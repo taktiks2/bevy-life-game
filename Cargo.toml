@@ -1,0 +1,15 @@
+[package]
+name = "bevy-life-game"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+bevy = "0.15"
+bevy-inspector-egui = "0.28.0"
+common = { path = "common" }
+game-plugin = { path = "game-plugin" }
+title-plugin = { path = "title-plugin" }
+menu-plugin = { path = "menu-plugin" }
+
+[workspace]
+members = ["common", "game-plugin", "title-plugin", "menu-plugin"]
