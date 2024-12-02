@@ -60,6 +60,7 @@ fn title_setup(mut commands: Commands) {
                     },
                     Button,
                     TitleButtonAction::Start,
+                    BorderRadius::px(5., 5., 5., 5.),
                     BackgroundColor(BLACK.into()),
                 ))
                 .with_children(|p| {

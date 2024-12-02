@@ -72,6 +72,7 @@ fn menu_setup(mut commands: Commands) {
                         },
                         MenuButtonAction::Back,
                         BackgroundColor(BLACK.into()),
+                        BorderRadius::px(5., 5., 5., 5.),
                         Button,
                     ))
                     .with_children(|p| {
@@ -93,6 +94,7 @@ fn menu_setup(mut commands: Commands) {
                         },
                         MenuButtonAction::Quit,
                         BackgroundColor(BLACK.into()),
+                        BorderRadius::px(5., 5., 5., 5.),
                         Button,
                     ))
                     .with_children(|p| {

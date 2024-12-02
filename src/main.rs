@@ -3,7 +3,7 @@ use bevy_inspector_egui::quick::WorldInspectorPlugin;
 
 use common::{states::GameState, systems::setup_camera};
 
-use common::consts::WINDOW_SIZE;
+use common::consts::{WINDOW_HEIGHT, WINDOW_WIDTH};
 use game_plugin::GamePlugin;
 use menu_plugin::MenuPlugin;
 use title_plugin::TitlePlugin;
@@ -14,7 +14,7 @@ fn main() {
         .add_plugins(DefaultPlugins.set(WindowPlugin {
             primary_window: Some(Window {
                 title: "Life Game".to_string(),
-                resolution: [WINDOW_SIZE, WINDOW_SIZE].into(), // NOTE: Windowサイズの指定
+                resolution: [WINDOW_WIDTH, WINDOW_HEIGHT].into(), // NOTE: Windowサイズの指定
                 resizable: false, // NOTE: Windowサイズの変更を不可にする
                 ..default()
             }),

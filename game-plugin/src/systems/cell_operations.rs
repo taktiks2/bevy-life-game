@@ -1,49 +1,8 @@
-use bevy::{color::palettes::css::*, prelude::*};
+use bevy::prelude::*;
 
-use crate::components::{coordinate::Coordinate, screen::OnGameScreen};
+use crate::components::coordinate::Coordinate;
 use crate::events::ProgressGenerationEvent;
 use crate::resources::world::World;
-
-pub fn spawn_cells(mut commands: Commands, world: Res<World>) {
-    commands
-        .spawn((
-            Node {
-                display: Display::Grid,
-                width: Val::Percent(100.),
-                height: Val::Percent(100.),
-                grid_template_columns: RepeatedGridTrack::auto(world.width),
-                grid_template_rows: RepeatedGridTrack::auto(world.height),
-                row_gap: Val::Px(1.),
-                column_gap: Val::Px(1.),
-                padding: UiRect::all(Val::Px(1.)),
-                ..default()
-            },
-            BackgroundColor(GRAY.into()),
-            OnGameScreen,
-        ))
-        .with_children(|parent| {
-            for (y, row) in world.cells.iter().enumerate() {
-                for (x, cell) in row.iter().enumerate() {
-                    parent.spawn((
-                        Button,
-                        Coordinate {
-                            x: x as u16,
-                            y: y as u16,
-                        },
-                        // NOTE: interactionで認識ができるようにButtonBundleにする
-                        Node {
-                            display: Display::Grid,
-                            width: Val::Auto,
-                            height: Val::Auto,
-                            ..default()
-                        },
-                        BackgroundColor(cell.get_color()),
-                        BorderRadius::px(5., 5., 5., 5.),
-                    ));
-                }
-            }
-        });
-}
 
 // NOTE: interaction_queryのwarningを出さないようにするには、以下の型をあてること
 // type InteractionQuery<'a, 'b> =
