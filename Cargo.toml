@@ -5,7 +5,9 @@ edition = "2021"
 
 [dependencies]
 bevy = "0.15"
-bevy-inspector-egui = "0.28.0"
+bevy-inspector-egui = { version = "0.28.0", default-features = false, features = [
+  "bevy_render",
+] }
 common = { path = "common" }
 game-plugin = { path = "game-plugin" }
 title-plugin = { path = "title-plugin" }
