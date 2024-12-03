@@ -24,7 +24,7 @@ enum MenuButtonAction {
     Quit,
 }
 
-fn menu_setup(mut commands: Commands) {
+fn menu_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands
         .spawn((
             Node {
@@ -48,6 +48,7 @@ fn menu_setup(mut commands: Commands) {
             parent.spawn((
                 Text::new("Settings"),
                 TextFont {
+                    font: asset_server.load("fonts/NotoSansJP-Bold.ttf"),
                     font_size: 60.0,
                     ..default()
                 },
@@ -79,6 +80,7 @@ fn menu_setup(mut commands: Commands) {
                         p.spawn((
                             Text::new("Back"),
                             TextFont {
+                                font: asset_server.load("fonts/NotoSansJP-Bold.ttf"),
                                 font_size: 40.0,
                                 ..default()
                             },
@@ -101,6 +103,7 @@ fn menu_setup(mut commands: Commands) {
                         p.spawn((
                             Text::new("Quit"),
                             TextFont {
+                                font: asset_server.load("fonts/NotoSansJP-Bold.ttf"),
                                 font_size: 40.0,
                                 ..default()
                             },

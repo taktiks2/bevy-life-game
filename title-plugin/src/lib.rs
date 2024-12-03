@@ -1,6 +1,6 @@
 use bevy::{color::palettes::css::*, prelude::*};
 
-use common::{resources::GameAssets, states::GameState, systems::despawn_screen};
+use common::{states::GameState, systems::despawn_screen};
 
 pub struct TitlePlugin;
 
@@ -20,7 +20,7 @@ enum TitleButtonAction {
     Start,
 }
 
-fn title_setup(mut commands: Commands, game_assets: Res<GameAssets>) {
+fn title_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands
         .spawn((
             Node {
@@ -44,7 +44,7 @@ fn title_setup(mut commands: Commands, game_assets: Res<GameAssets>) {
             parent.spawn((
                 Text::new("Conway's Game of Life"),
                 TextFont {
-                    // font: game_assets.font_bold.clone(),
+                    font: asset_server.load("fonts/NotoSansJP-Bold.ttf"),
                     font_size: 60.0,
                     ..default()
                 },
@@ -68,6 +68,7 @@ fn title_setup(mut commands: Commands, game_assets: Res<GameAssets>) {
                     p.spawn((
                         Text::new("Start"),
                         TextFont {
+                            font: asset_server.load("fonts/NotoSansJP-Bold.ttf"),
                             font_size: 40.0,
                             ..default()
                         },

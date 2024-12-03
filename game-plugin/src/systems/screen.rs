@@ -3,7 +3,7 @@ use bevy::{color::palettes::css::*, prelude::*};
 use crate::components::{coordinate::Coordinate, screen::OnGameScreen};
 use crate::resources::world::World;
 
-pub fn spawn_screen(mut commands: Commands, world: Res<World>) {
+pub fn spawn_screen(mut commands: Commands, world: Res<World>, asset_server: Res<AssetServer>) {
     commands
         .spawn((
             Node {
@@ -44,6 +44,7 @@ pub fn spawn_screen(mut commands: Commands, world: Res<World>) {
                     p.spawn((
                         Text::new("Start"),
                         TextFont {
+                            font: asset_server.load("fonts/NotoSansJP-Bold.ttf"),
                             font_size: 40.0,
                             ..default()
                         },
@@ -66,6 +67,7 @@ pub fn spawn_screen(mut commands: Commands, world: Res<World>) {
                     p.spawn((
                         Text::new("Next"),
                         TextFont {
+                            font: asset_server.load("fonts/NotoSansJP-Bold.ttf"),
                             font_size: 40.0,
                             ..default()
                         },
@@ -88,6 +90,7 @@ pub fn spawn_screen(mut commands: Commands, world: Res<World>) {
                     p.spawn((
                         Text::new("Reset"),
                         TextFont {
+                            font: asset_server.load("fonts/NotoSansJP-Bold.ttf"),
                             font_size: 40.0,
                             ..default()
                         },
