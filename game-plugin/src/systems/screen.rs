@@ -1,7 +1,7 @@
 use bevy::{color::palettes::css::*, prelude::*};
 use common::resources::GameAssets;
 
-use crate::components::{coordinate::Coordinate, screen::OnGameScreen};
+use crate::components::{action::GameButtonAction, coordinate::Coordinate, screen::OnGameScreen};
 use crate::resources::world::World;
 
 pub fn spawn_screen(mut commands: Commands, world: Res<World>, game_assets: Res<GameAssets>) {
@@ -38,6 +38,7 @@ pub fn spawn_screen(mut commands: Commands, world: Res<World>, game_assets: Res<
                         ..default()
                     },
                     Button,
+                    GameButtonAction::Start,
                     BorderRadius::px(5., 5., 5., 5.),
                     BackgroundColor(BLACK.into()),
                 ))
@@ -61,12 +62,13 @@ pub fn spawn_screen(mut commands: Commands, world: Res<World>, game_assets: Res<
                         ..default()
                     },
                     Button,
+                    GameButtonAction::Stop,
                     BorderRadius::px(5., 5., 5., 5.),
                     BackgroundColor(BLACK.into()),
                 ))
                 .with_children(|p| {
                     p.spawn((
-                        Text::new("あいNExt"),
+                        Text::new("Stop"),
                         TextFont {
                             font: game_assets.font_bold.clone(),
 
@@ -81,7 +83,6 @@ pub fn spawn_screen(mut commands: Commands, world: Res<World>, game_assets: Res<
                             ..default()
                         },
                         TextColor(WHITE.into()),
-                        BackgroundColor(BLUE.into()),
                     ));
                 });
                 p.spawn((
@@ -93,6 +94,39 @@ pub fn spawn_screen(mut commands: Commands, world: Res<World>, game_assets: Res<
                         ..default()
                     },
                     Button,
+                    GameButtonAction::Next,
+                    BorderRadius::px(5., 5., 5., 5.),
+                    BackgroundColor(BLACK.into()),
+                ))
+                .with_children(|p| {
+                    p.spawn((
+                        Text::new("Next"),
+                        TextFont {
+                            font: game_assets.font_bold.clone(),
+
+                            font_size: 40.0,
+                            ..default()
+                        },
+                        Node {
+                            align_items: AlignItems::Center,
+                            justify_content: JustifyContent::Center,
+                            align_self: AlignSelf::Center,
+                            justify_self: JustifySelf::Center,
+                            ..default()
+                        },
+                        TextColor(WHITE.into()),
+                    ));
+                });
+                p.spawn((
+                    Node {
+                        align_items: AlignItems::Center,
+                        justify_content: JustifyContent::Center,
+                        width: Val::Px(200.),
+                        height: Val::Px(60.),
+                        ..default()
+                    },
+                    Button,
+                    GameButtonAction::Reset,
                     BorderRadius::px(5., 5., 5., 5.),
                     BackgroundColor(BLACK.into()),
                 ))

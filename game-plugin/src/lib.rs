@@ -13,7 +13,10 @@ mod systems;
 use components::screen::OnGameScreen;
 use events::*;
 use resources::{timer::SpaceKeyTimer, world::World};
-use systems::{cell_operations::*, input::game_input_keyboard_handling, screen::spawn_screen};
+use systems::{
+    action::game_action, cell_operations::*, input::game_input_keyboard_handling,
+    screen::spawn_screen,
+};
 
 pub struct GamePlugin;
 
@@ -30,6 +33,7 @@ impl Plugin for GamePlugin {
                 update_cells,
                 game_input_keyboard_handling,
                 progress_generation,
+                game_action,
             )
                 .run_if(in_state(GameState::Game)),
         );
