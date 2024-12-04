@@ -16,6 +16,5 @@ pub fn setup_game_assets(mut commands: Commands, asset_server: Res<AssetServer>)
     commands.insert_resource(GameAssets {
         font_bold: asset_server.load("fonts/NotoSansJP-Bold.ttf"),
         font_regular: asset_server.load("fonts/NotoSansJP-Regular.ttf"),
-        test: "its working".to_string(),
     })
 }

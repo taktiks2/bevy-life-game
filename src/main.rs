@@ -3,6 +3,7 @@ use bevy_inspector_egui::quick::WorldInspectorPlugin;
 
 use common::{
     consts::{WINDOW_HEIGHT, WINDOW_WIDTH},
+    resources::GameAssets,
     states::GameState,
     systems::setup_camera,
 };
@@ -27,6 +28,7 @@ fn main() {
         .add_plugins(TitlePlugin)
         .add_plugins(GamePlugin)
         .add_plugins(MenuPlugin)
+        .init_resource::<GameAssets>()
         .init_state::<GameState>()
         .run();
 }

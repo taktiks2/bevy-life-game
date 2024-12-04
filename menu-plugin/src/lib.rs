@@ -1,6 +1,6 @@
 use bevy::{color::palettes::css::*, prelude::*};
 
-use common::{states::GameState, systems::despawn_screen};
+use common::{resources::GameAssets, states::GameState, systems::despawn_screen};
 
 pub struct MenuPlugin;
 
@@ -24,7 +24,7 @@ enum MenuButtonAction {
     Quit,
 }
 
-fn menu_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
+fn menu_setup(mut commands: Commands, game_assets: Res<GameAssets>) {
     commands
         .spawn((
             Node {
@@ -48,7 +48,7 @@ fn menu_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
             parent.spawn((
                 Text::new("Settings"),
                 TextFont {
-                    font: asset_server.load("fonts/NotoSansJP-Bold.ttf"),
+                    font: game_assets.font_bold.clone(),
                     font_size: 60.0,
                     ..default()
                 },
@@ -80,7 +80,7 @@ fn menu_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                         p.spawn((
                             Text::new("Back"),
                             TextFont {
-                                font: asset_server.load("fonts/NotoSansJP-Bold.ttf"),
+                                font: game_assets.font_bold.clone(),
                                 font_size: 40.0,
                                 ..default()
                             },
@@ -103,7 +103,7 @@ fn menu_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                         p.spawn((
                             Text::new("Quit"),
                             TextFont {
-                                font: asset_server.load("fonts/NotoSansJP-Bold.ttf"),
+                                font: game_assets.font_bold.clone(),
                                 font_size: 40.0,
                                 ..default()
                             },

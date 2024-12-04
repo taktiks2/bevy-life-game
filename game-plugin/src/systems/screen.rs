@@ -1,9 +1,10 @@
 use bevy::{color::palettes::css::*, prelude::*};
+use common::resources::GameAssets;
 
 use crate::components::{coordinate::Coordinate, screen::OnGameScreen};
 use crate::resources::world::World;
 
-pub fn spawn_screen(mut commands: Commands, world: Res<World>, asset_server: Res<AssetServer>) {
+pub fn spawn_screen(mut commands: Commands, world: Res<World>, game_assets: Res<GameAssets>) {
     commands
         .spawn((
             Node {
@@ -44,7 +45,7 @@ pub fn spawn_screen(mut commands: Commands, world: Res<World>, asset_server: Res
                     p.spawn((
                         Text::new("Start"),
                         TextFont {
-                            font: asset_server.load("fonts/NotoSansJP-Bold.ttf"),
+                            font: game_assets.font_bold.clone(),
                             font_size: 40.0,
                             ..default()
                         },
@@ -65,13 +66,22 @@ pub fn spawn_screen(mut commands: Commands, world: Res<World>, asset_server: Res
                 ))
                 .with_children(|p| {
                     p.spawn((
-                        Text::new("Next"),
+                        Text::new("あいNExt"),
                         TextFont {
-                            font: asset_server.load("fonts/NotoSansJP-Bold.ttf"),
+                            font: game_assets.font_bold.clone(),
+
                             font_size: 40.0,
                             ..default()
                         },
+                        Node {
+                            align_items: AlignItems::Center,
+                            justify_content: JustifyContent::Center,
+                            align_self: AlignSelf::Center,
+                            justify_self: JustifySelf::Center,
+                            ..default()
+                        },
                         TextColor(WHITE.into()),
+                        BackgroundColor(BLUE.into()),
                     ));
                 });
                 p.spawn((
@@ -90,7 +100,7 @@ pub fn spawn_screen(mut commands: Commands, world: Res<World>, asset_server: Res
                     p.spawn((
                         Text::new("Reset"),
                         TextFont {
-                            font: asset_server.load("fonts/NotoSansJP-Bold.ttf"),
+                            font: game_assets.font_bold.clone(),
                             font_size: 40.0,
                             ..default()
                         },
