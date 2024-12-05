@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::components::coordinate::Coordinate;
 use crate::events::ProgressGenerationEvent;
-use crate::resources::world::World;
+use crate::resources::{timer::SimulationTimer, world::World};
 
 // NOTE: interaction_queryのwarningを出さないようにするには、以下の型をあてること
 // type InteractionQuery<'a, 'b> =
@@ -34,5 +34,15 @@ pub fn progress_generation(
 ) {
     for _ in progress_generation_event_reader.read() {
         world.progress_generation()
+    }
+}
+
+pub fn progress_generation_trigger(
+    time: Res<Time>,
+    mut simulation_timer: ResMut<SimulationTimer>,
+    mut progress_generation_event_writer: EventWriter<ProgressGenerationEvent>,
+) {
+    if simulation_timer.0.tick(time.delta()).finished() {
+        progress_generation_event_writer.send(ProgressGenerationEvent);
     }
 }

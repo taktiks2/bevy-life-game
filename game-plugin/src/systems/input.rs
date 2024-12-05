@@ -3,30 +3,26 @@ use bevy::prelude::*;
 use common::states::GameState;
 
 use crate::events::ProgressGenerationEvent;
-use crate::resources::timer::SpaceKeyTimer;
+use crate::states::SimulationState;
 
 pub fn game_input_keyboard_handling(
     keys: Res<ButtonInput<KeyCode>>,
-    time: Res<Time>,
-    mut space_key_timer: ResMut<SpaceKeyTimer>,
+    simulation_state: Res<State<SimulationState>>,
+    mut simulation_next_state: ResMut<NextState<SimulationState>>,
+    mut game_next_state: ResMut<NextState<GameState>>,
     mut progress_generation_event_writer: EventWriter<ProgressGenerationEvent>,
-    mut state: ResMut<NextState<GameState>>,
 ) {
     if keys.just_pressed(KeyCode::Space) {
         progress_generation_event_writer.send(ProgressGenerationEvent);
     }
-    // NOTE: 押し続けている間発火
-    if keys.pressed(KeyCode::Space) {
-        space_key_timer.0.tick(time.delta()); // NOTE: space_key_timerに経過した時間を加算する
-        if space_key_timer.0.finished() {
-            progress_generation_event_writer.send(ProgressGenerationEvent);
-        }
+    if keys.pressed(KeyCode::Space) && *simulation_state.get() == SimulationState::Paused {
+        simulation_next_state.set(SimulationState::Simulating);
     }
-    // NOTE: キーを離したときにタイマーをリセット
-    if keys.just_released(KeyCode::Space) {
-        space_key_timer.0.reset();
+    if keys.just_released(KeyCode::Space) && *simulation_state.get() == SimulationState::Simulating
+    {
+        simulation_next_state.set(SimulationState::Paused);
     }
     if keys.just_pressed(KeyCode::KeyQ) {
-        state.set(GameState::Menu);
+        game_next_state.set(GameState::Menu);
     }
 }
