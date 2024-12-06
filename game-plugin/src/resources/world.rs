@@ -31,6 +31,7 @@ pub struct World {
     pub cells: Vec<Vec<Cell>>,
     pub width: u16,
     pub height: u16,
+    pub generation_count: u64,
 }
 
 impl World {
@@ -41,6 +42,7 @@ impl World {
                 .collect(),
             width,
             height,
+            generation_count: 0,
         }
     }
     pub fn progress_generation(&mut self) {

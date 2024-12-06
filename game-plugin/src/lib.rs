@@ -34,6 +34,7 @@ impl Plugin for GamePlugin {
                 progress_generation,
                 game_action,
                 progress_generation_trigger.run_if(in_state(SimulationState::Simulating)),
+                update_generation,
             )
                 .run_if(in_state(GameState::Game)),
         );

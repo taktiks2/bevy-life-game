@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::components::coordinate::Coordinate;
+use crate::components::{coordinate::Coordinate, screen::GenerationText};
 use crate::events::ProgressGenerationEvent;
 use crate::resources::{timer::SimulationTimer, world::World};
 
@@ -28,11 +28,20 @@ pub fn update_cells(world: Res<World>, mut query: Query<(&Coordinate, &mut Backg
     }
 }
 
+// TODO: テキストをアップデートする関数を作成する
+pub fn update_generation(world: Res<World>, mut query: Query<&mut Text, With<GenerationText>>) {
+    for mut generation_text in query.iter_mut() {
+        generation_text.0 = format!("Gen: {}", world.generation_count);
+    }
+}
+
 pub fn progress_generation(
     mut world: ResMut<World>,
     mut progress_generation_event_reader: EventReader<ProgressGenerationEvent>,
 ) {
     for _ in progress_generation_event_reader.read() {
+        world.generation_count += 1;
+        println!("Generation: {}", world.generation_count);
         world.progress_generation()
     }
 }

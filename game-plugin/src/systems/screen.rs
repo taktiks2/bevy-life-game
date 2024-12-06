@@ -1,7 +1,11 @@
 use bevy::{color::palettes::css::*, prelude::*};
 use common::resources::GameAssets;
 
-use crate::components::{action::GameButtonAction, coordinate::Coordinate, screen::OnGameScreen};
+use crate::components::{
+    action::GameButtonAction,
+    coordinate::Coordinate,
+    screen::{GenerationText, OnGameScreen},
+};
 use crate::resources::world::World;
 
 pub fn spawn_screen(mut commands: Commands, world: Res<World>, game_assets: Res<GameAssets>) {
@@ -141,6 +145,16 @@ pub fn spawn_screen(mut commands: Commands, world: Res<World>, game_assets: Res<
                         TextColor(WHITE.into()),
                     ));
                 });
+                p.spawn((
+                    Text::new(format!("Gen: {}", world.generation_count)),
+                    TextFont {
+                        font: game_assets.font_regular.clone(),
+                        font_size: 40.0,
+                        ..default()
+                    },
+                    TextColor(WHITE.into()),
+                    GenerationText,
+                ));
             });
             p.spawn((
                 Node {
