@@ -9,7 +9,10 @@ mod systems;
 
 use components::screen::OnGameScreen;
 use events::*;
-use resources::{timer::SimulationTimer, world::World};
+use resources::{
+    timer::{SimulationTimer, SpaceKeyTimer},
+    world::World,
+};
 use states::SimulationState;
 use systems::{
     action::game_action, cell_operations::*, input::game_input_keyboard_handling,
@@ -38,6 +41,7 @@ impl Plugin for GamePlugin {
             )
                 .run_if(in_state(GameState::Game)),
         );
+        app.insert_resource(SpaceKeyTimer::new());
         app.init_state::<SimulationState>();
         app.add_event::<ProgressGenerationEvent>();
     }

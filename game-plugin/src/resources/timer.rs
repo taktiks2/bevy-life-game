@@ -8,3 +8,12 @@ impl SimulationTimer {
         Self(Timer::from_seconds(duration, TimerMode::Repeating))
     }
 }
+
+#[derive(Resource)]
+pub struct SpaceKeyTimer(pub Timer);
+
+impl SpaceKeyTimer {
+    pub fn new() -> Self {
+        Self(Timer::from_seconds(0.5, TimerMode::Once))
+    }
+}

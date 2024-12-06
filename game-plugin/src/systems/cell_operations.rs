@@ -28,11 +28,8 @@ pub fn update_cells(world: Res<World>, mut query: Query<(&Coordinate, &mut Backg
     }
 }
 
-// TODO: テキストをアップデートする関数を作成する
-pub fn update_generation(world: Res<World>, mut query: Query<&mut Text, With<GenerationText>>) {
-    for mut generation_text in query.iter_mut() {
-        generation_text.0 = format!("Gen: {}", world.generation_count);
-    }
+pub fn update_generation(world: Res<World>, mut query: Query<&mut TextSpan, With<GenerationText>>) {
+    query.single_mut().0 = world.generation_count.to_string();
 }
 
 pub fn progress_generation(
@@ -41,7 +38,6 @@ pub fn progress_generation(
 ) {
     for _ in progress_generation_event_reader.read() {
         world.generation_count += 1;
-        println!("Generation: {}", world.generation_count);
         world.progress_generation()
     }
 }

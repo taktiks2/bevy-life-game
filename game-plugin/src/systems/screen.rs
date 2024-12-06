@@ -146,14 +146,23 @@ pub fn spawn_screen(mut commands: Commands, world: Res<World>, game_assets: Res<
                     ));
                 });
                 p.spawn((
-                    Text::new(format!("Gen: {}", world.generation_count)),
+                    Text::new("Gen: ".to_string()),
                     TextFont {
                         font: game_assets.font_regular.clone(),
-                        font_size: 40.0,
+                        font_size: 30.0,
                         ..default()
                     },
                     TextColor(WHITE.into()),
+                ))
+                .with_child((
+                    TextSpan::new(world.generation_count.to_string()),
+                    TextFont {
+                        font: game_assets.font_regular.clone(),
+                        font_size: 30.0,
+                        ..default()
+                    },
                     GenerationText,
+                    TextColor(WHITE.into()),
                 ));
             });
             p.spawn((
