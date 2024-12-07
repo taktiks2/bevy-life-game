@@ -1,13 +1,23 @@
 use bevy::{color::palettes::css::*, prelude::*};
 
-use common::{resources::GameAssets, states::GameState, systems::despawn_screen};
+use common::{
+    resources::GameAssets,
+    states::GameState,
+    systems::{despawn_entity, setup_camera},
+};
 
 pub struct MenuPlugin;
 
 impl Plugin for MenuPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(OnEnter(GameState::Menu), menu_setup);
-        app.add_systems(OnExit(GameState::Menu), despawn_screen::<OnMenuScreen>);
+        app.add_systems(
+            OnEnter(GameState::Menu),
+            (setup_menu_screen, setup_menu_camera),
+        );
+        app.add_systems(
+            OnExit(GameState::Menu),
+            (despawn_entity::<OnMenuScreen>, despawn_entity::<MenuCamera>),
+        );
         app.add_systems(
             Update,
             (menu_action, menu_input_keyboard_handling).run_if(in_state(GameState::Menu)),
@@ -19,12 +29,19 @@ impl Plugin for MenuPlugin {
 struct OnMenuScreen;
 
 #[derive(Component)]
+struct MenuCamera;
+
+#[derive(Component)]
 enum MenuButtonAction {
     Back,
     Quit,
 }
 
-fn menu_setup(mut commands: Commands, game_assets: Res<GameAssets>) {
+fn setup_menu_camera(commands: Commands) {
+    setup_camera(commands, MenuCamera);
+}
+
+fn setup_menu_screen(mut commands: Commands, game_assets: Res<GameAssets>) {
     commands
         .spawn((
             Node {

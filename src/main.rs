@@ -23,7 +23,6 @@ fn main() {
             }),
             ..default()
         }))
-        .add_systems(Startup, setup_camera)
         .add_plugins(WorldInspectorPlugin::new()) // NOTE: インスペクタープラグイン
         .add_plugins(TitlePlugin)
         .add_plugins(GamePlugin)

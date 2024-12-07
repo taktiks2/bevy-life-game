@@ -6,6 +6,7 @@ use crate::components::{
     coordinate::Coordinate,
     screen::{GenerationText, OnGameScreen},
 };
+use crate::layer::Layer;
 use crate::resources::world::World;
 
 pub fn spawn_screen(mut commands: Commands, world: Res<World>, game_assets: Res<GameAssets>) {
@@ -30,6 +31,7 @@ pub fn spawn_screen(mut commands: Commands, world: Res<World>, game_assets: Res<
                     row_gap: Val::Px(10.),
                     ..default()
                 },
+                Layer::SideMenu.as_render_layer(),
                 BackgroundColor(GRAY.into()),
             ))
             .with_children(|p| {
@@ -199,6 +201,7 @@ pub fn spawn_screen(mut commands: Commands, world: Res<World>, game_assets: Res<
                     padding: UiRect::all(Val::Px(1.)),
                     ..default()
                 },
+                Layer::World.as_render_layer(),
                 BackgroundColor(GRAY.into()),
             ))
             .with_children(|p| {

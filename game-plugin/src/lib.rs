@@ -1,14 +1,16 @@
 use bevy::prelude::*;
-use common::{resources::GameAssets, states::GameState, systems::despawn_screen};
+use common::{resources::GameAssets, states::GameState, systems::despawn_entity};
 
 mod components;
 mod events;
+mod layer;
 mod resources;
 mod states;
 mod systems;
 
 use components::screen::OnGameScreen;
 use events::*;
+use layer::Layer;
 use resources::{
     timer::{SimulationTimer, SpaceKeyTimer},
     world::World,
@@ -25,9 +27,23 @@ impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             OnEnter(GameState::Game),
-            (setup_resource, spawn_screen).chain(),
+            (
+                setup_side_menu_camera,
+                setup_world_camera,
+                setup_resource,
+                spawn_screen,
+            )
+                .chain(),
         );
-        app.add_systems(OnExit(GameState::Game), despawn_screen::<OnGameScreen>);
+        app.add_systems(
+            OnExit(GameState::Game),
+            (
+                despawn_entity::<OnGameScreen>,
+                despawn_entity::<SideMenuCamera>,
+                despawn_entity::<WorldCamera>,
+            ),
+        );
+
         app.add_systems(
             Update,
             (
@@ -49,6 +65,20 @@ impl Plugin for GamePlugin {
         app.add_event::<GenerationResetEvent>();
         app.add_event::<WorldClearEvent>();
     }
+}
+
+#[derive(Component)]
+struct SideMenuCamera;
+
+pub fn setup_side_menu_camera(mut commands: Commands) {
+    commands.spawn((Camera2d, SideMenuCamera, Layer::SideMenu.as_render_layer()));
+}
+
+#[derive(Component)]
+struct WorldCamera;
+
+pub fn setup_world_camera(mut commands: Commands) {
+    commands.spawn((Camera2d, WorldCamera, Layer::World.as_render_layer()));
 }
 
 fn setup_resource(mut commands: Commands, game_assets: Res<GameAssets>) {
