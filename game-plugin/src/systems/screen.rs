@@ -34,6 +34,25 @@ pub fn spawn_screen(mut commands: Commands, world: Res<World>, game_assets: Res<
             ))
             .with_children(|p| {
                 p.spawn((
+                    Text::new("Gen: ".to_string()),
+                    TextFont {
+                        font: game_assets.font_regular.clone(),
+                        font_size: 30.0,
+                        ..default()
+                    },
+                    TextColor(WHITE.into()),
+                ))
+                .with_child((
+                    TextSpan::new(world.generation_count.to_string()),
+                    TextFont {
+                        font: game_assets.font_regular.clone(),
+                        font_size: 30.0,
+                        ..default()
+                    },
+                    GenerationText,
+                    TextColor(WHITE.into()),
+                ));
+                p.spawn((
                     Node {
                         align_items: AlignItems::Center,
                         justify_content: JustifyContent::Center,
@@ -75,7 +94,6 @@ pub fn spawn_screen(mut commands: Commands, world: Res<World>, game_assets: Res<
                         Text::new("Stop"),
                         TextFont {
                             font: game_assets.font_bold.clone(),
-
                             font_size: 40.0,
                             ..default()
                         },
@@ -107,7 +125,6 @@ pub fn spawn_screen(mut commands: Commands, world: Res<World>, game_assets: Res<
                         Text::new("Next"),
                         TextFont {
                             font: game_assets.font_bold.clone(),
-
                             font_size: 40.0,
                             ..default()
                         },
@@ -146,24 +163,29 @@ pub fn spawn_screen(mut commands: Commands, world: Res<World>, game_assets: Res<
                     ));
                 });
                 p.spawn((
-                    Text::new("Gen: ".to_string()),
-                    TextFont {
-                        font: game_assets.font_regular.clone(),
-                        font_size: 30.0,
+                    Node {
+                        align_items: AlignItems::Center,
+                        justify_content: JustifyContent::Center,
+                        width: Val::Px(200.),
+                        height: Val::Px(60.),
                         ..default()
                     },
-                    TextColor(WHITE.into()),
+                    Button,
+                    GameButtonAction::Clear,
+                    BorderRadius::px(5., 5., 5., 5.),
+                    BackgroundColor(BLACK.into()),
                 ))
-                .with_child((
-                    TextSpan::new(world.generation_count.to_string()),
-                    TextFont {
-                        font: game_assets.font_regular.clone(),
-                        font_size: 30.0,
-                        ..default()
-                    },
-                    GenerationText,
-                    TextColor(WHITE.into()),
-                ));
+                .with_children(|p| {
+                    p.spawn((
+                        Text::new("Clear"),
+                        TextFont {
+                            font: game_assets.font_bold.clone(),
+                            font_size: 40.0,
+                            ..default()
+                        },
+                        TextColor(WHITE.into()),
+                    ));
+                });
             });
             p.spawn((
                 Node {

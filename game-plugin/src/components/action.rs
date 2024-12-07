@@ -6,4 +6,5 @@ pub enum GameButtonAction {
     Stop,
     Next,
     Reset,
+    Clear,
 }

@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 use crate::components::{coordinate::Coordinate, screen::GenerationText};
-use crate::events::ProgressGenerationEvent;
+use crate::events::{GenerationResetEvent, ProgressGenerationEvent, WorldClearEvent};
 use crate::resources::{timer::SimulationTimer, world::World};
 
 // NOTE: interaction_queryのwarningを出さないようにするには、以下の型をあてること
@@ -16,7 +16,9 @@ pub fn switch_cell_state(
     for (interaction, coordinate) in &mut interaction_query {
         if let Interaction::Pressed = interaction {
             world.cells[coordinate.y as usize][coordinate.x as usize] =
-                world.cells[coordinate.y as usize][coordinate.x as usize].switch_state()
+                world.cells[coordinate.y as usize][coordinate.x as usize].switch_state();
+            world.generation_count = 0;
+            world.prev_cells = world.cells.clone();
         }
     }
 }
@@ -32,16 +34,6 @@ pub fn update_generation(world: Res<World>, mut query: Query<&mut TextSpan, With
     query.single_mut().0 = world.generation_count.to_string();
 }
 
-pub fn progress_generation(
-    mut world: ResMut<World>,
-    mut progress_generation_event_reader: EventReader<ProgressGenerationEvent>,
-) {
-    for _ in progress_generation_event_reader.read() {
-        world.generation_count += 1;
-        world.progress_generation()
-    }
-}
-
 pub fn progress_generation_trigger(
     time: Res<Time>,
     mut simulation_timer: ResMut<SimulationTimer>,
@@ -49,5 +41,32 @@ pub fn progress_generation_trigger(
 ) {
     if simulation_timer.0.tick(time.delta()).finished() {
         progress_generation_event_writer.send(ProgressGenerationEvent);
+    }
+}
+
+pub fn progress_generation(
+    mut world: ResMut<World>,
+    mut progress_generation_event_reader: EventReader<ProgressGenerationEvent>,
+) {
+    for _ in progress_generation_event_reader.read() {
+        world.progress_generation()
+    }
+}
+
+pub fn reset_generation(
+    mut world: ResMut<World>,
+    mut generation_reset_event_reader: EventReader<GenerationResetEvent>,
+) {
+    for _ in generation_reset_event_reader.read() {
+        world.reset();
+    }
+}
+
+pub fn world_clear(
+    mut world: ResMut<World>,
+    mut world_clear_event_reader: EventReader<WorldClearEvent>,
+) {
+    for _ in world_clear_event_reader.read() {
+        world.clear();
     }
 }

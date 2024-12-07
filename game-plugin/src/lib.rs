@@ -38,12 +38,16 @@ impl Plugin for GamePlugin {
                 game_action,
                 progress_generation_trigger.run_if(in_state(SimulationState::Simulating)),
                 update_generation,
+                reset_generation,
+                world_clear,
             )
                 .run_if(in_state(GameState::Game)),
         );
         app.insert_resource(SpaceKeyTimer::new());
         app.init_state::<SimulationState>();
         app.add_event::<ProgressGenerationEvent>();
+        app.add_event::<GenerationResetEvent>();
+        app.add_event::<WorldClearEvent>();
     }
 }
 

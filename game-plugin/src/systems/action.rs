@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 use crate::components::action::GameButtonAction;
-use crate::events::ProgressGenerationEvent;
+use crate::events::{GenerationResetEvent, ProgressGenerationEvent, WorldClearEvent};
 use crate::states::SimulationState;
 
 #[allow(clippy::type_complexity)]
@@ -11,6 +11,8 @@ pub fn game_action(
         (Changed<Interaction>, With<Button>),
     >,
     mut progress_generation_event_writer: EventWriter<ProgressGenerationEvent>,
+    mut generation_reset_event_writer: EventWriter<GenerationResetEvent>,
+    mut world_clear_event_writer: EventWriter<WorldClearEvent>,
     simulation_state: Res<State<SimulationState>>,
     mut simulation_next_state: ResMut<NextState<SimulationState>>,
 ) {
@@ -31,7 +33,10 @@ pub fn game_action(
                     progress_generation_event_writer.send(ProgressGenerationEvent);
                 }
                 GameButtonAction::Reset => {
-                    println!("Reset");
+                    generation_reset_event_writer.send(GenerationResetEvent);
+                }
+                GameButtonAction::Clear => {
+                    world_clear_event_writer.send(WorldClearEvent);
                 }
             }
         }

@@ -29,6 +29,7 @@ impl Cell {
 #[derive(Resource, Clone, Debug)]
 pub struct World {
     pub cells: Vec<Vec<Cell>>,
+    pub prev_cells: Vec<Vec<Cell>>,
     pub width: u16,
     pub height: u16,
     pub generation_count: u64,
@@ -37,15 +38,20 @@ pub struct World {
 impl World {
     pub fn new(width: u16, height: u16) -> Self {
         Self {
-            cells: (0..height)
-                .map(|_| (0..width).map(|_| Cell::Dead).collect())
-                .collect(),
+            cells: Self::init_cells(width, height),
+            prev_cells: Self::init_cells(width, height),
             width,
             height,
             generation_count: 0,
         }
     }
+    fn init_cells(width: u16, height: u16) -> Vec<Vec<Cell>> {
+        (0..height)
+            .map(|_| (0..width).map(|_| Cell::Dead).collect())
+            .collect()
+    }
     pub fn progress_generation(&mut self) {
+        self.generation_count += 1;
         let current_world = self.clone();
         for (abs_y, row) in current_world.cells.iter().enumerate() {
             for (abs_x, cell) in row.iter().enumerate() {
@@ -92,5 +98,14 @@ impl World {
                 }
             }
         }
+    }
+    pub fn reset(&mut self) {
+        self.cells = self.prev_cells.clone();
+        self.generation_count = 0;
+    }
+    pub fn clear(&mut self) {
+        self.cells = Self::init_cells(self.width, self.height);
+        self.prev_cells = Self::init_cells(self.width, self.height);
+        self.generation_count = 0;
     }
 }
