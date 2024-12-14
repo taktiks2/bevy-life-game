@@ -8,7 +8,10 @@ mod resources;
 mod states;
 mod systems;
 
-use components::screen::OnGameScreen;
+use components::{
+    camera::{SideMenuCamera, WorldCamera},
+    screen::OnGameScreen,
+};
 use events::*;
 use layer::Layer;
 use resources::{
@@ -43,7 +46,6 @@ impl Plugin for GamePlugin {
                 despawn_entity::<WorldCamera>,
             ),
         );
-
         app.add_systems(
             Update,
             (
@@ -67,19 +69,37 @@ impl Plugin for GamePlugin {
     }
 }
 
-#[derive(Component)]
-struct SideMenuCamera;
-
 pub fn setup_side_menu_camera(mut commands: Commands) {
-    commands.spawn((Camera2d, SideMenuCamera, Layer::SideMenu.as_render_layer()));
+    commands.spawn((
+        Camera2d,
+        Camera {
+            // NOTE: 複数のカメラを使う場合、優先順位を付ける必要がある
+            order: 1,
+            ..default()
+        },
+        SideMenuCamera,
+        // Layer::SideMenu.as_render_layer(),
+    ));
 }
-
-#[derive(Component)]
-struct WorldCamera;
 
 pub fn setup_world_camera(mut commands: Commands) {
-    commands.spawn((Camera2d, WorldCamera, Layer::World.as_render_layer()));
+    commands.spawn((
+        Camera2d,
+        Camera {
+            // NOTE: 複数のカメラを使う場合、優先順位を付ける必要がある
+            order: 0,
+            ..default()
+        },
+        WorldCamera,
+        Layer::World.as_render_layer(),
+    ));
 }
+
+// pub fn zoom_scale(mut query_camera: Query<&mut OrthographicProjection, With<WorldCamera>>) {
+//     for mut camera in query_camera.iter_mut() {
+//         camera.scale += 0.1;
+//     }
+// }
 
 fn setup_resource(mut commands: Commands, game_assets: Res<GameAssets>) {
     commands.insert_resource(World::new(

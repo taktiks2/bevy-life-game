@@ -5,7 +5,6 @@ use common::{
     consts::{WINDOW_HEIGHT, WINDOW_WIDTH},
     resources::GameAssets,
     states::GameState,
-    systems::setup_camera,
 };
 
 use game_plugin::GamePlugin;

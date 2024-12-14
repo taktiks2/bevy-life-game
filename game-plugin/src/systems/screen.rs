@@ -9,7 +9,12 @@ use crate::components::{
 use crate::layer::Layer;
 use crate::resources::world::World;
 
-pub fn spawn_screen(mut commands: Commands, world: Res<World>, game_assets: Res<GameAssets>) {
+pub fn spawn_screen(
+    mut commands: Commands,
+    world: Res<World>,
+    game_assets: Res<GameAssets>,
+    asset_server: Res<AssetServer>,
+) {
     commands
         .spawn((
             Node {
@@ -188,12 +193,144 @@ pub fn spawn_screen(mut commands: Commands, world: Res<World>, game_assets: Res<
                         TextColor(WHITE.into()),
                     ));
                 });
+                p.spawn(Node {
+                    align_items: AlignItems::Center,
+                    justify_content: JustifyContent::SpaceBetween,
+                    width: Val::Px(200.),
+                    height: Val::Px(60.),
+                    ..default()
+                })
+                .with_children(|p| {
+                    p.spawn((
+                        Node {
+                            align_items: AlignItems::Center,
+                            justify_content: JustifyContent::Center,
+                            width: Val::Px(60.),
+                            height: Val::Px(60.),
+                            ..default()
+                        },
+                        Button,
+                        GameButtonAction::SpeedDown,
+                        BorderRadius::px(5., 5., 5., 5.),
+                        BackgroundColor(BLACK.into()),
+                    ))
+                    .with_children(|p| {
+                        p.spawn((
+                            Text::new("<"),
+                            TextFont {
+                                font: game_assets.font_bold.clone(),
+                                font_size: 40.0,
+                                ..default()
+                            },
+                            TextColor(WHITE.into()),
+                        ));
+                    });
+                    p.spawn((
+                        Text::new("Speed"),
+                        TextFont {
+                            font: game_assets.font_regular.clone(),
+                            font_size: 20.,
+                            ..default()
+                        },
+                        TextColor(WHITE.into()),
+                    ));
+                    p.spawn((
+                        Node {
+                            align_items: AlignItems::Center,
+                            justify_content: JustifyContent::Center,
+                            width: Val::Px(60.),
+                            height: Val::Px(60.),
+                            ..default()
+                        },
+                        Button,
+                        GameButtonAction::SpeedUp,
+                        BorderRadius::px(5., 5., 5., 5.),
+                        BackgroundColor(BLACK.into()),
+                    ))
+                    .with_children(|p| {
+                        p.spawn((
+                            Text::new(">"),
+                            TextFont {
+                                font: game_assets.font_bold.clone(),
+                                font_size: 40.0,
+                                ..default()
+                            },
+                            TextColor(WHITE.into()),
+                        ));
+                    });
+                });
+                p.spawn(Node {
+                    align_items: AlignItems::Center,
+                    justify_content: JustifyContent::SpaceBetween,
+                    width: Val::Px(200.),
+                    height: Val::Px(60.),
+                    ..default()
+                })
+                .with_children(|p| {
+                    p.spawn((
+                        Node {
+                            align_items: AlignItems::Center,
+                            justify_content: JustifyContent::Center,
+                            width: Val::Px(60.),
+                            height: Val::Px(60.),
+                            ..default()
+                        },
+                        Button,
+                        GameButtonAction::ZoomDown,
+                        BorderRadius::px(5., 5., 5., 5.),
+                        BackgroundColor(BLACK.into()),
+                    ))
+                    .with_children(|p| {
+                        p.spawn((
+                            Text::new("<"),
+                            TextFont {
+                                font: game_assets.font_bold.clone(),
+                                font_size: 40.0,
+                                ..default()
+                            },
+                            TextColor(WHITE.into()),
+                        ));
+                    });
+                    p.spawn((
+                        Text::new("Zoom"),
+                        TextFont {
+                            font: game_assets.font_regular.clone(),
+                            font_size: 20.,
+                            ..default()
+                        },
+                        TextColor(WHITE.into()),
+                    ));
+                    p.spawn((
+                        Node {
+                            align_items: AlignItems::Center,
+                            justify_content: JustifyContent::Center,
+                            width: Val::Px(60.),
+                            height: Val::Px(60.),
+                            ..default()
+                        },
+                        Button,
+                        GameButtonAction::ZoomUp,
+                        BorderRadius::px(5., 5., 5., 5.),
+                        BackgroundColor(BLACK.into()),
+                    ))
+                    .with_children(|p| {
+                        p.spawn((
+                            Text::new(">"),
+                            TextFont {
+                                font: game_assets.font_bold.clone(),
+                                font_size: 40.0,
+                                ..default()
+                            },
+                            TextColor(WHITE.into()),
+                        ));
+                    });
+                });
             });
             p.spawn((
                 Node {
-                    display: Display::Grid,
                     width: Val::Percent(80.),
                     height: Val::Percent(100.),
+                    display: Display::Grid,
                     grid_template_columns: RepeatedGridTrack::auto(world.width),
                     grid_template_rows: RepeatedGridTrack::auto(world.height),
                     row_gap: Val::Px(1.),
