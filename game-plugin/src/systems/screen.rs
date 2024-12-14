@@ -18,7 +18,7 @@ pub fn spawn_screen(
     commands
         .spawn((
             Node {
-                width: Val::Percent(100.),
+                width: Val::Percent(20.),
                 height: Val::Percent(100.),
                 ..default()
             },
@@ -326,40 +326,41 @@ pub fn spawn_screen(
                     });
                 });
             });
-            p.spawn((
-                Node {
-                    width: Val::Percent(80.),
-                    height: Val::Percent(100.),
-                    display: Display::Grid,
-                    grid_template_columns: RepeatedGridTrack::auto(world.width),
-                    grid_template_rows: RepeatedGridTrack::auto(world.height),
-                    row_gap: Val::Px(1.),
-                    column_gap: Val::Px(1.),
-                    padding: UiRect::all(Val::Px(1.)),
-                    ..default()
-                },
-                Layer::World.as_render_layer(),
-                BackgroundColor(GRAY.into()),
-            ))
-            .with_children(|p| {
-                for (y, row) in world.cells.iter().enumerate() {
-                    for (x, cell) in row.iter().enumerate() {
-                        p.spawn((
-                            Button,
-                            Coordinate {
-                                x: x as u16,
-                                y: y as u16,
-                            },
-                            Node {
-                                display: Display::Grid,
-                                width: Val::Auto,
-                                height: Val::Auto,
-                                ..default()
-                            },
-                            BackgroundColor(cell.get_color()),
-                        ));
-                    }
-                }
-            });
         });
+    // commands
+    //     .spawn((
+    //         Node {
+    //             width: Val::Percent(80.),
+    //             height: Val::Percent(100.),
+    //             display: Display::Grid,
+    //             grid_template_columns: RepeatedGridTrack::auto(world.width),
+    //             grid_template_rows: RepeatedGridTrack::auto(world.height),
+    //             row_gap: Val::Px(1.),
+    //             column_gap: Val::Px(1.),
+    //             padding: UiRect::all(Val::Px(1.)),
+    //             ..default()
+    //         },
+    //         Layer::World.as_render_layer(),
+    //         BackgroundColor(GRAY.into()),
+    //     ))
+    //     .with_children(|p| {
+    //         for (y, row) in world.cells.iter().enumerate() {
+    //             for (x, cell) in row.iter().enumerate() {
+    //                 p.spawn((
+    //                     Button,
+    //                     Coordinate {
+    //                         x: x as u16,
+    //                         y: y as u16,
+    //                     },
+    //                     Node {
+    //                         display: Display::Grid,
+    //                         width: Val::Auto,
+    //                         height: Val::Auto,
+    //                         ..default()
+    //                     },
+    //                     BackgroundColor(cell.get_color()),
+    //                 ));
+    //             }
+    //         }
+    //     });
 }

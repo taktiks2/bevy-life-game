@@ -16,8 +16,8 @@ fn main() {
         .add_plugins(DefaultPlugins.set(WindowPlugin {
             primary_window: Some(Window {
                 title: "Conway's Game of Life".to_string(),
-                resolution: [WINDOW_WIDTH, WINDOW_HEIGHT].into(), // NOTE: Windowサイズの指定
-                resizable: false, // NOTE: Windowサイズの変更を不可にする
+                resolution: [1000., 800.].into(), // NOTE: Windowサイズの指定
+                resizable: false,                 // NOTE: Windowサイズの変更を不可にする
                 ..default()
             }),
             ..default()

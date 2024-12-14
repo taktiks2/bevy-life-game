@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, render::camera::Viewport};
 use common::{resources::GameAssets, states::GameState, systems::despawn_entity};
 
 mod components;
@@ -75,6 +75,11 @@ pub fn setup_side_menu_camera(mut commands: Commands) {
         Camera {
             // NOTE: 複数のカメラを使う場合、優先順位を付ける必要がある
             order: 1,
+            viewport: Some(Viewport {
+                physical_position: [0, 0].into(),
+                physical_size: [1000, 1600].into(),
+                ..default()
+            }),
             ..default()
         },
         SideMenuCamera,
@@ -88,6 +93,11 @@ pub fn setup_world_camera(mut commands: Commands) {
         Camera {
             // NOTE: 複数のカメラを使う場合、優先順位を付ける必要がある
             order: 0,
+            viewport: Some(Viewport {
+                physical_position: [1000, 0].into(),
+                physical_size: [1000, 1600].into(),
+                ..default()
+            }),
             ..default()
         },
         WorldCamera,
