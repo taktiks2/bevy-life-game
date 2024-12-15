@@ -9,16 +9,11 @@ use crate::components::{
 use crate::layer::Layer;
 use crate::resources::world::World;
 
-pub fn spawn_screen(
-    mut commands: Commands,
-    world: Res<World>,
-    game_assets: Res<GameAssets>,
-    asset_server: Res<AssetServer>,
-) {
+pub fn spawn_screen(mut commands: Commands, world: Res<World>, game_assets: Res<GameAssets>) {
     commands
         .spawn((
             Node {
-                width: Val::Percent(20.),
+                width: Val::Percent(100.),
                 height: Val::Percent(100.),
                 ..default()
             },

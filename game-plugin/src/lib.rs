@@ -1,5 +1,10 @@
 use bevy::{prelude::*, render::camera::Viewport};
-use common::{resources::GameAssets, states::GameState, systems::despawn_entity};
+use common::{
+    consts::{MAIN_PHYSICAL_WIDTH, PHYSICAL_HEIGHT, SUB_PHYSICAL_WIDTH},
+    resources::GameAssets,
+    states::GameState,
+    systems::despawn_entity,
+};
 
 mod components;
 mod events;
@@ -77,7 +82,7 @@ pub fn setup_side_menu_camera(mut commands: Commands) {
             order: 1,
             viewport: Some(Viewport {
                 physical_position: [0, 0].into(),
-                physical_size: [1000, 1600].into(),
+                physical_size: [SUB_PHYSICAL_WIDTH, PHYSICAL_HEIGHT].into(),
                 ..default()
             }),
             ..default()
@@ -94,8 +99,8 @@ pub fn setup_world_camera(mut commands: Commands) {
             // NOTE: 複数のカメラを使う場合、優先順位を付ける必要がある
             order: 0,
             viewport: Some(Viewport {
-                physical_position: [1000, 0].into(),
-                physical_size: [1000, 1600].into(),
+                physical_position: [SUB_PHYSICAL_WIDTH, 0].into(),
+                physical_size: [MAIN_PHYSICAL_WIDTH, PHYSICAL_HEIGHT].into(),
                 ..default()
             }),
             ..default()

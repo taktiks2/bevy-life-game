@@ -21,7 +21,6 @@ impl Plugin for TitlePlugin {
                 despawn_entity::<TitleCamera>,
             ),
         );
-        app.add_systems(Update, (title_action).run_if(in_state(GameState::Title)));
     }
 }
 
@@ -87,6 +86,7 @@ fn setup_title_screen(mut commands: Commands, game_assets: Res<GameAssets>) {
                     BorderRadius::px(5., 5., 5., 5.),
                     BackgroundColor(BLACK.into()),
                 ))
+                .observe(on_start_button_click)
                 .with_children(|p| {
                     p.spawn((
                         Text::new("Start"),
@@ -100,19 +100,6 @@ fn setup_title_screen(mut commands: Commands, game_assets: Res<GameAssets>) {
         });
 }
 
-#[allow(clippy::type_complexity, irrefutable_let_patterns)]
-fn title_action(
-    interaction_query: Query<
-        (&Interaction, &TitleButtonAction),
-        (Changed<Interaction>, With<Button>),
-    >,
-    mut state: ResMut<NextState<GameState>>,
-) {
-    for (interaction, title_button_action) in &interaction_query {
-        if *interaction == Interaction::Pressed {
-            if let TitleButtonAction::Start = title_button_action {
-                state.set(GameState::Game);
-            }
-        }
-    }
+fn on_start_button_click(_click: Trigger<Pointer<Click>>, mut state: ResMut<NextState<GameState>>) {
+    state.set(GameState::Game);
 }
