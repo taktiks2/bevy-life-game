@@ -1,6 +1,9 @@
-use bevy::{color::palettes::css::*, prelude::*, transform::commands};
+use bevy::{color::palettes::css::*, prelude::*};
 use common::{
-    consts::{WORLD_HEIGHT, WORLD_WIDTH},
+    consts::{
+        CELL_HEIGHT, CELL_WIDTH, INTERVAL_HEIGHT, INTERVAL_WIDTH, OFFSET_HEIGHT, OFFSET_WIDTH,
+        WORLD_HEIGHT, WORLD_WIDTH,
+    },
     resources::GameAssets,
 };
 
@@ -328,13 +331,13 @@ pub fn spawn_screen(
         for (x, cell) in row.iter().enumerate() {
             commands
                 .spawn((
-                    Mesh2d(meshes.add(Rectangle::new(100., 100.))),
+                    Mesh2d(meshes.add(Rectangle::new(CELL_WIDTH, CELL_HEIGHT))),
                     MeshMaterial2d(materials.add(cell.get_color())),
                     Layer::World.as_render_layer(),
                     OnGameScreen,
                     Transform::from_xyz(
-                        (x as u16 % WORLD_WIDTH) as f32 * 200. - 350.,
-                        (y as u16 % WORLD_HEIGHT) as f32 * 200. - 350.,
+                        (x as u16 % WORLD_WIDTH) as f32 * INTERVAL_WIDTH - OFFSET_WIDTH,
+                        (y as u16 % WORLD_HEIGHT) as f32 * INTERVAL_HEIGHT - OFFSET_HEIGHT,
                         0.,
                     ),
                     Coordinate {
@@ -358,5 +361,4 @@ pub fn switch_cell_state(
         world.generation_count = 0;
         world.prev_cells = world.cells.clone();
     }
-    println!("{:?}", click);
 }

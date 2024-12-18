@@ -88,7 +88,6 @@ pub fn setup_side_menu_camera(mut commands: Commands) {
             ..default()
         },
         SideMenuCamera,
-        // Layer::SideMenu.as_render_layer(),
     ));
 }
 
