@@ -1,14 +1,24 @@
-use bevy::prelude::*;
-use common::{resources::GameAssets, states::GameState, systems::despawn_screen};
+use bevy::{prelude::*, render::camera::Viewport};
+use common::{
+    consts::{MAIN_PHYSICAL_WIDTH, PHYSICAL_HEIGHT, SUB_PHYSICAL_WIDTH},
+    resources::GameAssets,
+    states::GameState,
+    systems::despawn_entity,
+};
 
 mod components;
 mod events;
+mod layer;
 mod resources;
 mod states;
 mod systems;
 
-use components::screen::OnGameScreen;
+use components::{
+    camera::{SideMenuCamera, WorldCamera},
+    screen::OnGameScreen,
+};
 use events::*;
+use layer::Layer;
 use resources::{
     timer::{SimulationTimer, SpaceKeyTimer},
     world::World,
@@ -25,9 +35,22 @@ impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             OnEnter(GameState::Game),
-            (setup_resource, spawn_screen).chain(),
+            (
+                setup_side_menu_camera,
+                setup_world_camera,
+                setup_resource,
+                spawn_screen,
+            )
+                .chain(),
         );
-        app.add_systems(OnExit(GameState::Game), despawn_screen::<OnGameScreen>);
+        app.add_systems(
+            OnExit(GameState::Game),
+            (
+                despawn_entity::<OnGameScreen>,
+                despawn_entity::<SideMenuCamera>,
+                despawn_entity::<WorldCamera>,
+            ),
+        );
         app.add_systems(
             Update,
             (
@@ -50,6 +73,47 @@ impl Plugin for GamePlugin {
         app.add_event::<WorldClearEvent>();
     }
 }
+
+pub fn setup_side_menu_camera(mut commands: Commands) {
+    commands.spawn((
+        Camera2d,
+        Camera {
+            // NOTE: 複数のカメラを使う場合、優先順位を付ける必要がある
+            order: 1,
+            viewport: Some(Viewport {
+                physical_position: [0, 0].into(),
+                physical_size: [SUB_PHYSICAL_WIDTH, PHYSICAL_HEIGHT].into(),
+                ..default()
+            }),
+            ..default()
+        },
+        SideMenuCamera,
+    ));
+}
+
+pub fn setup_world_camera(mut commands: Commands) {
+    commands.spawn((
+        Camera2d,
+        Camera {
+            // NOTE: 複数のカメラを使う場合、優先順位を付ける必要がある
+            order: 0,
+            viewport: Some(Viewport {
+                physical_position: [SUB_PHYSICAL_WIDTH, 0].into(),
+                physical_size: [MAIN_PHYSICAL_WIDTH, PHYSICAL_HEIGHT].into(),
+                ..default()
+            }),
+            ..default()
+        },
+        WorldCamera,
+        Layer::World.as_render_layer(),
+    ));
+}
+
+// pub fn zoom_scale(mut query_camera: Query<&mut OrthographicProjection, With<WorldCamera>>) {
+//     for mut camera in query_camera.iter_mut() {
+//         camera.scale += 0.1;
+//     }
+// }
 
 fn setup_resource(mut commands: Commands, game_assets: Res<GameAssets>) {
     commands.insert_resource(World::new(

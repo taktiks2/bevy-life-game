@@ -1,14 +1,26 @@
 use bevy::{color::palettes::css::*, prelude::*};
 
-use common::{resources::GameAssets, states::GameState, systems::despawn_screen};
+use common::{
+    resources::GameAssets,
+    states::GameState,
+    systems::{despawn_entity, setup_camera},
+};
 
 pub struct TitlePlugin;
 
 impl Plugin for TitlePlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(OnEnter(GameState::Title), title_setup);
-        app.add_systems(OnExit(GameState::Title), despawn_screen::<OnTitleScreen>);
-        app.add_systems(Update, (title_action).run_if(in_state(GameState::Title)));
+        app.add_systems(
+            OnEnter(GameState::Title),
+            (setup_title_screen, setup_title_camera),
+        );
+        app.add_systems(
+            OnExit(GameState::Title),
+            (
+                despawn_entity::<OnTitleScreen>,
+                despawn_entity::<TitleCamera>,
+            ),
+        );
     }
 }
 
@@ -16,11 +28,21 @@ impl Plugin for TitlePlugin {
 struct OnTitleScreen;
 
 #[derive(Component)]
+pub struct TitleCamera;
+
+#[derive(Component)]
 enum TitleButtonAction {
     Start,
 }
 
-fn title_setup(mut commands: Commands, game_assets: Res<GameAssets>) {
+fn setup_title_camera(commands: Commands) {
+    setup_camera(commands, TitleCamera);
+}
+
+#[derive(Component)]
+pub struct TestParent;
+
+fn setup_title_screen(mut commands: Commands, game_assets: Res<GameAssets>) {
     commands
         .spawn((
             Node {
@@ -64,6 +86,7 @@ fn title_setup(mut commands: Commands, game_assets: Res<GameAssets>) {
                     BorderRadius::px(5., 5., 5., 5.),
                     BackgroundColor(BLACK.into()),
                 ))
+                .observe(on_start_button_click)
                 .with_children(|p| {
                     p.spawn((
                         Text::new("Start"),
@@ -77,19 +100,6 @@ fn title_setup(mut commands: Commands, game_assets: Res<GameAssets>) {
         });
 }
 
-#[allow(clippy::type_complexity, irrefutable_let_patterns)]
-fn title_action(
-    interaction_query: Query<
-        (&Interaction, &TitleButtonAction),
-        (Changed<Interaction>, With<Button>),
-    >,
-    mut state: ResMut<NextState<GameState>>,
-) {
-    for (interaction, title_button_action) in &interaction_query {
-        if *interaction == Interaction::Pressed {
-            if let TitleButtonAction::Start = title_button_action {
-                state.set(GameState::Game);
-            }
-        }
-    }
+fn on_start_button_click(_click: Trigger<Pointer<Click>>, mut state: ResMut<NextState<GameState>>) {
+    state.set(GameState::Game);
 }

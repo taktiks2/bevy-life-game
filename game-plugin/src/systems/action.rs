@@ -3,6 +3,7 @@ use bevy::prelude::*;
 use crate::components::action::GameButtonAction;
 use crate::events::{GenerationResetEvent, ProgressGenerationEvent, WorldClearEvent};
 use crate::states::SimulationState;
+use crate::WorldCamera;
 
 #[allow(clippy::type_complexity)]
 pub fn game_action(
@@ -15,6 +16,7 @@ pub fn game_action(
     mut world_clear_event_writer: EventWriter<WorldClearEvent>,
     simulation_state: Res<State<SimulationState>>,
     mut simulation_next_state: ResMut<NextState<SimulationState>>,
+    mut query_camera: Query<&mut OrthographicProjection, With<WorldCamera>>,
 ) {
     for (interaction, button_action) in &interaction_query {
         if *interaction == Interaction::Pressed {
@@ -37,6 +39,24 @@ pub fn game_action(
                 }
                 GameButtonAction::Clear => {
                     world_clear_event_writer.send(WorldClearEvent);
+                }
+                GameButtonAction::SpeedDown => {
+                    println!("SpeedDown");
+                }
+                GameButtonAction::SpeedUp => {
+                    println!("SpeedUp");
+                }
+                GameButtonAction::ZoomDown => {
+                    println!("ZoomDown");
+                    for mut camera in query_camera.iter_mut() {
+                        camera.scale = (camera.scale + 0.1).min(1.0);
+                    }
+                }
+                GameButtonAction::ZoomUp => {
+                    println!("ZoomUp");
+                    for mut camera in query_camera.iter_mut() {
+                        camera.scale = (camera.scale - 0.1).max(0.1);
+                    }
                 }
             }
         }

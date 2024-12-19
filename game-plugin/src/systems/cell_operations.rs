@@ -23,10 +23,14 @@ pub fn switch_cell_state(
     }
 }
 
-pub fn update_cells(world: Res<World>, mut query: Query<(&Coordinate, &mut BackgroundColor)>) {
-    for (coordinate, mut background_color) in query.iter_mut() {
+pub fn update_cells(
+    world: Res<World>,
+    mut query: Query<(&Coordinate, &mut MeshMaterial2d<ColorMaterial>)>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
+) {
+    for (coordinate, mut material) in query.iter_mut() {
         let cell = &world.cells[coordinate.y as usize][coordinate.x as usize];
-        *background_color = BackgroundColor(cell.get_color());
+        *material = MeshMaterial2d(materials.add(cell.get_color()));
     }
 }
 

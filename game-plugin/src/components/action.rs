@@ -7,4 +7,8 @@ pub enum GameButtonAction {
     Next,
     Reset,
     Clear,
+    SpeedUp,
+    SpeedDown,
+    ZoomUp,
+    ZoomDown,
 }
