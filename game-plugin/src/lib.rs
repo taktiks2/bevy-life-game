@@ -24,10 +24,7 @@ use resources::{
     world::World,
 };
 use states::SimulationState;
-use systems::{
-    action::game_action, cell_operations::*, input::game_input_keyboard_handling,
-    screen::spawn_screen,
-};
+use systems::{action::game_action, cell_operations::*, input::*, screen::spawn_screen};
 
 pub struct GamePlugin;
 
@@ -57,6 +54,7 @@ impl Plugin for GamePlugin {
                 switch_cell_state,
                 update_cells,
                 game_input_keyboard_handling,
+                game_input_zoom_handling,
                 progress_generation,
                 game_action,
                 progress_generation_trigger.run_if(in_state(SimulationState::Simulating)),
@@ -108,12 +106,6 @@ pub fn setup_world_camera(mut commands: Commands) {
         Layer::World.as_render_layer(),
     ));
 }
-
-// pub fn zoom_scale(mut query_camera: Query<&mut OrthographicProjection, With<WorldCamera>>) {
-//     for mut camera in query_camera.iter_mut() {
-//         camera.scale += 0.1;
-//     }
-// }
 
 fn setup_resource(mut commands: Commands, game_assets: Res<GameAssets>) {
     commands.insert_resource(World::new(

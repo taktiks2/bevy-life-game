@@ -47,13 +47,11 @@ pub fn game_action(
                     println!("SpeedUp");
                 }
                 GameButtonAction::ZoomDown => {
-                    println!("ZoomDown");
                     for mut camera in query_camera.iter_mut() {
                         camera.scale = (camera.scale + 0.1).min(1.0);
                     }
                 }
                 GameButtonAction::ZoomUp => {
-                    println!("ZoomUp");
                     for mut camera in query_camera.iter_mut() {
                         camera.scale = (camera.scale - 0.1).max(0.1);
                     }
