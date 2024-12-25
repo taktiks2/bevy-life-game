@@ -9,8 +9,8 @@ pub const CELL_HEIGHT: f32 = INTERVAL_HEIGHT * 0.95;
 pub const OFFSET_WIDTH: f32 = MAIN_PHYSICAL_WIDTH as f32 / 2. - INTERVAL_WIDTH / 2.;
 pub const OFFSET_HEIGHT: f32 = WINDOW_HEIGHT / 2. - INTERVAL_HEIGHT / 2.;
 pub const PHYSICAL_HEIGHT: u32 = (WINDOW_HEIGHT as u32) * 2;
-pub const WORLD_WIDTH: u16 = 40;
-pub const WORLD_HEIGHT: u16 = 40;
+pub const WORLD_WIDTH: u16 = 100;
+pub const WORLD_HEIGHT: u16 = 100;
 pub const SQUARE_COORDINATES: [(i8, i8); 8] = [
     (-1, -1),
     (0, -1),

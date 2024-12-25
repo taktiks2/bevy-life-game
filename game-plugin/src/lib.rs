@@ -24,7 +24,7 @@ use resources::{
     world::World,
 };
 use states::SimulationState;
-use systems::{action::game_action, cell_operations::*, input::*, screen::spawn_screen};
+use systems::{cell_operations::*, input::*, screen::spawn_screen};
 
 pub struct GamePlugin;
 
@@ -56,7 +56,6 @@ impl Plugin for GamePlugin {
                 game_input_keyboard_handling,
                 game_input_zoom_handling,
                 progress_generation,
-                game_action,
                 progress_generation_trigger.run_if(in_state(SimulationState::Simulating)),
                 update_generation,
                 reset_generation,
@@ -101,6 +100,10 @@ pub fn setup_world_camera(mut commands: Commands) {
                 ..default()
             }),
             ..default()
+        },
+        OrthographicProjection {
+            scale: 0.5,
+            ..OrthographicProjection::default_2d()
         },
         WorldCamera,
         Layer::World.as_render_layer(),

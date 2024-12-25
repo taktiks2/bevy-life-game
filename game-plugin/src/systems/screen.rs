@@ -14,6 +14,7 @@ use crate::components::{
 };
 use crate::layer::Layer;
 use crate::resources::world::World;
+use crate::systems::action::*;
 
 pub fn spawn_screen(
     mut commands: Commands,
@@ -66,11 +67,11 @@ pub fn spawn_screen(
                     height: Val::Px(60.),
                     ..default()
                 },
-                Button,
                 GameButtonAction::Start,
                 BorderRadius::px(5., 5., 5., 5.),
                 BackgroundColor(BLACK.into()),
             ))
+            .observe(handle_start)
             .with_children(|p| {
                 p.spawn((
                     Text::new("Start"),
@@ -90,11 +91,11 @@ pub fn spawn_screen(
                     height: Val::Px(60.),
                     ..default()
                 },
-                Button,
                 GameButtonAction::Stop,
                 BorderRadius::px(5., 5., 5., 5.),
                 BackgroundColor(BLACK.into()),
             ))
+            .observe(handle_stop)
             .with_children(|p| {
                 p.spawn((
                     Text::new("Stop"),
@@ -121,11 +122,11 @@ pub fn spawn_screen(
                     height: Val::Px(60.),
                     ..default()
                 },
-                Button,
                 GameButtonAction::Next,
                 BorderRadius::px(5., 5., 5., 5.),
                 BackgroundColor(BLACK.into()),
             ))
+            .observe(handle_next)
             .with_children(|p| {
                 p.spawn((
                     Text::new("Next"),
@@ -152,11 +153,11 @@ pub fn spawn_screen(
                     height: Val::Px(60.),
                     ..default()
                 },
-                Button,
                 GameButtonAction::Reset,
                 BorderRadius::px(5., 5., 5., 5.),
                 BackgroundColor(BLACK.into()),
             ))
+            .observe(handle_reset)
             .with_children(|p| {
                 p.spawn((
                     Text::new("Reset"),
@@ -176,11 +177,11 @@ pub fn spawn_screen(
                     height: Val::Px(60.),
                     ..default()
                 },
-                Button,
                 GameButtonAction::Clear,
                 BorderRadius::px(5., 5., 5., 5.),
                 BackgroundColor(BLACK.into()),
             ))
+            .observe(handle_clear)
             .with_children(|p| {
                 p.spawn((
                     Text::new("Clear"),
@@ -208,11 +209,11 @@ pub fn spawn_screen(
                         height: Val::Percent(100.),
                         ..default()
                     },
-                    Button,
                     GameButtonAction::SpeedDown,
                     BorderRadius::px(5., 5., 5., 5.),
                     BackgroundColor(BLACK.into()),
                 ))
+                .observe(handle_speed_down)
                 .with_children(|p| {
                     p.spawn((
                         Text::new("<"),
@@ -241,11 +242,11 @@ pub fn spawn_screen(
                         height: Val::Percent(100.),
                         ..default()
                     },
-                    Button,
                     GameButtonAction::SpeedUp,
                     BorderRadius::px(5., 5., 5., 5.),
                     BackgroundColor(BLACK.into()),
                 ))
+                .observe(handle_speed_up)
                 .with_children(|p| {
                     p.spawn((
                         Text::new(">"),
@@ -274,11 +275,11 @@ pub fn spawn_screen(
                         height: Val::Percent(80.),
                         ..default()
                     },
-                    Button,
                     GameButtonAction::ZoomDown,
                     BorderRadius::px(5., 5., 5., 5.),
                     BackgroundColor(BLACK.into()),
                 ))
+                .observe(handle_zoom_down)
                 .with_children(|p| {
                     p.spawn((
                         Text::new("<"),
@@ -307,11 +308,11 @@ pub fn spawn_screen(
                         height: Val::Percent(100.),
                         ..default()
                     },
-                    Button,
                     GameButtonAction::ZoomUp,
                     BorderRadius::px(5., 5., 5., 5.),
                     BackgroundColor(BLACK.into()),
                 ))
+                .observe(handle_zoom_up)
                 .with_children(|p| {
                     p.spawn((
                         Text::new(">"),
@@ -347,18 +348,5 @@ pub fn spawn_screen(
                 ))
                 .observe(switch_cell_state);
         }
-    }
-}
-
-pub fn switch_cell_state(
-    click: Trigger<Pointer<Click>>,
-    query: Query<&Coordinate, With<Mesh2d>>,
-    mut world: ResMut<World>,
-) {
-    if let Ok(coordinate) = query.get(click.entity()) {
-        world.cells[coordinate.y as usize][coordinate.x as usize] =
-            world.cells[coordinate.y as usize][coordinate.x as usize].switch_state();
-        world.generation_count = 0;
-        world.prev_cells = world.cells.clone();
     }
 }

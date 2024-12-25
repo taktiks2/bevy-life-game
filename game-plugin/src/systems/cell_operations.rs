@@ -38,6 +38,7 @@ pub fn update_generation(world: Res<World>, mut query: Query<&mut TextSpan, With
     query.single_mut().0 = world.generation_count.to_string();
 }
 
+// NOTE: 一定間隔事に進化させる関数
 pub fn progress_generation_trigger(
     time: Res<Time>,
     mut simulation_timer: ResMut<SimulationTimer>,
