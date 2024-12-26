@@ -157,7 +157,7 @@ pub fn menu_input_keyboard_handling(
     keys: Res<ButtonInput<KeyCode>>,
     mut state: ResMut<NextState<GameState>>,
 ) {
-    if keys.just_pressed(KeyCode::KeyQ) {
+    if keys.just_pressed(KeyCode::Escape) {
         state.set(GameState::Game);
     }
 }

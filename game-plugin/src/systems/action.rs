@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{color::palettes::css::NAVY, prelude::*};
 
 use crate::components::coordinate::Coordinate;
 use crate::events::{GenerationResetEvent, ProgressGenerationEvent, WorldClearEvent};
@@ -84,6 +84,18 @@ pub fn handle_zoom_up(
 ) {
     for mut camera in query_camera.iter_mut() {
         camera.scale = (camera.scale - 0.1).max(0.1);
+    }
+}
+
+pub fn handle_over(over: Trigger<Pointer<Over>>, mut query: Query<&mut BackgroundColor>) {
+    if let Ok(mut background_color) = query.get_mut(over.entity()) {
+        background_color.0 = NAVY.into();
+    }
+}
+
+pub fn handle_out(out: Trigger<Pointer<Out>>, mut query: Query<&mut BackgroundColor>) {
+    if let Ok(mut background_color) = query.get_mut(out.entity()) {
+        background_color.0 = Color::BLACK;
     }
 }
 

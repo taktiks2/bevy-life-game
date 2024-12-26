@@ -72,6 +72,8 @@ pub fn spawn_screen(
                 BackgroundColor(BLACK.into()),
             ))
             .observe(handle_start)
+            .observe(handle_over)
+            .observe(handle_out)
             .with_children(|p| {
                 p.spawn((
                     Text::new("Start"),
@@ -96,6 +98,8 @@ pub fn spawn_screen(
                 BackgroundColor(BLACK.into()),
             ))
             .observe(handle_stop)
+            .observe(handle_over)
+            .observe(handle_out)
             .with_children(|p| {
                 p.spawn((
                     Text::new("Stop"),
@@ -127,6 +131,8 @@ pub fn spawn_screen(
                 BackgroundColor(BLACK.into()),
             ))
             .observe(handle_next)
+            .observe(handle_over)
+            .observe(handle_out)
             .with_children(|p| {
                 p.spawn((
                     Text::new("Next"),
@@ -158,6 +164,8 @@ pub fn spawn_screen(
                 BackgroundColor(BLACK.into()),
             ))
             .observe(handle_reset)
+            .observe(handle_over)
+            .observe(handle_out)
             .with_children(|p| {
                 p.spawn((
                     Text::new("Reset"),
@@ -182,6 +190,8 @@ pub fn spawn_screen(
                 BackgroundColor(BLACK.into()),
             ))
             .observe(handle_clear)
+            .observe(handle_over)
+            .observe(handle_out)
             .with_children(|p| {
                 p.spawn((
                     Text::new("Clear"),
@@ -214,6 +224,8 @@ pub fn spawn_screen(
                     BackgroundColor(BLACK.into()),
                 ))
                 .observe(handle_speed_down)
+                .observe(handle_over)
+                .observe(handle_out)
                 .with_children(|p| {
                     p.spawn((
                         Text::new("<"),
@@ -247,6 +259,8 @@ pub fn spawn_screen(
                     BackgroundColor(BLACK.into()),
                 ))
                 .observe(handle_speed_up)
+                .observe(handle_over)
+                .observe(handle_out)
                 .with_children(|p| {
                     p.spawn((
                         Text::new(">"),
@@ -280,6 +294,8 @@ pub fn spawn_screen(
                     BackgroundColor(BLACK.into()),
                 ))
                 .observe(handle_zoom_down)
+                .observe(handle_over)
+                .observe(handle_out)
                 .with_children(|p| {
                     p.spawn((
                         Text::new("<"),
@@ -313,6 +329,8 @@ pub fn spawn_screen(
                     BackgroundColor(BLACK.into()),
                 ))
                 .observe(handle_zoom_up)
+                .observe(handle_over)
+                .observe(handle_out)
                 .with_children(|p| {
                     p.spawn((
                         Text::new(">"),
@@ -346,7 +364,9 @@ pub fn spawn_screen(
                         y: y as u16,
                     },
                 ))
-                .observe(switch_cell_state);
+                .observe(switch_cell_state)
+                .observe(handle_over)
+                .observe(handle_out);
         }
     }
 }
