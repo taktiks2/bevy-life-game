@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_inspector_egui::quick::WorldInspectorPlugin;
+// use bevy_inspector_egui::quick::WorldInspectorPlugin;
 
 use common::{
     consts::{WINDOW_HEIGHT, WINDOW_WIDTH},
@@ -23,7 +23,7 @@ fn main() {
             ..default()
         }))
         .add_plugins(MeshPickingPlugin) // NOTE: meshやプラグインをクリック検知するのに必要
-        .add_plugins(WorldInspectorPlugin::new()) // NOTE: インスペクタープラグイン
+        // .add_plugins(WorldInspectorPlugin::new()) // NOTE: インスペクタープラグイン
         .add_plugins(TitlePlugin)
         .add_plugins(GamePlugin)
         .add_plugins(MenuPlugin)

@@ -1,7 +1,9 @@
 use bevy::{color::palettes::css::NAVY, prelude::*};
 
 use crate::components::coordinate::Coordinate;
-use crate::events::{GenerationResetEvent, ProgressGenerationEvent, WorldClearEvent};
+use crate::events::{
+    GenerationResetEvent, PlayAudioEvent, ProgressGenerationEvent, WorldClearEvent,
+};
 use crate::resources::{timer::SimulationTimer, world::World};
 use crate::states::SimulationState;
 use crate::WorldCamera;
@@ -87,9 +89,14 @@ pub fn handle_zoom_up(
     }
 }
 
-pub fn handle_over(over: Trigger<Pointer<Over>>, mut query: Query<&mut BackgroundColor>) {
+pub fn handle_over(
+    over: Trigger<Pointer<Over>>,
+    mut query: Query<&mut BackgroundColor>,
+    mut events: EventWriter<PlayAudioEvent>,
+) {
     if let Ok(mut background_color) = query.get_mut(over.entity()) {
         background_color.0 = NAVY.into();
+        events.send(PlayAudioEvent);
     }
 }
 

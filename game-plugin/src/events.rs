@@ -8,3 +8,6 @@ pub struct GenerationResetEvent;
 
 #[derive(Event)]
 pub struct WorldClearEvent;
+
+#[derive(Event)]
+pub struct PlayAudioEvent;

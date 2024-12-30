@@ -24,7 +24,7 @@ use resources::{
     world::World,
 };
 use states::SimulationState;
-use systems::{cell_operations::*, input::*, screen::spawn_screen};
+use systems::{audio::play_audios, cell_operations::*, input::*, screen::spawn_screen};
 
 pub struct GamePlugin;
 
@@ -60,6 +60,7 @@ impl Plugin for GamePlugin {
                 update_generation,
                 reset_generation,
                 world_clear,
+                play_audios,
             )
                 .run_if(in_state(GameState::Game)),
         );
@@ -68,6 +69,7 @@ impl Plugin for GamePlugin {
         app.add_event::<ProgressGenerationEvent>();
         app.add_event::<GenerationResetEvent>();
         app.add_event::<WorldClearEvent>();
+        app.add_event::<PlayAudioEvent>();
     }
 }
 
