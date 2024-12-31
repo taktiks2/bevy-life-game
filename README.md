@@ -11,7 +11,7 @@ cargo run --release
 ### rustプロジェクトをリリースビルド
 
 ```sh
-cargo build --release --target wasm32-unknown-unknown                                              44.8s
+cargo build --release --target wasm32-unknown-unknown
 ```
 
 ### ビルドファイルからwasm-bindgenを使ってjs/wasmファイルを生成
@@ -50,3 +50,43 @@ wasm-bindgen --no-typescript --target web \
 
 参考サイト
 https://bevy-cheatbook.github.io/platforms/wasm/webpage.html
+
+### itch.io用のzipファイルを作成する方法
+
+以下の内容が入ったindex.htmlを作成する
+
+```html
+<!doctype html>
+<html lang="en">
+  <body style="margin: 0px">
+    <script type="module">
+      import init from "./bevy-life-game.js";
+      try {
+        init();
+      } catch (e) {
+        console.error(e);
+      }
+    </script>
+    <iframe id="test" src="./index.html" width="1000" height="800"></iframe>
+  </body>
+</html>
+```
+
+assets, js, wasm, index.htmlをまとめてzip化する
+
+```txt
+.
+├── assets
+│   ├── audios
+│   │   └── appear-online.ogg
+│   └── fonts
+│       ├── NotoSansJP-Bold.ttf
+│       └── NotoSansJP-Regular.ttf
+├── bevy-life-game.js
+├── bevy-life-game_bg.wasm
+├── index.html
+└── アーカイブ.zip
+```
+
+DefaultPlugins.setで以下を追加しないとassetファイルが読み込まれない
+https://github.com/bevyengine/bevy/issues/10157#issuecomment-2308481813

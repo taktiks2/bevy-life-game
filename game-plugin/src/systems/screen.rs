@@ -286,7 +286,7 @@ pub fn spawn_screen(
                         align_items: AlignItems::Center,
                         justify_content: JustifyContent::Center,
                         width: Val::Percent(25.),
-                        height: Val::Percent(80.),
+                        height: Val::Percent(100.),
                         ..default()
                     },
                     GameButtonAction::ZoomDown,

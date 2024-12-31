@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{asset::AssetMetaCheck, prelude::*};
 // use bevy_inspector_egui::quick::WorldInspectorPlugin;
 
 use common::{
@@ -13,15 +13,22 @@ use title_plugin::TitlePlugin;
 
 fn main() {
     App::new()
-        .add_plugins(DefaultPlugins.set(WindowPlugin {
-            primary_window: Some(Window {
-                title: "Conway's Game of Life".to_string(),
-                resolution: [WINDOW_WIDTH, WINDOW_HEIGHT].into(), // NOTE: Windowサイズの指定
-                resizable: false, // NOTE: Windowサイズの変更を不可にする
-                ..default()
-            }),
-            ..default()
-        }))
+        .add_plugins(
+            DefaultPlugins
+                .set(WindowPlugin {
+                    primary_window: Some(Window {
+                        title: "Conway's Game of Life".to_string(),
+                        resolution: [WINDOW_WIDTH, WINDOW_HEIGHT].into(), // NOTE: Windowサイズの指定
+                        resizable: false, // NOTE: Windowサイズの変更を不可にする
+                        ..default()
+                    }),
+                    ..default()
+                })
+                .set(AssetPlugin {
+                    meta_check: AssetMetaCheck::Never, // NOTE: これを入れないとwasmでassetsがロードされない
+                    ..default()
+                }),
+        )
         .add_plugins(MeshPickingPlugin) // NOTE: meshやプラグインをクリック検知するのに必要
         // .add_plugins(WorldInspectorPlugin::new()) // NOTE: インスペクタープラグイン
         .add_plugins(TitlePlugin)
