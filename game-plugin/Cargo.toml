@@ -1,8 +1,8 @@
 [package]
 name = "game-plugin"
 version = "0.1.0"
-edition = "2021"
+edition.workspace = true
 
 [dependencies]
-bevy = "0.18"
-common = { path = "../common" }
+bevy.workspace = true
+common.workspace = true
