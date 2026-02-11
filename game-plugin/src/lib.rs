@@ -1,6 +1,6 @@
 use bevy::{prelude::*, camera::Viewport};
 use common::{
-    consts::{MAIN_PHYSICAL_WIDTH, PHYSICAL_HEIGHT, SUB_PHYSICAL_WIDTH},
+    consts::{INITIAL_CAMERA_SCALE, MAIN_PHYSICAL_WIDTH, PHYSICAL_HEIGHT, SUB_PHYSICAL_WIDTH},
     resources::GameAssets,
     states::GameState,
     systems::despawn_entity,
@@ -51,7 +51,6 @@ impl Plugin for GamePlugin {
         app.add_systems(
             Update,
             (
-                switch_cell_state,
                 update_cells,
                 game_input_keyboard_handling,
                 game_input_zoom_handling,
@@ -106,7 +105,7 @@ pub fn setup_world_camera(mut commands: Commands) {
             ..default()
         },
         Projection::Orthographic(OrthographicProjection {
-            scale: 0.5,
+            scale: INITIAL_CAMERA_SCALE,
             ..OrthographicProjection::default_2d()
         }),
         WorldCamera,

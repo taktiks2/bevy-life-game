@@ -3,7 +3,7 @@ use bevy::{
     prelude::{Color, Resource},
 };
 
-use common::consts::SQUARE_COORDINATES;
+use super::simulation;
 
 #[derive(Clone, Debug)]
 pub enum Cell {
@@ -52,50 +52,12 @@ impl World {
     }
     pub fn progress_generation(&mut self) {
         self.generation_count += 1;
-        let current_world = self.clone();
-        for (abs_y, row) in current_world.cells.iter().enumerate() {
-            for (abs_x, cell) in row.iter().enumerate() {
-                let alive_neighbor_count = self.count_alive_neighbors(&current_world, abs_y, abs_x);
-                self.evolve(abs_y, abs_x, cell, alive_neighbor_count);
-            }
-        }
-    }
-    fn count_alive_neighbors(&self, world: &World, abs_y: usize, abs_x: usize) -> usize {
-        SQUARE_COORDINATES
-            .iter()
-            .filter(|(rel_y, rel_x)| {
-                let target_abs_y = abs_y as i8 + rel_y;
-                let target_abs_x = abs_x as i8 + rel_x;
-                if target_abs_y >= 0
-                    && target_abs_y < world.height as i8
-                    && target_abs_x >= 0
-                    && target_abs_x < world.width as i8
-                {
-                    matches!(
-                        world.cells[target_abs_y as usize][target_abs_x as usize],
-                        Cell::Alive
-                    )
-                } else {
-                    false
-                }
-            })
-            .count()
-    }
-    fn evolve(&mut self, abs_y: usize, abs_x: usize, cell: &Cell, alive_neighbor_count: usize) {
-        self.cells[abs_y][abs_x] = match cell {
-            Cell::Alive => {
-                if alive_neighbor_count <= 1 || alive_neighbor_count >= 4 {
-                    Cell::Dead
-                } else {
-                    Cell::Alive
-                }
-            }
-            Cell::Dead => {
-                if alive_neighbor_count == 3 {
-                    Cell::Alive
-                } else {
-                    Cell::Dead
-                }
+        let snapshot = self.cells.clone();
+        for y in 0..self.height as usize {
+            for x in 0..self.width as usize {
+                let neighbors =
+                    simulation::count_alive_neighbors(&snapshot, self.width, self.height, y, x);
+                self.cells[y][x] = simulation::next_cell_state(&snapshot[y][x], neighbors);
             }
         }
     }
@@ -107,5 +69,248 @@ impl World {
         self.cells = Self::init_cells(self.width, self.height);
         self.prev_cells = Self::init_cells(self.width, self.height);
         self.generation_count = 0;
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn is_alive(cell: &Cell) -> bool {
+        matches!(cell, Cell::Alive)
+    }
+
+    fn is_dead(cell: &Cell) -> bool {
+        matches!(cell, Cell::Dead)
+    }
+
+    // --- World::new ---
+
+    #[test]
+    fn new_world_has_all_dead_cells() {
+        let world = World::new(5, 5);
+        for row in &world.cells {
+            for cell in row {
+                assert!(is_dead(cell));
+            }
+        }
+    }
+
+    #[test]
+    fn new_world_has_correct_dimensions() {
+        let world = World::new(10, 7);
+        assert_eq!(world.width, 10);
+        assert_eq!(world.height, 7);
+        assert_eq!(world.cells.len(), 7);
+        assert_eq!(world.cells[0].len(), 10);
+    }
+
+    #[test]
+    fn new_world_has_zero_generation() {
+        let world = World::new(5, 5);
+        assert_eq!(world.generation_count, 0);
+    }
+
+    // --- Cell::switch_state ---
+
+    #[test]
+    fn switch_state_alive_to_dead() {
+        let cell = Cell::Alive;
+        assert!(is_dead(&cell.switch_state()));
+    }
+
+    #[test]
+    fn switch_state_dead_to_alive() {
+        let cell = Cell::Dead;
+        assert!(is_alive(&cell.switch_state()));
+    }
+
+    // --- Conway's ルール (progress_generation 経由) ---
+
+    #[test]
+    fn alive_cell_with_0_neighbors_dies() {
+        let mut world = World::new(3, 3);
+        world.cells[1][1] = Cell::Alive;
+        world.progress_generation();
+        assert!(is_dead(&world.cells[1][1]));
+    }
+
+    #[test]
+    fn alive_cell_with_1_neighbor_dies() {
+        let mut world = World::new(3, 3);
+        world.cells[1][1] = Cell::Alive;
+        world.cells[0][0] = Cell::Alive;
+        world.progress_generation();
+        assert!(is_dead(&world.cells[1][1]));
+    }
+
+    #[test]
+    fn alive_cell_with_2_neighbors_survives() {
+        let mut world = World::new(3, 3);
+        world.cells[1][1] = Cell::Alive;
+        world.cells[0][0] = Cell::Alive;
+        world.cells[0][1] = Cell::Alive;
+        world.progress_generation();
+        assert!(is_alive(&world.cells[1][1]));
+    }
+
+    #[test]
+    fn alive_cell_with_3_neighbors_survives() {
+        let mut world = World::new(3, 3);
+        world.cells[1][1] = Cell::Alive;
+        world.cells[0][0] = Cell::Alive;
+        world.cells[0][1] = Cell::Alive;
+        world.cells[0][2] = Cell::Alive;
+        world.progress_generation();
+        assert!(is_alive(&world.cells[1][1]));
+    }
+
+    #[test]
+    fn alive_cell_with_4_neighbors_dies() {
+        let mut world = World::new(3, 3);
+        world.cells[1][1] = Cell::Alive;
+        world.cells[0][0] = Cell::Alive;
+        world.cells[0][1] = Cell::Alive;
+        world.cells[0][2] = Cell::Alive;
+        world.cells[1][0] = Cell::Alive;
+        world.progress_generation();
+        assert!(is_dead(&world.cells[1][1]));
+    }
+
+    #[test]
+    fn dead_cell_with_3_neighbors_becomes_alive() {
+        let mut world = World::new(3, 3);
+        world.cells[0][0] = Cell::Alive;
+        world.cells[0][1] = Cell::Alive;
+        world.cells[1][0] = Cell::Alive;
+        world.progress_generation();
+        assert!(is_alive(&world.cells[1][1]));
+    }
+
+    #[test]
+    fn dead_cell_with_2_neighbors_stays_dead() {
+        let mut world = World::new(3, 3);
+        world.cells[0][0] = Cell::Alive;
+        world.cells[0][1] = Cell::Alive;
+        world.progress_generation();
+        assert!(is_dead(&world.cells[1][1]));
+    }
+
+    // --- 有名パターン ---
+
+    #[test]
+    fn blinker_oscillates() {
+        // 横棒 → 縦棒
+        let mut world = World::new(5, 5);
+        world.cells[2][1] = Cell::Alive;
+        world.cells[2][2] = Cell::Alive;
+        world.cells[2][3] = Cell::Alive;
+
+        world.progress_generation();
+        // 縦棒になるはず
+        assert!(is_dead(&world.cells[2][1]));
+        assert!(is_alive(&world.cells[1][2]));
+        assert!(is_alive(&world.cells[2][2]));
+        assert!(is_alive(&world.cells[3][2]));
+        assert!(is_dead(&world.cells[2][3]));
+
+        world.progress_generation();
+        // 横棒に戻るはず
+        assert!(is_alive(&world.cells[2][1]));
+        assert!(is_alive(&world.cells[2][2]));
+        assert!(is_alive(&world.cells[2][3]));
+        assert!(is_dead(&world.cells[1][2]));
+        assert!(is_dead(&world.cells[3][2]));
+    }
+
+    #[test]
+    fn block_is_stable() {
+        let mut world = World::new(4, 4);
+        world.cells[1][1] = Cell::Alive;
+        world.cells[1][2] = Cell::Alive;
+        world.cells[2][1] = Cell::Alive;
+        world.cells[2][2] = Cell::Alive;
+
+        world.progress_generation();
+        assert!(is_alive(&world.cells[1][1]));
+        assert!(is_alive(&world.cells[1][2]));
+        assert!(is_alive(&world.cells[2][1]));
+        assert!(is_alive(&world.cells[2][2]));
+    }
+
+    // --- generation_count ---
+
+    #[test]
+    fn generation_count_increments() {
+        let mut world = World::new(3, 3);
+        assert_eq!(world.generation_count, 0);
+        world.progress_generation();
+        assert_eq!(world.generation_count, 1);
+        world.progress_generation();
+        assert_eq!(world.generation_count, 2);
+    }
+
+    // --- reset ---
+
+    #[test]
+    fn reset_restores_prev_cells() {
+        let mut world = World::new(3, 3);
+        world.cells[0][0] = Cell::Alive;
+        world.prev_cells = world.cells.clone();
+
+        world.progress_generation();
+        world.reset();
+
+        assert!(is_alive(&world.cells[0][0]));
+        assert_eq!(world.generation_count, 0);
+    }
+
+    // --- clear ---
+
+    #[test]
+    fn clear_sets_all_cells_dead() {
+        let mut world = World::new(3, 3);
+        world.cells[0][0] = Cell::Alive;
+        world.cells[1][1] = Cell::Alive;
+        world.generation_count = 5;
+
+        world.clear();
+
+        for row in &world.cells {
+            for cell in row {
+                assert!(is_dead(cell));
+            }
+        }
+        for row in &world.prev_cells {
+            for cell in row {
+                assert!(is_dead(cell));
+            }
+        }
+        assert_eq!(world.generation_count, 0);
+    }
+
+    // --- 境界条件 ---
+
+    #[test]
+    fn corner_cell_counts_neighbors_correctly() {
+        // 左上角(0,0)に3隣接 → 誕生
+        let mut world = World::new(3, 3);
+        world.cells[0][1] = Cell::Alive;
+        world.cells[1][0] = Cell::Alive;
+        world.cells[1][1] = Cell::Alive;
+
+        world.progress_generation();
+        assert!(is_alive(&world.cells[0][0]));
+    }
+
+    #[test]
+    fn edge_cell_counts_neighbors_correctly() {
+        // 上辺の中央(0,1)に隣接2つ → Dead のまま
+        let mut world = World::new(3, 3);
+        world.cells[0][0] = Cell::Alive;
+        world.cells[0][2] = Cell::Alive;
+
+        world.progress_generation();
+        assert!(is_dead(&world.cells[0][1]));
     }
 }

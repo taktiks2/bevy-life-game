@@ -11,6 +11,22 @@ pub const OFFSET_HEIGHT: f32 = WINDOW_HEIGHT / 2. - INTERVAL_HEIGHT / 2.;
 pub const PHYSICAL_HEIGHT: u32 = (WINDOW_HEIGHT as u32) * 2;
 pub const WORLD_WIDTH: u16 = 100;
 pub const WORLD_HEIGHT: u16 = 100;
+// Simulation timing
+pub const DEFAULT_TICK_INTERVAL: f32 = 0.2;
+pub const MIN_TICK_INTERVAL: f32 = 0.1;
+pub const MAX_TICK_INTERVAL: f32 = 5.0;
+pub const TICK_INTERVAL_STEP: f32 = 0.1;
+
+// Space key hold detection
+pub const SPACE_KEY_HOLD_DURATION: f32 = 0.5;
+
+// Camera
+pub const INITIAL_CAMERA_SCALE: f32 = 0.5;
+pub const MIN_CAMERA_SCALE: f32 = 0.1;
+pub const MAX_CAMERA_SCALE: f32 = 1.0;
+pub const CAMERA_SCALE_STEP: f32 = 0.1;
+pub const CAMERA_PAN_SPEED: f32 = 10.0;
+
 pub const SQUARE_COORDINATES: [(i8, i8); 8] = [
     (-1, -1),
     (0, -1),

@@ -1,6 +1,6 @@
 use bevy::prelude::{AssetServer, Font, FromWorld, Handle, Resource, World};
 
-use crate::consts::{WORLD_HEIGHT, WORLD_WIDTH};
+use crate::consts::{DEFAULT_TICK_INTERVAL, WORLD_HEIGHT, WORLD_WIDTH};
 
 #[derive(Resource, Debug, Clone)]
 pub struct GameAssets {
@@ -17,7 +17,7 @@ impl FromWorld for GameAssets {
         Self {
             font_bold: asset_server.load("fonts/NotoSansJP-Bold.ttf"),
             font_regular: asset_server.load("fonts/NotoSansJP-Regular.ttf"),
-            tick_interval: 0.2,
+            tick_interval: DEFAULT_TICK_INTERVAL,
             world_width: WORLD_WIDTH,
             world_height: WORLD_HEIGHT,
         }

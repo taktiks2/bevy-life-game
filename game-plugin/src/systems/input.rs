@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-
+use common::consts::{CAMERA_PAN_SPEED, CAMERA_SCALE_STEP, MAX_CAMERA_SCALE, MIN_CAMERA_SCALE};
 use common::states::GameState;
 
 use crate::events::ProgressGenerationEvent;
@@ -47,23 +47,23 @@ pub fn game_input_zoom_handling(
         return;
     };
     if keys.just_pressed(KeyCode::KeyW) {
-        transform.translation.y += 10.;
+        transform.translation.y += CAMERA_PAN_SPEED;
     }
     if keys.just_pressed(KeyCode::KeyS) {
-        transform.translation.y -= 10.;
+        transform.translation.y -= CAMERA_PAN_SPEED;
     }
     if keys.just_pressed(KeyCode::KeyA) {
-        transform.translation.x -= 10.;
+        transform.translation.x -= CAMERA_PAN_SPEED;
     }
     if keys.just_pressed(KeyCode::KeyD) {
-        transform.translation.x += 10.;
+        transform.translation.x += CAMERA_PAN_SPEED;
     }
     if let Projection::Orthographic(ref mut ortho) = *projection {
         if keys.just_pressed(KeyCode::KeyQ) {
-            ortho.scale = (ortho.scale + 0.1).min(1.0);
+            ortho.scale = (ortho.scale + CAMERA_SCALE_STEP).min(MAX_CAMERA_SCALE);
         }
         if keys.just_pressed(KeyCode::KeyE) {
-            ortho.scale = (ortho.scale - 0.1).max(0.1);
+            ortho.scale = (ortho.scale - CAMERA_SCALE_STEP).max(MIN_CAMERA_SCALE);
         }
     }
 }

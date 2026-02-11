@@ -39,9 +39,6 @@ fn setup_title_camera(commands: Commands) {
     setup_camera(commands, TitleCamera);
 }
 
-#[derive(Component)]
-pub struct TestParent;
-
 fn setup_title_screen(mut commands: Commands, game_assets: Res<GameAssets>) {
     commands
         .spawn((

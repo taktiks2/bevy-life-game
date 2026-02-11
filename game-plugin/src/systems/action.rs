@@ -1,4 +1,8 @@
 use bevy::{color::palettes::css::NAVY, prelude::*};
+use common::consts::{
+    MAX_CAMERA_SCALE, MAX_TICK_INTERVAL, MIN_CAMERA_SCALE, MIN_TICK_INTERVAL,
+    CAMERA_SCALE_STEP, TICK_INTERVAL_STEP,
+};
 
 use crate::components::coordinate::Coordinate;
 use crate::events::{
@@ -54,7 +58,7 @@ pub fn handle_speed_down(
     mut simulation_timer: ResMut<SimulationTimer>,
 ) {
     let current_duration = simulation_timer.0.duration().as_secs_f32();
-    let new_duration = (current_duration + 0.1).min(5.0); // 最大5秒まで増加
+    let new_duration = (current_duration + TICK_INTERVAL_STEP).min(MAX_TICK_INTERVAL);
     simulation_timer
         .0
         .set_duration(std::time::Duration::from_secs_f32(new_duration));
@@ -65,7 +69,7 @@ pub fn handle_speed_up(
     mut simulation_timer: ResMut<SimulationTimer>,
 ) {
     let current_duration = simulation_timer.0.duration().as_secs_f32();
-    let new_duration = (current_duration - 0.1).max(0.1); // 最小0.1秒まで減少
+    let new_duration = (current_duration - TICK_INTERVAL_STEP).max(MIN_TICK_INTERVAL);
     simulation_timer
         .0
         .set_duration(std::time::Duration::from_secs_f32(new_duration));
@@ -77,7 +81,7 @@ pub fn handle_zoom_down(
 ) {
     for mut projection in query_camera.iter_mut() {
         if let Projection::Orthographic(ref mut ortho) = *projection {
-            ortho.scale = (ortho.scale + 0.1).min(1.0);
+            ortho.scale = (ortho.scale + CAMERA_SCALE_STEP).min(MAX_CAMERA_SCALE);
         }
     }
 }
@@ -88,7 +92,7 @@ pub fn handle_zoom_up(
 ) {
     for mut projection in query_camera.iter_mut() {
         if let Projection::Orthographic(ref mut ortho) = *projection {
-            ortho.scale = (ortho.scale - 0.1).max(0.1);
+            ortho.scale = (ortho.scale - CAMERA_SCALE_STEP).max(MIN_CAMERA_SCALE);
         }
     }
 }

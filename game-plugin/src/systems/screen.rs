@@ -1,20 +1,11 @@
 use bevy::{color::palettes::css::*, prelude::*};
-use common::{
-    consts::{
-        CELL_HEIGHT, CELL_WIDTH, INTERVAL_HEIGHT, INTERVAL_WIDTH, OFFSET_HEIGHT, OFFSET_WIDTH,
-        WORLD_HEIGHT, WORLD_WIDTH,
-    },
-    resources::GameAssets,
-};
+use common::resources::GameAssets;
 
-use crate::components::{
-    action::GameButtonAction,
-    coordinate::Coordinate,
-    screen::{GenerationText, OnGameScreen},
-};
+use crate::components::{action::GameButtonAction, screen::OnGameScreen};
 use crate::layer::Layer;
 use crate::resources::world::World;
 use crate::systems::action::*;
+use crate::systems::ui::*;
 
 pub fn spawn_screen(
     mut commands: Commands,
@@ -40,333 +31,56 @@ pub fn spawn_screen(
             BackgroundColor(GRAY.into()),
         ))
         .with_children(|p| {
-            p.spawn((
-                Text::new("Gen: ".to_string()),
-                TextFont {
-                    font: game_assets.font_regular.clone(),
-                    font_size: 30.0,
-                    ..default()
-                },
-                TextColor(WHITE.into()),
-            ))
-            .with_child((
-                TextSpan::new(world.generation_count.to_string()),
-                TextFont {
-                    font: game_assets.font_regular.clone(),
-                    font_size: 30.0,
-                    ..default()
-                },
-                GenerationText,
-                TextColor(WHITE.into()),
-            ));
-            p.spawn((
-                Node {
-                    align_items: AlignItems::Center,
-                    justify_content: JustifyContent::Center,
-                    width: Val::Percent(80.),
-                    height: Val::Px(60.),
-                    border_radius: BorderRadius::px(5., 5., 5., 5.),
-                    ..default()
-                },
-                GameButtonAction::Start,
-                BackgroundColor(BLACK.into()),
-            ))
-            .observe(handle_start)
-            .observe(handle_over)
-            .observe(handle_out)
-            .with_children(|p| {
-                p.spawn((
-                    Text::new("Start"),
-                    TextFont {
-                        font: game_assets.font_bold.clone(),
-                        font_size: 40.0,
-                        ..default()
-                    },
-                    TextColor(WHITE.into()),
-                ));
-            });
-            p.spawn((
-                Node {
-                    align_items: AlignItems::Center,
-                    justify_content: JustifyContent::Center,
-                    width: Val::Percent(80.),
-                    height: Val::Px(60.),
-                    border_radius: BorderRadius::px(5., 5., 5., 5.),
-                    ..default()
-                },
-                GameButtonAction::Stop,
-                BackgroundColor(BLACK.into()),
-            ))
-            .observe(handle_stop)
-            .observe(handle_over)
-            .observe(handle_out)
-            .with_children(|p| {
-                p.spawn((
-                    Text::new("Stop"),
-                    TextFont {
-                        font: game_assets.font_bold.clone(),
-                        font_size: 40.0,
-                        ..default()
-                    },
-                    Node {
-                        align_items: AlignItems::Center,
-                        justify_content: JustifyContent::Center,
-                        align_self: AlignSelf::Center,
-                        justify_self: JustifySelf::Center,
-                        ..default()
-                    },
-                    TextColor(WHITE.into()),
-                ));
-            });
-            p.spawn((
-                Node {
-                    align_items: AlignItems::Center,
-                    justify_content: JustifyContent::Center,
-                    width: Val::Percent(80.),
-                    height: Val::Px(60.),
-                    border_radius: BorderRadius::px(5., 5., 5., 5.),
-                    ..default()
-                },
-                GameButtonAction::Next,
-                BackgroundColor(BLACK.into()),
-            ))
-            .observe(handle_next)
-            .observe(handle_over)
-            .observe(handle_out)
-            .with_children(|p| {
-                p.spawn((
-                    Text::new("Next"),
-                    TextFont {
-                        font: game_assets.font_bold.clone(),
-                        font_size: 40.0,
-                        ..default()
-                    },
-                    Node {
-                        align_items: AlignItems::Center,
-                        justify_content: JustifyContent::Center,
-                        align_self: AlignSelf::Center,
-                        justify_self: JustifySelf::Center,
-                        ..default()
-                    },
-                    TextColor(WHITE.into()),
-                ));
-            });
-            p.spawn((
-                Node {
-                    align_items: AlignItems::Center,
-                    justify_content: JustifyContent::Center,
-                    width: Val::Percent(80.),
-                    height: Val::Px(60.),
-                    border_radius: BorderRadius::px(5., 5., 5., 5.),
-                    ..default()
-                },
-                GameButtonAction::Reset,
-                BackgroundColor(BLACK.into()),
-            ))
-            .observe(handle_reset)
-            .observe(handle_over)
-            .observe(handle_out)
-            .with_children(|p| {
-                p.spawn((
-                    Text::new("Reset"),
-                    TextFont {
-                        font: game_assets.font_bold.clone(),
-                        font_size: 40.0,
-                        ..default()
-                    },
-                    TextColor(WHITE.into()),
-                ));
-            });
-            p.spawn((
-                Node {
-                    align_items: AlignItems::Center,
-                    justify_content: JustifyContent::Center,
-                    width: Val::Percent(80.),
-                    height: Val::Px(60.),
-                    border_radius: BorderRadius::px(5., 5., 5., 5.),
-                    ..default()
-                },
-                GameButtonAction::Clear,
-                BackgroundColor(BLACK.into()),
-            ))
-            .observe(handle_clear)
-            .observe(handle_over)
-            .observe(handle_out)
-            .with_children(|p| {
-                p.spawn((
-                    Text::new("Clear"),
-                    TextFont {
-                        font: game_assets.font_bold.clone(),
-                        font_size: 40.0,
-                        ..default()
-                    },
-                    TextColor(WHITE.into()),
-                ));
-            });
-            p.spawn(Node {
-                align_items: AlignItems::Center,
-                justify_content: JustifyContent::SpaceBetween,
-                width: Val::Percent(80.),
-                height: Val::Px(60.),
-                ..default()
-            })
-            .with_children(|p| {
-                p.spawn((
-                    Node {
-                        align_items: AlignItems::Center,
-                        justify_content: JustifyContent::Center,
-                        width: Val::Percent(25.),
-                        height: Val::Percent(100.),
-                        border_radius: BorderRadius::px(5., 5., 5., 5.),
-                        ..default()
-                    },
-                    GameButtonAction::SpeedDown,
-                    BackgroundColor(BLACK.into()),
-                ))
-                .observe(handle_speed_down)
+            spawn_generation_text(p, &game_assets, world.generation_count);
+
+            spawn_action_button(p, &game_assets, "Start", GameButtonAction::Start)
+                .observe(handle_start)
                 .observe(handle_over)
-                .observe(handle_out)
-                .with_children(|p| {
-                    p.spawn((
-                        Text::new("<"),
-                        TextFont {
-                            font: game_assets.font_bold.clone(),
-                            font_size: 40.0,
-                            ..default()
-                        },
-                        TextColor(WHITE.into()),
-                    ));
-                });
-                p.spawn((
-                    Text::new("Speed"),
-                    TextFont {
-                        font: game_assets.font_regular.clone(),
-                        font_size: 20.,
-                        ..default()
-                    },
-                    TextColor(WHITE.into()),
-                ));
-                p.spawn((
-                    Node {
-                        align_items: AlignItems::Center,
-                        justify_content: JustifyContent::Center,
-                        width: Val::Percent(25.),
-                        height: Val::Percent(100.),
-                        border_radius: BorderRadius::px(5., 5., 5., 5.),
-                        ..default()
-                    },
-                    GameButtonAction::SpeedUp,
-                    BackgroundColor(BLACK.into()),
-                ))
-                .observe(handle_speed_up)
+                .observe(handle_out);
+            spawn_action_button(p, &game_assets, "Stop", GameButtonAction::Stop)
+                .observe(handle_stop)
                 .observe(handle_over)
-                .observe(handle_out)
-                .with_children(|p| {
-                    p.spawn((
-                        Text::new(">"),
-                        TextFont {
-                            font: game_assets.font_bold.clone(),
-                            font_size: 40.0,
-                            ..default()
-                        },
-                        TextColor(WHITE.into()),
-                    ));
-                });
+                .observe(handle_out);
+            spawn_action_button(p, &game_assets, "Next", GameButtonAction::Next)
+                .observe(handle_next)
+                .observe(handle_over)
+                .observe(handle_out);
+            spawn_action_button(p, &game_assets, "Reset", GameButtonAction::Reset)
+                .observe(handle_reset)
+                .observe(handle_over)
+                .observe(handle_out);
+            spawn_action_button(p, &game_assets, "Clear", GameButtonAction::Clear)
+                .observe(handle_clear)
+                .observe(handle_over)
+                .observe(handle_out);
+
+            // Speed control
+            p.spawn(stepper_row_node()).with_children(|p| {
+                spawn_small_button(p, &game_assets, "<", GameButtonAction::SpeedDown)
+                    .observe(handle_speed_down)
+                    .observe(handle_over)
+                    .observe(handle_out);
+                spawn_stepper_label(p, &game_assets, "Speed");
+                spawn_small_button(p, &game_assets, ">", GameButtonAction::SpeedUp)
+                    .observe(handle_speed_up)
+                    .observe(handle_over)
+                    .observe(handle_out);
             });
-            p.spawn(Node {
-                align_items: AlignItems::Center,
-                justify_content: JustifyContent::SpaceBetween,
-                width: Val::Percent(80.),
-                height: Val::Px(60.),
-                ..default()
-            })
-            .with_children(|p| {
-                p.spawn((
-                    Node {
-                        align_items: AlignItems::Center,
-                        justify_content: JustifyContent::Center,
-                        width: Val::Percent(25.),
-                        height: Val::Percent(100.),
-                        border_radius: BorderRadius::px(5., 5., 5., 5.),
-                        ..default()
-                    },
-                    GameButtonAction::ZoomDown,
-                    BackgroundColor(BLACK.into()),
-                ))
-                .observe(handle_zoom_down)
-                .observe(handle_over)
-                .observe(handle_out)
-                .with_children(|p| {
-                    p.spawn((
-                        Text::new("<"),
-                        TextFont {
-                            font: game_assets.font_bold.clone(),
-                            font_size: 40.0,
-                            ..default()
-                        },
-                        TextColor(WHITE.into()),
-                    ));
-                });
-                p.spawn((
-                    Text::new("Zoom"),
-                    TextFont {
-                        font: game_assets.font_regular.clone(),
-                        font_size: 20.,
-                        ..default()
-                    },
-                    TextColor(WHITE.into()),
-                ));
-                p.spawn((
-                    Node {
-                        align_items: AlignItems::Center,
-                        justify_content: JustifyContent::Center,
-                        width: Val::Percent(25.),
-                        height: Val::Percent(100.),
-                        border_radius: BorderRadius::px(5., 5., 5., 5.),
-                        ..default()
-                    },
-                    GameButtonAction::ZoomUp,
-                    BackgroundColor(BLACK.into()),
-                ))
-                .observe(handle_zoom_up)
-                .observe(handle_over)
-                .observe(handle_out)
-                .with_children(|p| {
-                    p.spawn((
-                        Text::new(">"),
-                        TextFont {
-                            font: game_assets.font_bold.clone(),
-                            font_size: 40.0,
-                            ..default()
-                        },
-                        TextColor(WHITE.into()),
-                    ));
-                });
+
+            // Zoom control
+            p.spawn(stepper_row_node()).with_children(|p| {
+                spawn_small_button(p, &game_assets, "<", GameButtonAction::ZoomDown)
+                    .observe(handle_zoom_down)
+                    .observe(handle_over)
+                    .observe(handle_out);
+                spawn_stepper_label(p, &game_assets, "Zoom");
+                spawn_small_button(p, &game_assets, ">", GameButtonAction::ZoomUp)
+                    .observe(handle_zoom_up)
+                    .observe(handle_over)
+                    .observe(handle_out);
             });
         });
 
     // NOTE: World
-    for (y, row) in world.cells.iter().enumerate() {
-        for (x, cell) in row.iter().enumerate() {
-            commands
-                .spawn((
-                    Mesh2d(meshes.add(Rectangle::new(CELL_WIDTH, CELL_HEIGHT))),
-                    MeshMaterial2d(materials.add(cell.get_color())),
-                    Layer::World.as_render_layer(),
-                    OnGameScreen,
-                    Transform::from_xyz(
-                        (x as u16 % WORLD_WIDTH) as f32 * INTERVAL_WIDTH - OFFSET_WIDTH,
-                        (y as u16 % WORLD_HEIGHT) as f32 * INTERVAL_HEIGHT - OFFSET_HEIGHT,
-                        0.,
-                    ),
-                    Coordinate {
-                        x: x as u16,
-                        y: y as u16,
-                    },
-                ))
-                .observe(switch_cell_state)
-                .observe(handle_over)
-                .observe(handle_out);
-        }
-    }
+    spawn_cell_grid(&mut commands, &world, &mut meshes, &mut materials);
 }

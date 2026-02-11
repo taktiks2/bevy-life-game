@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use common::consts::SPACE_KEY_HOLD_DURATION;
 
 #[derive(Resource)]
 pub struct SimulationTimer(pub Timer);
@@ -14,6 +15,6 @@ pub struct SpaceKeyTimer(pub Timer);
 
 impl SpaceKeyTimer {
     pub fn new() -> Self {
-        Self(Timer::from_seconds(0.5, TimerMode::Once))
+        Self(Timer::from_seconds(SPACE_KEY_HOLD_DURATION, TimerMode::Once))
     }
 }
