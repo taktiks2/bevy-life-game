@@ -29,8 +29,6 @@ fn main() {
                     ..default()
                 }),
         )
-        .add_plugins(MeshPickingPlugin) // NOTE: meshやプラグインをクリック検知するのに必要
-        // .add_plugins(WorldInspectorPlugin::new()) // NOTE: インスペクタープラグイン
         .add_plugins(TitlePlugin)
         .add_plugins(GamePlugin)
         .add_plugins(MenuPlugin)

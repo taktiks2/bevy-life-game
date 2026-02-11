@@ -1,20 +1,20 @@
-use bevy::{color::palettes::css::*, prelude::*};
+use bevy::{
+    asset::RenderAssetUsages,
+    color::palettes::css::*,
+    image::{ImageSampler, ImageSamplerDescriptor},
+    prelude::*,
+};
 use common::{
-    consts::{
-        CELL_HEIGHT, CELL_WIDTH, INTERVAL_HEIGHT, INTERVAL_WIDTH, OFFSET_HEIGHT, OFFSET_WIDTH,
-        WORLD_HEIGHT, WORLD_WIDTH,
-    },
+    consts::{MAIN_PHYSICAL_WIDTH, WINDOW_HEIGHT},
     resources::GameAssets,
 };
 
 use crate::components::{
     action::GameButtonAction,
-    coordinate::Coordinate,
-    screen::{GenerationText, OnGameScreen},
+    screen::{CellHighlight, GenerationText, GridTexture, OnGameScreen},
 };
 use crate::layer::Layer;
 use crate::resources::world::World;
-use crate::systems::action::{handle_out, handle_over, switch_cell_state};
 
 pub fn spawn_generation_text(
     parent: &mut ChildSpawnerCommands,
@@ -137,33 +137,77 @@ pub fn stepper_row_node() -> Node {
     }
 }
 
-pub fn spawn_cell_grid(
+pub fn spawn_grid_sprite(
     commands: &mut Commands,
+    images: &mut Assets<Image>,
     world: &World,
-    meshes: &mut Assets<Mesh>,
-    materials: &mut Assets<ColorMaterial>,
 ) {
-    for (y, row) in world.cells.iter().enumerate() {
-        for (x, cell) in row.iter().enumerate() {
-            commands
-                .spawn((
-                    Mesh2d(meshes.add(Rectangle::new(CELL_WIDTH, CELL_HEIGHT))),
-                    MeshMaterial2d(materials.add(cell.get_color())),
-                    Layer::World.as_render_layer(),
-                    OnGameScreen,
-                    Transform::from_xyz(
-                        (x as u16 % WORLD_WIDTH) as f32 * INTERVAL_WIDTH - OFFSET_WIDTH,
-                        (y as u16 % WORLD_HEIGHT) as f32 * INTERVAL_HEIGHT - OFFSET_HEIGHT,
-                        0.,
-                    ),
-                    Coordinate {
-                        x: x as u16,
-                        y: y as u16,
-                    },
-                ))
-                .observe(switch_cell_state)
-                .observe(handle_over)
-                .observe(handle_out);
+    let width = world.width as u32;
+    let height = world.height as u32;
+    let mut data = vec![255u8; (width * height * 4) as usize];
+    write_world_to_image_data(&mut data, world);
+
+    let mut image = Image::new(
+        bevy::render::render_resource::Extent3d {
+            width,
+            height,
+            depth_or_array_layers: 1,
+        },
+        bevy::render::render_resource::TextureDimension::D2,
+        data,
+        bevy::render::render_resource::TextureFormat::Rgba8UnormSrgb,
+        RenderAssetUsages::MAIN_WORLD | RenderAssetUsages::RENDER_WORLD,
+    );
+    image.sampler = ImageSampler::Descriptor(ImageSamplerDescriptor::nearest());
+
+    let handle = images.add(image);
+
+    commands.spawn((
+        Sprite {
+            image: handle,
+            custom_size: Some(Vec2::new(
+                MAIN_PHYSICAL_WIDTH as f32,
+                WINDOW_HEIGHT,
+            )),
+            ..default()
+        },
+        Layer::World.as_render_layer(),
+        OnGameScreen,
+        GridTexture,
+    ));
+}
+
+pub fn spawn_cell_highlight(commands: &mut Commands) {
+    let cell_w = MAIN_PHYSICAL_WIDTH as f32 / 100.0;
+    let cell_h = WINDOW_HEIGHT / 100.0;
+    commands.spawn((
+        Sprite {
+            color: Color::srgba(0.0, 0.0, 0.5, 0.3),
+            custom_size: Some(Vec2::new(cell_w, cell_h)),
+            ..default()
+        },
+        Visibility::Hidden,
+        Layer::World.as_render_layer(),
+        OnGameScreen,
+        CellHighlight,
+    ));
+}
+
+pub fn write_world_to_image_data(data: &mut [u8], world: &World) {
+    let width = world.width as usize;
+    let height = world.height as usize;
+    for y in 0..height {
+        for x in 0..width {
+            let offset = (y * width + x) * 4;
+            let (r, g, b) = if world.is_alive(x as u16, y as u16) {
+                (0u8, 0u8, 0u8)
+            } else {
+                (255u8, 255u8, 255u8)
+            };
+            data[offset] = r;
+            data[offset + 1] = g;
+            data[offset + 2] = b;
+            data[offset + 3] = 255;
         }
     }
 }

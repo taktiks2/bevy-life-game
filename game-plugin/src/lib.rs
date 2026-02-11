@@ -20,12 +20,17 @@ use components::{
 use events::*;
 use layer::Layer;
 use resources::{
-    cell_materials::CellMaterials,
     timer::{SimulationTimer, SpaceKeyTimer},
     world::World,
 };
 use states::SimulationState;
-use systems::{audio::play_audios, cell_operations::*, input::*, screen::spawn_screen};
+use systems::{
+    action::{handle_grid_click, update_cell_highlight, HoveredCell},
+    audio::play_audios,
+    cell_operations::*,
+    input::*,
+    screen::spawn_screen,
+};
 
 pub struct GamePlugin;
 
@@ -59,6 +64,8 @@ impl Plugin for GamePlugin {
                 progress_generation_trigger.run_if(in_state(SimulationState::Simulating)),
                 update_generation,
                 reset_generation,
+                handle_grid_click,
+                update_cell_highlight,
             )
                 .run_if(in_state(GameState::Game)),
         );
@@ -67,6 +74,8 @@ impl Plugin for GamePlugin {
             (world_clear, play_audios).run_if(in_state(GameState::Game)),
         );
         app.insert_resource(SpaceKeyTimer::new());
+        app.init_resource::<HoveredCell>();
+        app.init_resource::<systems::audio::AudioCooldown>();
         app.init_state::<SimulationState>();
         app.add_message::<ProgressGenerationEvent>();
         app.add_message::<GenerationResetEvent>();
@@ -114,15 +123,10 @@ pub fn setup_world_camera(mut commands: Commands) {
     ));
 }
 
-fn setup_resource(
-    mut commands: Commands,
-    game_assets: Res<GameAssets>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
-) {
+fn setup_resource(mut commands: Commands, game_assets: Res<GameAssets>) {
     commands.insert_resource(World::new(
         game_assets.world_width,
         game_assets.world_height,
     ));
     commands.insert_resource(SimulationTimer::new(game_assets.tick_interval));
-    commands.insert_resource(CellMaterials::new(&mut materials));
 }

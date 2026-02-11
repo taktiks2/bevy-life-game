@@ -1,28 +1,28 @@
 use bevy::prelude::*;
 
-use crate::components::{coordinate::Coordinate, screen::GenerationText};
+use crate::components::screen::{GenerationText, GridTexture};
 use crate::events::{GenerationResetEvent, ProgressGenerationEvent, WorldClearEvent};
-use crate::resources::{
-    cell_materials::CellMaterials,
-    timer::SimulationTimer,
-    world::{Cell, World},
-};
+use crate::resources::{timer::SimulationTimer, world::World};
+use crate::systems::ui::write_world_to_image_data;
 
 pub fn update_cells(
     world: Res<World>,
-    cell_materials: Res<CellMaterials>,
-    mut query: Query<(&Coordinate, &mut MeshMaterial2d<ColorMaterial>)>,
+    grid_query: Query<&Sprite, With<GridTexture>>,
+    mut images: ResMut<Assets<Image>>,
 ) {
     if !world.is_changed() {
         return;
     }
-    for (coordinate, mut material) in query.iter_mut() {
-        let handle = match world.cells[coordinate.y as usize][coordinate.x as usize] {
-            Cell::Alive => cell_materials.alive.clone(),
-            Cell::Dead => cell_materials.dead.clone(),
-        };
-        *material = MeshMaterial2d(handle);
-    }
+    let Ok(sprite) = grid_query.single() else {
+        return;
+    };
+    let Some(image) = images.get_mut(&sprite.image) else {
+        return;
+    };
+    let Some(ref mut data) = image.data else {
+        return;
+    };
+    write_world_to_image_data(data, &world);
 }
 
 pub fn update_generation(world: Res<World>, mut query: Query<&mut TextSpan, With<GenerationText>>) {

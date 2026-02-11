@@ -11,8 +11,7 @@ pub fn spawn_screen(
     mut commands: Commands,
     world: Res<World>,
     game_assets: Res<GameAssets>,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
+    mut images: ResMut<Assets<Image>>,
 ) {
     // NOTE: Side Menu
     commands
@@ -82,5 +81,6 @@ pub fn spawn_screen(
         });
 
     // NOTE: World
-    spawn_cell_grid(&mut commands, &world, &mut meshes, &mut materials);
+    spawn_grid_sprite(&mut commands, &mut images, &world);
+    spawn_cell_highlight(&mut commands);
 }
