@@ -120,9 +120,6 @@ pub fn switch_cell_state(
     mut world: ResMut<World>,
 ) {
     if let Ok(coordinate) = query.get(click.entity) {
-        world.cells[coordinate.y as usize][coordinate.x as usize] =
-            world.cells[coordinate.y as usize][coordinate.x as usize].switch_state();
-        world.generation_count = 0;
-        world.prev_cells = world.cells.clone();
+        world.toggle_cell(coordinate.x, coordinate.y);
     }
 }

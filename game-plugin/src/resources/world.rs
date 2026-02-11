@@ -29,7 +29,8 @@ impl Cell {
 #[derive(Resource, Clone, Debug)]
 pub struct World {
     pub cells: Vec<Vec<Cell>>,
-    pub prev_cells: Vec<Vec<Cell>>,
+    back_buffer: Vec<Vec<Cell>>,
+    pub initial_cells: Vec<Vec<Cell>>,
     pub width: u16,
     pub height: u16,
     pub generation_count: u64,
@@ -39,7 +40,8 @@ impl World {
     pub fn new(width: u16, height: u16) -> Self {
         Self {
             cells: Self::init_cells(width, height),
-            prev_cells: Self::init_cells(width, height),
+            back_buffer: Self::init_cells(width, height),
+            initial_cells: Self::init_cells(width, height),
             width,
             height,
             generation_count: 0,
@@ -52,22 +54,30 @@ impl World {
     }
     pub fn progress_generation(&mut self) {
         self.generation_count += 1;
-        let snapshot = self.cells.clone();
         for y in 0..self.height as usize {
             for x in 0..self.width as usize {
                 let neighbors =
-                    simulation::count_alive_neighbors(&snapshot, self.width, self.height, y, x);
-                self.cells[y][x] = simulation::next_cell_state(&snapshot[y][x], neighbors);
+                    simulation::count_alive_neighbors(&self.cells, self.width, self.height, y, x);
+                self.back_buffer[y][x] =
+                    simulation::next_cell_state(&self.cells[y][x], neighbors);
             }
         }
+        std::mem::swap(&mut self.cells, &mut self.back_buffer);
+    }
+    pub fn toggle_cell(&mut self, x: u16, y: u16) {
+        let cell = self.cells[y as usize][x as usize].switch_state();
+        self.cells[y as usize][x as usize] = cell.clone();
+        self.initial_cells[y as usize][x as usize] = cell;
+        self.generation_count = 0;
     }
     pub fn reset(&mut self) {
-        self.cells = self.prev_cells.clone();
+        self.cells = self.initial_cells.clone();
         self.generation_count = 0;
     }
     pub fn clear(&mut self) {
         self.cells = Self::init_cells(self.width, self.height);
-        self.prev_cells = Self::init_cells(self.width, self.height);
+        self.back_buffer = Self::init_cells(self.width, self.height);
+        self.initial_cells = Self::init_cells(self.width, self.height);
         self.generation_count = 0;
     }
 }
@@ -253,10 +263,10 @@ mod tests {
     // --- reset ---
 
     #[test]
-    fn reset_restores_prev_cells() {
+    fn reset_restores_initial_cells() {
         let mut world = World::new(3, 3);
         world.cells[0][0] = Cell::Alive;
-        world.prev_cells = world.cells.clone();
+        world.initial_cells = world.cells.clone();
 
         world.progress_generation();
         world.reset();
@@ -281,12 +291,58 @@ mod tests {
                 assert!(is_dead(cell));
             }
         }
-        for row in &world.prev_cells {
+        for row in &world.initial_cells {
             for cell in row {
                 assert!(is_dead(cell));
             }
         }
         assert_eq!(world.generation_count, 0);
+    }
+
+    // --- toggle_cell ---
+
+    #[test]
+    fn toggle_cell_switches_dead_to_alive() {
+        let mut world = World::new(3, 3);
+        world.toggle_cell(1, 1);
+        assert!(is_alive(&world.cells[1][1]));
+    }
+
+    #[test]
+    fn toggle_cell_switches_alive_to_dead() {
+        let mut world = World::new(3, 3);
+        world.cells[1][1] = Cell::Alive;
+        world.toggle_cell(1, 1);
+        assert!(is_dead(&world.cells[1][1]));
+    }
+
+    #[test]
+    fn toggle_cell_syncs_initial_cells() {
+        let mut world = World::new(3, 3);
+        world.toggle_cell(1, 1);
+        assert!(is_alive(&world.initial_cells[1][1]));
+    }
+
+    #[test]
+    fn toggle_cell_resets_generation_count() {
+        let mut world = World::new(3, 3);
+        world.generation_count = 5;
+        world.toggle_cell(1, 1);
+        assert_eq!(world.generation_count, 0);
+    }
+
+    #[test]
+    fn toggle_cell_does_not_clone_entire_grid() {
+        let mut world = World::new(3, 3);
+        world.cells[0][0] = Cell::Alive;
+        world.initial_cells = world.cells.clone();
+
+        world.toggle_cell(1, 1);
+
+        // 他のセルの initial_cells は変わらない
+        assert!(is_alive(&world.initial_cells[0][0]));
+        // トグルしたセルだけ同期される
+        assert!(is_alive(&world.initial_cells[1][1]));
     }
 
     // --- 境界条件 ---

@@ -20,6 +20,7 @@ use components::{
 use events::*;
 use layer::Layer;
 use resources::{
+    cell_materials::CellMaterials,
     timer::{SimulationTimer, SpaceKeyTimer},
     world::World,
 };
@@ -113,10 +114,15 @@ pub fn setup_world_camera(mut commands: Commands) {
     ));
 }
 
-fn setup_resource(mut commands: Commands, game_assets: Res<GameAssets>) {
+fn setup_resource(
+    mut commands: Commands,
+    game_assets: Res<GameAssets>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
+) {
     commands.insert_resource(World::new(
         game_assets.world_width,
         game_assets.world_height,
     ));
     commands.insert_resource(SimulationTimer::new(game_assets.tick_interval));
+    commands.insert_resource(CellMaterials::new(&mut materials));
 }

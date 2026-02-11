@@ -2,16 +2,26 @@ use bevy::prelude::*;
 
 use crate::components::{coordinate::Coordinate, screen::GenerationText};
 use crate::events::{GenerationResetEvent, ProgressGenerationEvent, WorldClearEvent};
-use crate::resources::{timer::SimulationTimer, world::World};
+use crate::resources::{
+    cell_materials::CellMaterials,
+    timer::SimulationTimer,
+    world::{Cell, World},
+};
 
 pub fn update_cells(
     world: Res<World>,
+    cell_materials: Res<CellMaterials>,
     mut query: Query<(&Coordinate, &mut MeshMaterial2d<ColorMaterial>)>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
+    if !world.is_changed() {
+        return;
+    }
     for (coordinate, mut material) in query.iter_mut() {
-        let cell = &world.cells[coordinate.y as usize][coordinate.x as usize];
-        *material = MeshMaterial2d(materials.add(cell.get_color()));
+        let handle = match world.cells[coordinate.y as usize][coordinate.x as usize] {
+            Cell::Alive => cell_materials.alive.clone(),
+            Cell::Dead => cell_materials.dead.clone(),
+        };
+        *material = MeshMaterial2d(handle);
     }
 }
 
