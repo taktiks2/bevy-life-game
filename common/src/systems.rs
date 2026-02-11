@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 pub fn despawn_entity<T: Component>(mut commands: Commands, to_despawn: Query<Entity, With<T>>) {
     for entity in &to_despawn {
-        commands.entity(entity).despawn_recursive();
+        commands.entity(entity).despawn();
     }
 }
 

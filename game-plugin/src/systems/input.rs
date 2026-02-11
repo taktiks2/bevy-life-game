@@ -12,15 +12,15 @@ pub fn game_input_keyboard_handling(
     simulation_state: Res<State<SimulationState>>,
     mut simulation_next_state: ResMut<NextState<SimulationState>>,
     mut game_next_state: ResMut<NextState<GameState>>,
-    mut progress_generation_event_writer: EventWriter<ProgressGenerationEvent>,
+    mut progress_generation_event_writer: MessageWriter<ProgressGenerationEvent>,
     time: Res<Time>,
     mut space_key_timer: ResMut<SpaceKeyTimer>,
 ) {
     if keys.just_pressed(KeyCode::Space) {
-        progress_generation_event_writer.send(ProgressGenerationEvent);
+        progress_generation_event_writer.write(ProgressGenerationEvent);
     }
     if keys.pressed(KeyCode::Space)
-        && space_key_timer.0.tick(time.delta()).finished()
+        && space_key_timer.0.tick(time.delta()).is_finished()
         && *simulation_state.get() == SimulationState::Paused
     {
         // NOTE: スペースキーを長押しして、PausedのときにSimulating開始
@@ -41,9 +41,11 @@ pub fn game_input_keyboard_handling(
 
 pub fn game_input_zoom_handling(
     keys: Res<ButtonInput<KeyCode>>,
-    mut camera_query: Query<(&mut Transform, &mut OrthographicProjection), With<WorldCamera>>,
+    mut camera_query: Query<(&mut Transform, &mut Projection), With<WorldCamera>>,
 ) {
-    let (mut transform, mut projection) = camera_query.single_mut();
+    let Ok((mut transform, mut projection)) = camera_query.single_mut() else {
+        return;
+    };
     if keys.just_pressed(KeyCode::KeyW) {
         transform.translation.y += 10.;
     }
@@ -56,10 +58,12 @@ pub fn game_input_zoom_handling(
     if keys.just_pressed(KeyCode::KeyD) {
         transform.translation.x += 10.;
     }
-    if keys.just_pressed(KeyCode::KeyQ) {
-        projection.scale = (projection.scale + 0.1).min(1.0);
-    }
-    if keys.just_pressed(KeyCode::KeyE) {
-        projection.scale = (projection.scale - 0.1).max(0.1);
+    if let Projection::Orthographic(ref mut ortho) = *projection {
+        if keys.just_pressed(KeyCode::KeyQ) {
+            ortho.scale = (ortho.scale + 0.1).min(1.0);
+        }
+        if keys.just_pressed(KeyCode::KeyE) {
+            ortho.scale = (ortho.scale - 0.1).max(0.1);
+        }
     }
 }

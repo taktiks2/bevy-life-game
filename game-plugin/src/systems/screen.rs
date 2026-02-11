@@ -65,10 +65,10 @@ pub fn spawn_screen(
                     justify_content: JustifyContent::Center,
                     width: Val::Percent(80.),
                     height: Val::Px(60.),
+                    border_radius: BorderRadius::px(5., 5., 5., 5.),
                     ..default()
                 },
                 GameButtonAction::Start,
-                BorderRadius::px(5., 5., 5., 5.),
                 BackgroundColor(BLACK.into()),
             ))
             .observe(handle_start)
@@ -91,10 +91,10 @@ pub fn spawn_screen(
                     justify_content: JustifyContent::Center,
                     width: Val::Percent(80.),
                     height: Val::Px(60.),
+                    border_radius: BorderRadius::px(5., 5., 5., 5.),
                     ..default()
                 },
                 GameButtonAction::Stop,
-                BorderRadius::px(5., 5., 5., 5.),
                 BackgroundColor(BLACK.into()),
             ))
             .observe(handle_stop)
@@ -124,10 +124,10 @@ pub fn spawn_screen(
                     justify_content: JustifyContent::Center,
                     width: Val::Percent(80.),
                     height: Val::Px(60.),
+                    border_radius: BorderRadius::px(5., 5., 5., 5.),
                     ..default()
                 },
                 GameButtonAction::Next,
-                BorderRadius::px(5., 5., 5., 5.),
                 BackgroundColor(BLACK.into()),
             ))
             .observe(handle_next)
@@ -157,10 +157,10 @@ pub fn spawn_screen(
                     justify_content: JustifyContent::Center,
                     width: Val::Percent(80.),
                     height: Val::Px(60.),
+                    border_radius: BorderRadius::px(5., 5., 5., 5.),
                     ..default()
                 },
                 GameButtonAction::Reset,
-                BorderRadius::px(5., 5., 5., 5.),
                 BackgroundColor(BLACK.into()),
             ))
             .observe(handle_reset)
@@ -183,10 +183,10 @@ pub fn spawn_screen(
                     justify_content: JustifyContent::Center,
                     width: Val::Percent(80.),
                     height: Val::Px(60.),
+                    border_radius: BorderRadius::px(5., 5., 5., 5.),
                     ..default()
                 },
                 GameButtonAction::Clear,
-                BorderRadius::px(5., 5., 5., 5.),
                 BackgroundColor(BLACK.into()),
             ))
             .observe(handle_clear)
@@ -217,10 +217,10 @@ pub fn spawn_screen(
                         justify_content: JustifyContent::Center,
                         width: Val::Percent(25.),
                         height: Val::Percent(100.),
+                        border_radius: BorderRadius::px(5., 5., 5., 5.),
                         ..default()
                     },
                     GameButtonAction::SpeedDown,
-                    BorderRadius::px(5., 5., 5., 5.),
                     BackgroundColor(BLACK.into()),
                 ))
                 .observe(handle_speed_down)
@@ -252,10 +252,10 @@ pub fn spawn_screen(
                         justify_content: JustifyContent::Center,
                         width: Val::Percent(25.),
                         height: Val::Percent(100.),
+                        border_radius: BorderRadius::px(5., 5., 5., 5.),
                         ..default()
                     },
                     GameButtonAction::SpeedUp,
-                    BorderRadius::px(5., 5., 5., 5.),
                     BackgroundColor(BLACK.into()),
                 ))
                 .observe(handle_speed_up)
@@ -287,10 +287,10 @@ pub fn spawn_screen(
                         justify_content: JustifyContent::Center,
                         width: Val::Percent(25.),
                         height: Val::Percent(100.),
+                        border_radius: BorderRadius::px(5., 5., 5., 5.),
                         ..default()
                     },
                     GameButtonAction::ZoomDown,
-                    BorderRadius::px(5., 5., 5., 5.),
                     BackgroundColor(BLACK.into()),
                 ))
                 .observe(handle_zoom_down)
@@ -322,10 +322,10 @@ pub fn spawn_screen(
                         justify_content: JustifyContent::Center,
                         width: Val::Percent(25.),
                         height: Val::Percent(100.),
+                        border_radius: BorderRadius::px(5., 5., 5., 5.),
                         ..default()
                     },
                     GameButtonAction::ZoomUp,
-                    BorderRadius::px(5., 5., 5., 5.),
                     BackgroundColor(BLACK.into()),
                 ))
                 .observe(handle_zoom_up)

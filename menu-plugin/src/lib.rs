@@ -86,11 +86,11 @@ fn setup_menu_screen(mut commands: Commands, game_assets: Res<GameAssets>) {
                             justify_content: JustifyContent::Center,
                             width: Val::Px(200.),
                             height: Val::Px(60.),
+                            border_radius: BorderRadius::px(5., 5., 5., 5.),
                             ..default()
                         },
                         MenuButtonAction::Back,
                         BackgroundColor(BLACK.into()),
-                        BorderRadius::px(5., 5., 5., 5.),
                         Button,
                     ))
                     .with_children(|p| {
@@ -109,11 +109,11 @@ fn setup_menu_screen(mut commands: Commands, game_assets: Res<GameAssets>) {
                             justify_content: JustifyContent::Center,
                             width: Val::Px(200.),
                             height: Val::Px(60.),
+                            border_radius: BorderRadius::px(5., 5., 5., 5.),
                             ..default()
                         },
                         MenuButtonAction::Quit,
                         BackgroundColor(BLACK.into()),
-                        BorderRadius::px(5., 5., 5., 5.),
                         Button,
                     ))
                     .with_children(|p| {
@@ -136,14 +136,14 @@ fn menu_action(
         (&Interaction, &MenuButtonAction),
         (Changed<Interaction>, With<Button>),
     >,
-    mut app_exit_events: EventWriter<AppExit>,
+    mut app_exit_events: MessageWriter<AppExit>,
     mut state: ResMut<NextState<GameState>>,
 ) {
     for (interaction, title_button_action) in &interaction_query {
         if *interaction == Interaction::Pressed {
             match title_button_action {
                 MenuButtonAction::Quit => {
-                    app_exit_events.send(AppExit::Success);
+                    app_exit_events.write(AppExit::Success);
                 }
                 MenuButtonAction::Back => {
                     state.set(GameState::Title);

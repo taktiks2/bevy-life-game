@@ -1,4 +1,4 @@
-use bevy::render::view::RenderLayers;
+use bevy::camera::visibility::RenderLayers;
 
 #[derive(Clone, Copy)]
 pub enum Layer {

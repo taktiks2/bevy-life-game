@@ -1,13 +1,13 @@
-use bevy::prelude::Event;
+use bevy::prelude::Message;
 
-#[derive(Event)]
+#[derive(Message)]
 pub struct ProgressGenerationEvent;
 
-#[derive(Event)]
+#[derive(Message)]
 pub struct GenerationResetEvent;
 
-#[derive(Event)]
+#[derive(Message)]
 pub struct WorldClearEvent;
 
-#[derive(Event)]
+#[derive(Message)]
 pub struct PlayAudioEvent;

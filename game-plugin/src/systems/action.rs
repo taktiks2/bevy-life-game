@@ -9,7 +9,7 @@ use crate::states::SimulationState;
 use crate::WorldCamera;
 
 pub fn handle_start(
-    _click: Trigger<Pointer<Click>>,
+    _click: On<Pointer<Click>>,
     simulation_state: Res<State<SimulationState>>,
     mut simulation_next_state: ResMut<NextState<SimulationState>>,
 ) {
@@ -19,7 +19,7 @@ pub fn handle_start(
 }
 
 pub fn handle_stop(
-    _click: Trigger<Pointer<Click>>,
+    _click: On<Pointer<Click>>,
     simulation_state: Res<State<SimulationState>>,
     mut simulation_next_state: ResMut<NextState<SimulationState>>,
 ) {
@@ -29,28 +29,28 @@ pub fn handle_stop(
 }
 
 pub fn handle_next(
-    _click: Trigger<Pointer<Click>>,
-    mut progress_generation_event_writer: EventWriter<ProgressGenerationEvent>,
+    _click: On<Pointer<Click>>,
+    mut progress_generation_event_writer: MessageWriter<ProgressGenerationEvent>,
 ) {
-    progress_generation_event_writer.send(ProgressGenerationEvent);
+    progress_generation_event_writer.write(ProgressGenerationEvent);
 }
 
 pub fn handle_reset(
-    _click: Trigger<Pointer<Click>>,
-    mut generation_reset_event_writer: EventWriter<GenerationResetEvent>,
+    _click: On<Pointer<Click>>,
+    mut generation_reset_event_writer: MessageWriter<GenerationResetEvent>,
 ) {
-    generation_reset_event_writer.send(GenerationResetEvent);
+    generation_reset_event_writer.write(GenerationResetEvent);
 }
 
 pub fn handle_clear(
-    _click: Trigger<Pointer<Click>>,
-    mut world_clear_event_writer: EventWriter<WorldClearEvent>,
+    _click: On<Pointer<Click>>,
+    mut world_clear_event_writer: MessageWriter<WorldClearEvent>,
 ) {
-    world_clear_event_writer.send(WorldClearEvent);
+    world_clear_event_writer.write(WorldClearEvent);
 }
 
 pub fn handle_speed_down(
-    _click: Trigger<Pointer<Click>>,
+    _click: On<Pointer<Click>>,
     mut simulation_timer: ResMut<SimulationTimer>,
 ) {
     let current_duration = simulation_timer.0.duration().as_secs_f32();
@@ -61,7 +61,7 @@ pub fn handle_speed_down(
 }
 
 pub fn handle_speed_up(
-    _click: Trigger<Pointer<Click>>,
+    _click: On<Pointer<Click>>,
     mut simulation_timer: ResMut<SimulationTimer>,
 ) {
     let current_duration = simulation_timer.0.duration().as_secs_f32();
@@ -72,46 +72,50 @@ pub fn handle_speed_up(
 }
 
 pub fn handle_zoom_down(
-    _click: Trigger<Pointer<Click>>,
-    mut query_camera: Query<&mut OrthographicProjection, With<WorldCamera>>,
+    _click: On<Pointer<Click>>,
+    mut query_camera: Query<&mut Projection, With<WorldCamera>>,
 ) {
-    for mut camera in query_camera.iter_mut() {
-        camera.scale = (camera.scale + 0.1).min(1.0);
+    for mut projection in query_camera.iter_mut() {
+        if let Projection::Orthographic(ref mut ortho) = *projection {
+            ortho.scale = (ortho.scale + 0.1).min(1.0);
+        }
     }
 }
 
 pub fn handle_zoom_up(
-    _click: Trigger<Pointer<Click>>,
-    mut query_camera: Query<&mut OrthographicProjection, With<WorldCamera>>,
+    _click: On<Pointer<Click>>,
+    mut query_camera: Query<&mut Projection, With<WorldCamera>>,
 ) {
-    for mut camera in query_camera.iter_mut() {
-        camera.scale = (camera.scale - 0.1).max(0.1);
+    for mut projection in query_camera.iter_mut() {
+        if let Projection::Orthographic(ref mut ortho) = *projection {
+            ortho.scale = (ortho.scale - 0.1).max(0.1);
+        }
     }
 }
 
 pub fn handle_over(
-    over: Trigger<Pointer<Over>>,
+    over: On<Pointer<Over>>,
     mut query: Query<&mut BackgroundColor>,
-    mut events: EventWriter<PlayAudioEvent>,
+    mut events: MessageWriter<PlayAudioEvent>,
 ) {
-    if let Ok(mut background_color) = query.get_mut(over.entity()) {
+    if let Ok(mut background_color) = query.get_mut(over.entity) {
         background_color.0 = NAVY.into();
-        events.send(PlayAudioEvent);
+        events.write(PlayAudioEvent);
     }
 }
 
-pub fn handle_out(out: Trigger<Pointer<Out>>, mut query: Query<&mut BackgroundColor>) {
-    if let Ok(mut background_color) = query.get_mut(out.entity()) {
+pub fn handle_out(out: On<Pointer<Out>>, mut query: Query<&mut BackgroundColor>) {
+    if let Ok(mut background_color) = query.get_mut(out.entity) {
         background_color.0 = Color::BLACK;
     }
 }
 
 pub fn switch_cell_state(
-    click: Trigger<Pointer<Click>>,
+    click: On<Pointer<Click>>,
     query: Query<&Coordinate, With<Mesh2d>>,
     mut world: ResMut<World>,
 ) {
-    if let Ok(coordinate) = query.get(click.entity()) {
+    if let Ok(coordinate) = query.get(click.entity) {
         world.cells[coordinate.y as usize][coordinate.x as usize] =
             world.cells[coordinate.y as usize][coordinate.x as usize].switch_state();
         world.generation_count = 0;

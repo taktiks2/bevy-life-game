@@ -79,11 +79,11 @@ fn setup_title_screen(mut commands: Commands, game_assets: Res<GameAssets>) {
                         justify_content: JustifyContent::Center,
                         width: Val::Px(200.),
                         height: Val::Px(60.),
+                        border_radius: BorderRadius::px(5., 5., 5., 5.),
                         ..default()
                     },
                     Button,
                     TitleButtonAction::Start,
-                    BorderRadius::px(5., 5., 5., 5.),
                     BackgroundColor(BLACK.into()),
                 ))
                 .observe(on_start_button_click)
@@ -100,6 +100,6 @@ fn setup_title_screen(mut commands: Commands, game_assets: Res<GameAssets>) {
         });
 }
 
-fn on_start_button_click(_click: Trigger<Pointer<Click>>, mut state: ResMut<NextState<GameState>>) {
+fn on_start_button_click(_click: On<Pointer<Click>>, mut state: ResMut<NextState<GameState>>) {
     state.set(GameState::Game);
 }

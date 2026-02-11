@@ -1,4 +1,4 @@
-use bevy::{asset::AssetMetaCheck, prelude::*};
+use bevy::{asset::AssetMetaCheck, prelude::*, window::WindowResolution};
 // use bevy_inspector_egui::quick::WorldInspectorPlugin;
 
 use common::{
@@ -18,7 +18,7 @@ fn main() {
                 .set(WindowPlugin {
                     primary_window: Some(Window {
                         title: "Conway's Game of Life".to_string(),
-                        resolution: [WINDOW_WIDTH, WINDOW_HEIGHT].into(), // NOTE: Windowサイズの指定
+                        resolution: WindowResolution::new(WINDOW_WIDTH as u32, WINDOW_HEIGHT as u32), // NOTE: Windowサイズの指定
                         resizable: false, // NOTE: Windowサイズの変更を不可にする
                         ..default()
                     }),

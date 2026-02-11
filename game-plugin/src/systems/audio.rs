@@ -4,7 +4,7 @@ use crate::events::PlayAudioEvent;
 
 pub fn play_audios(
     asset_server: Res<AssetServer>,
-    mut events: EventReader<PlayAudioEvent>,
+    mut events: MessageReader<PlayAudioEvent>,
     mut commands: Commands,
 ) {
     for _ in events.read() {

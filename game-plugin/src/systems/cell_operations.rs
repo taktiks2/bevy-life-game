@@ -35,23 +35,25 @@ pub fn update_cells(
 }
 
 pub fn update_generation(world: Res<World>, mut query: Query<&mut TextSpan, With<GenerationText>>) {
-    query.single_mut().0 = world.generation_count.to_string();
+    if let Ok(mut span) = query.single_mut() {
+        span.0 = world.generation_count.to_string();
+    }
 }
 
 // NOTE: 一定間隔事に進化させる関数
 pub fn progress_generation_trigger(
     time: Res<Time>,
     mut simulation_timer: ResMut<SimulationTimer>,
-    mut progress_generation_event_writer: EventWriter<ProgressGenerationEvent>,
+    mut progress_generation_event_writer: MessageWriter<ProgressGenerationEvent>,
 ) {
-    if simulation_timer.0.tick(time.delta()).finished() {
-        progress_generation_event_writer.send(ProgressGenerationEvent);
+    if simulation_timer.0.tick(time.delta()).is_finished() {
+        progress_generation_event_writer.write(ProgressGenerationEvent);
     }
 }
 
 pub fn progress_generation(
     mut world: ResMut<World>,
-    mut progress_generation_event_reader: EventReader<ProgressGenerationEvent>,
+    mut progress_generation_event_reader: MessageReader<ProgressGenerationEvent>,
 ) {
     for _ in progress_generation_event_reader.read() {
         world.progress_generation()
@@ -60,7 +62,7 @@ pub fn progress_generation(
 
 pub fn reset_generation(
     mut world: ResMut<World>,
-    mut generation_reset_event_reader: EventReader<GenerationResetEvent>,
+    mut generation_reset_event_reader: MessageReader<GenerationResetEvent>,
 ) {
     for _ in generation_reset_event_reader.read() {
         world.reset();
@@ -69,7 +71,7 @@ pub fn reset_generation(
 
 pub fn world_clear(
     mut world: ResMut<World>,
-    mut world_clear_event_reader: EventReader<WorldClearEvent>,
+    mut world_clear_event_reader: MessageReader<WorldClearEvent>,
 ) {
     for _ in world_clear_event_reader.read() {
         world.clear();

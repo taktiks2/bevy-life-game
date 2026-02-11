@@ -1,4 +1,4 @@
-use bevy::{prelude::*, render::camera::Viewport};
+use bevy::{prelude::*, camera::Viewport};
 use common::{
     consts::{MAIN_PHYSICAL_WIDTH, PHYSICAL_HEIGHT, SUB_PHYSICAL_WIDTH},
     resources::GameAssets,
@@ -59,17 +59,19 @@ impl Plugin for GamePlugin {
                 progress_generation_trigger.run_if(in_state(SimulationState::Simulating)),
                 update_generation,
                 reset_generation,
-                world_clear,
-                play_audios,
             )
                 .run_if(in_state(GameState::Game)),
         );
+        app.add_systems(
+            Update,
+            (world_clear, play_audios).run_if(in_state(GameState::Game)),
+        );
         app.insert_resource(SpaceKeyTimer::new());
         app.init_state::<SimulationState>();
-        app.add_event::<ProgressGenerationEvent>();
-        app.add_event::<GenerationResetEvent>();
-        app.add_event::<WorldClearEvent>();
-        app.add_event::<PlayAudioEvent>();
+        app.add_message::<ProgressGenerationEvent>();
+        app.add_message::<GenerationResetEvent>();
+        app.add_message::<WorldClearEvent>();
+        app.add_message::<PlayAudioEvent>();
     }
 }
 
@@ -103,10 +105,10 @@ pub fn setup_world_camera(mut commands: Commands) {
             }),
             ..default()
         },
-        OrthographicProjection {
+        Projection::Orthographic(OrthographicProjection {
             scale: 0.5,
             ..OrthographicProjection::default_2d()
-        },
+        }),
         WorldCamera,
         Layer::World.as_render_layer(),
     ));
