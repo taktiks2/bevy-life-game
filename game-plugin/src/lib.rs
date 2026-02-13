@@ -1,4 +1,4 @@
-use bevy::{prelude::*, camera::Viewport};
+use bevy::{camera::Viewport, prelude::*};
 use common::{
     consts::{INITIAL_CAMERA_SCALE, MAIN_PHYSICAL_WIDTH, PHYSICAL_HEIGHT, SUB_PHYSICAL_WIDTH},
     resources::GameAssets,
@@ -25,8 +25,8 @@ use resources::{
 };
 use states::SimulationState;
 use systems::{
-    action::{handle_grid_click, update_cell_highlight, HoveredCell},
-    audio::play_audios,
+    action::{HoveredCell, handle_grid_click, update_cell_highlight},
+    audio::{AudioCooldown, play_audios},
     cell_operations::*,
     input::*,
     screen::spawn_screen,
@@ -75,7 +75,7 @@ impl Plugin for GamePlugin {
         );
         app.insert_resource(SpaceKeyTimer::new());
         app.init_resource::<HoveredCell>();
-        app.init_resource::<systems::audio::AudioCooldown>();
+        app.init_resource::<AudioCooldown>();
         app.init_state::<SimulationState>();
         app.add_message::<ProgressGenerationEvent>();
         app.add_message::<GenerationResetEvent>();
