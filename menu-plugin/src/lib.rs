@@ -1,3 +1,8 @@
+//! メニュー画面プラグイン
+//!
+//! ゲーム中にEscapeキーで遷移するメニュー画面を提供する。
+//! Back（タイトルに戻る）とQuit（アプリ終了）のボタンを表示する。
+
 use bevy::{color::palettes::css::*, prelude::*};
 
 use common::{
@@ -6,6 +11,7 @@ use common::{
     systems::{despawn_entity, setup_camera},
 };
 
+/// メニュー画面のBevyプラグイン
 pub struct MenuPlugin;
 
 impl Plugin for MenuPlugin {
@@ -25,22 +31,29 @@ impl Plugin for MenuPlugin {
     }
 }
 
+/// メニュー画面に属する全エンティティのマーカー
 #[derive(Component)]
 struct OnMenuScreen;
 
+/// メニュー画面用カメラのマーカー
 #[derive(Component)]
 struct MenuCamera;
 
+/// メニュー画面のボタンアクション
 #[derive(Component)]
 enum MenuButtonAction {
+    /// タイトル画面に戻る
     Back,
+    /// アプリケーションを終了する
     Quit,
 }
 
+/// メニュー画面用カメラを生成する
 fn setup_menu_camera(commands: Commands) {
     setup_camera(commands, MenuCamera);
 }
 
+/// メニュー画面のUIを構築する
 fn setup_menu_screen(mut commands: Commands, game_assets: Res<GameAssets>) {
     commands
         .spawn((
@@ -130,6 +143,7 @@ fn setup_menu_screen(mut commands: Commands, game_assets: Res<GameAssets>) {
         });
 }
 
+/// メニューボタンのインタラクションを処理するシステム
 #[allow(clippy::type_complexity)]
 fn menu_action(
     interaction_query: Query<
@@ -153,6 +167,7 @@ fn menu_action(
     }
 }
 
+/// メニュー画面のキーボード入力ハンドラ: Escapeでゲーム画面に戻る
 pub fn menu_input_keyboard_handling(
     keys: Res<ButtonInput<KeyCode>>,
     mut state: ResMut<NextState<GameState>>,

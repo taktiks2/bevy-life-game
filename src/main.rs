@@ -1,5 +1,9 @@
+//! コンウェイのライフゲーム - アプリケーションエントリーポイント
+//!
+//! Bevyエンジンを使用したライフゲームの実装。
+//! タイトル画面・ゲーム画面・メニュー画面の3画面構成。
+
 use bevy::{asset::AssetMetaCheck, prelude::*, window::WindowResolution};
-// use bevy_inspector_egui::quick::WorldInspectorPlugin;
 
 use common::{
     consts::{WINDOW_HEIGHT, WINDOW_WIDTH},
@@ -11,6 +15,7 @@ use game_plugin::GamePlugin;
 use menu_plugin::MenuPlugin;
 use title_plugin::TitlePlugin;
 
+/// アプリケーションのエントリーポイント
 fn main() {
     App::new()
         .add_plugins(

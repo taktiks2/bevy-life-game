@@ -1,3 +1,5 @@
+//! ゲーム画面のUI構築
+
 use bevy::{color::palettes::css::*, prelude::*};
 use common::resources::GameAssets;
 
@@ -7,6 +9,9 @@ use crate::resources::world::World;
 use crate::systems::action::*;
 use crate::systems::ui::*;
 
+/// ゲーム画面の全UIを構築するシステム
+///
+/// サイドメニュー（操作ボタン群）とワールド（セルグリッドスプライト＋ハイライト）を生成する。
 pub fn spawn_screen(
     mut commands: Commands,
     world: Res<World>,

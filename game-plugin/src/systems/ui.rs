@@ -1,3 +1,5 @@
+//! UI部品のスポーン関数とグリッド描画ユーティリティ
+
 use bevy::{
     asset::RenderAssetUsages,
     color::palettes::css::*,
@@ -16,6 +18,7 @@ use crate::components::{
 use crate::layer::Layer;
 use crate::resources::world::World;
 
+/// 世代カウンター表示テキストを生成する
 pub fn spawn_generation_text(
     parent: &mut ChildSpawnerCommands,
     game_assets: &GameAssets,
@@ -43,6 +46,7 @@ pub fn spawn_generation_text(
         ));
 }
 
+/// アクションボタン（フルサイズ）を生成する
 pub fn spawn_action_button<'a>(
     parent: &'a mut ChildSpawnerCommands<'_>,
     game_assets: &GameAssets,
@@ -77,6 +81,7 @@ pub fn spawn_action_button<'a>(
     entity
 }
 
+/// 小型ボタン（ステッパーの増減ボタン）を生成する
 pub fn spawn_small_button<'a>(
     parent: &'a mut ChildSpawnerCommands<'_>,
     game_assets: &GameAssets,
@@ -111,6 +116,7 @@ pub fn spawn_small_button<'a>(
     entity
 }
 
+/// ステッパーのラベル（Speed / Zoom）を生成する
 pub fn spawn_stepper_label(
     parent: &mut ChildSpawnerCommands,
     game_assets: &GameAssets,
@@ -127,6 +133,7 @@ pub fn spawn_stepper_label(
     ));
 }
 
+/// ステッパー行のレイアウトノードを返す
 pub fn stepper_row_node() -> Node {
     Node {
         align_items: AlignItems::Center,
@@ -137,6 +144,10 @@ pub fn stepper_row_node() -> Node {
     }
 }
 
+/// セルグリッドのテクスチャスプライトを生成する
+///
+/// 1セル=1ピクセルのRGBA画像を作成し、`ImageSamplerDescriptor::nearest()` で
+/// ピクセルパーフェクトに拡大表示する。
 pub fn spawn_grid_sprite(
     commands: &mut Commands,
     images: &mut Assets<Image>,
@@ -177,6 +188,7 @@ pub fn spawn_grid_sprite(
     ));
 }
 
+/// マウスホバー時のセルハイライトスプライトを生成する
 pub fn spawn_cell_highlight(commands: &mut Commands) {
     let cell_w = MAIN_PHYSICAL_WIDTH as f32 / 100.0;
     let cell_h = WINDOW_HEIGHT / 100.0;
@@ -193,6 +205,9 @@ pub fn spawn_cell_highlight(commands: &mut Commands) {
     ));
 }
 
+/// Worldのセル状態をRGBAピクセルデータに書き込む
+///
+/// 生存セル=黒(0,0,0)、死亡セル=白(255,255,255)、アルファは常に255。
 pub fn write_world_to_image_data(data: &mut [u8], world: &World) {
     let width = world.width as usize;
     let height = world.height as usize;

@@ -1,5 +1,12 @@
+//! コンウェイのライフゲームのシミュレーションロジック（純粋関数）
+//!
+//! Bevyに依存しない純粋な計算ロジックを提供する。
+
 use common::consts::SQUARE_COORDINATES;
 
+/// 指定座標の周囲8マス（ムーア近傍）の生存セル数を数える
+///
+/// グリッド境界外の座標は無視される（トーラスではない）。
 pub fn count_alive_neighbors(
     cells: &[bool],
     width: u16,
@@ -21,6 +28,10 @@ pub fn count_alive_neighbors(
         .count()
 }
 
+/// コンウェイのルールに基づき次世代のセル状態を決定する
+///
+/// - 生存セル: 隣接2-3で生存、それ以外は死亡（過疎/過密）
+/// - 死亡セル: 隣接ちょうど3で誕生
 pub fn next_cell_state(alive: bool, alive_neighbor_count: usize) -> bool {
     match (alive, alive_neighbor_count) {
         (true, 2) | (true, 3) => true,

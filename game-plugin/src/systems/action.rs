@@ -1,3 +1,5 @@
+//! ボタンクリック・グリッド操作・ホバーのアクションハンドラ
+
 use bevy::{color::palettes::css::NAVY, prelude::*};
 use common::consts::{
     MAIN_PHYSICAL_WIDTH, MAX_CAMERA_SCALE, MAX_TICK_INTERVAL, MIN_CAMERA_SCALE,
@@ -12,9 +14,11 @@ use crate::resources::{timer::SimulationTimer, world::World};
 use crate::states::SimulationState;
 use crate::WorldCamera;
 
+/// 現在マウスがホバーしているセルの座標を保持するリソース
 #[derive(Resource, Default, PartialEq)]
 pub struct HoveredCell(pub Option<(u16, u16)>);
 
+/// Startボタンのクリックハンドラ: シミュレーションを開始する
 pub fn handle_start(
     _click: On<Pointer<Click>>,
     simulation_state: Res<State<SimulationState>>,
@@ -25,6 +29,7 @@ pub fn handle_start(
     }
 }
 
+/// Stopボタンのクリックハンドラ: シミュレーションを一時停止する
 pub fn handle_stop(
     _click: On<Pointer<Click>>,
     simulation_state: Res<State<SimulationState>>,
@@ -35,6 +40,7 @@ pub fn handle_stop(
     }
 }
 
+/// Nextボタンのクリックハンドラ: 1世代進める
 pub fn handle_next(
     _click: On<Pointer<Click>>,
     mut progress_generation_event_writer: MessageWriter<ProgressGenerationEvent>,
@@ -42,6 +48,7 @@ pub fn handle_next(
     progress_generation_event_writer.write(ProgressGenerationEvent);
 }
 
+/// Resetボタンのクリックハンドラ: 初期パターンに戻す
 pub fn handle_reset(
     _click: On<Pointer<Click>>,
     mut generation_reset_event_writer: MessageWriter<GenerationResetEvent>,
@@ -49,6 +56,7 @@ pub fn handle_reset(
     generation_reset_event_writer.write(GenerationResetEvent);
 }
 
+/// Clearボタンのクリックハンドラ: 全セルをクリアする
 pub fn handle_clear(
     _click: On<Pointer<Click>>,
     mut world_clear_event_writer: MessageWriter<WorldClearEvent>,
@@ -56,6 +64,7 @@ pub fn handle_clear(
     world_clear_event_writer.write(WorldClearEvent);
 }
 
+/// 速度ダウンボタンのクリックハンドラ: ティック間隔を延長する
 pub fn handle_speed_down(
     _click: On<Pointer<Click>>,
     mut simulation_timer: ResMut<SimulationTimer>,
@@ -67,6 +76,7 @@ pub fn handle_speed_down(
         .set_duration(std::time::Duration::from_secs_f32(new_duration));
 }
 
+/// 速度アップボタンのクリックハンドラ: ティック間隔を短縮する
 pub fn handle_speed_up(
     _click: On<Pointer<Click>>,
     mut simulation_timer: ResMut<SimulationTimer>,
@@ -78,6 +88,7 @@ pub fn handle_speed_up(
         .set_duration(std::time::Duration::from_secs_f32(new_duration));
 }
 
+/// ズームアウトボタンのクリックハンドラ: カメラスケールを拡大する
 pub fn handle_zoom_down(
     _click: On<Pointer<Click>>,
     mut query_camera: Query<&mut Projection, With<WorldCamera>>,
@@ -89,6 +100,7 @@ pub fn handle_zoom_down(
     }
 }
 
+/// ズームインボタンのクリックハンドラ: カメラスケールを縮小する
 pub fn handle_zoom_up(
     _click: On<Pointer<Click>>,
     mut query_camera: Query<&mut Projection, With<WorldCamera>>,
@@ -100,6 +112,7 @@ pub fn handle_zoom_up(
     }
 }
 
+/// ボタンホバー時のハンドラ: 背景色を変更し効果音を再生する
 pub fn handle_over(
     over: On<Pointer<Over>>,
     mut query: Query<&mut BackgroundColor>,
@@ -111,12 +124,14 @@ pub fn handle_over(
     }
 }
 
+/// ボタンホバー終了時のハンドラ: 背景色を元に戻す
 pub fn handle_out(out: On<Pointer<Out>>, mut query: Query<&mut BackgroundColor>) {
     if let Ok(mut background_color) = query.get_mut(out.entity) {
         background_color.0 = Color::BLACK;
     }
 }
 
+/// グリッド座標をワールド空間の座標に変換する
 pub fn world_to_screen_pos(grid_x: u16, grid_y: u16, world_width: u16, world_height: u16) -> Vec2 {
     let cell_w = MAIN_PHYSICAL_WIDTH as f32 / world_width as f32;
     let cell_h = WINDOW_HEIGHT / world_height as f32;
@@ -126,6 +141,9 @@ pub fn world_to_screen_pos(grid_x: u16, grid_y: u16, world_width: u16, world_hei
     )
 }
 
+/// ワールド空間の座標をグリッド座標に変換する
+///
+/// グリッド範囲外の場合は `None` を返す。
 pub fn screen_to_grid_coords(
     world_pos: Vec2,
     world_width: u16,
@@ -154,6 +172,7 @@ pub fn screen_to_grid_coords(
     Some((grid_x, grid_y))
 }
 
+/// グリッド上の左クリックを処理し、クリックされたセルをトグルする
 pub fn handle_grid_click(
     mouse: Res<ButtonInput<MouseButton>>,
     windows: Query<&Window>,
@@ -244,6 +263,10 @@ mod tests {
     }
 }
 
+/// マウスカーソル位置に応じてセルハイライトを更新する
+///
+/// カーソルがグリッド上にある場合は該当セル位置にハイライトを表示し、
+/// セルが変わった時に効果音を再生する。グリッド外では非表示にする。
 pub fn update_cell_highlight(
     windows: Query<&Window>,
     camera_query: Query<(&Camera, &GlobalTransform), With<WorldCamera>>,

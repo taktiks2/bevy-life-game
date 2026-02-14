@@ -1,12 +1,18 @@
+//! キーボード入力のハンドリング
+//!
+//! スペースキーのステートマシン（短押し/長押し判定）と、
+//! WASD/QEキーによるカメラ操作を処理する。
+
 use bevy::prelude::*;
 use common::consts::{CAMERA_PAN_SPEED, CAMERA_SCALE_STEP, MAX_CAMERA_SCALE, MIN_CAMERA_SCALE};
 use common::states::GameState;
 
+use crate::WorldCamera;
 use crate::events::ProgressGenerationEvent;
 use crate::resources::timer::SpaceKeyTimer;
 use crate::states::SimulationState;
-use crate::WorldCamera;
 
+/// スペースキーの入力状態をまとめた構造体
 #[derive(Debug)]
 pub(crate) struct SpaceKeyInput {
     pub just_pressed: bool,
@@ -16,6 +22,7 @@ pub(crate) struct SpaceKeyInput {
     pub is_paused: bool,
 }
 
+/// スペースキーの入力状態から決定されるアクション
 #[derive(Debug, PartialEq)]
 pub(crate) enum SpaceKeyAction {
     /// 短押し: 1世代進める
@@ -30,6 +37,9 @@ pub(crate) enum SpaceKeyAction {
     None,
 }
 
+/// スペースキーの入力状態からアクションを決定する純粋関数
+///
+/// 優先順位: just_pressed > 長押し完了 > just_released > None
 pub(crate) fn resolve_space_key_action(input: &SpaceKeyInput) -> SpaceKeyAction {
     if input.just_pressed {
         return SpaceKeyAction::StepOnce;
@@ -46,6 +56,10 @@ pub(crate) fn resolve_space_key_action(input: &SpaceKeyInput) -> SpaceKeyAction 
     SpaceKeyAction::None
 }
 
+/// キーボード入力を処理するシステム
+///
+/// - スペースキー: 短押しで1世代進める、長押しで自動シミュレーション開始/停止
+/// - Escapeキー: メニュー画面に遷移
 pub fn game_input_keyboard_handling(
     keys: Res<ButtonInput<KeyCode>>,
     simulation_state: Res<State<SimulationState>>,
@@ -86,6 +100,10 @@ pub fn game_input_keyboard_handling(
     }
 }
 
+/// WASD/QEキーによるカメラ操作システム
+///
+/// - W/A/S/D: カメラのパン（上下左右移動）
+/// - Q: ズームアウト、E: ズームイン
 pub fn game_input_zoom_handling(
     keys: Res<ButtonInput<KeyCode>>,
     mut camera_query: Query<(&mut Transform, &mut Projection), With<WorldCamera>>,

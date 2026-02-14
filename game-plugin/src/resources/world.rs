@@ -1,18 +1,32 @@
+//! ライフゲームのワールド（セルグリッド）リソース
+
 use bevy::prelude::Resource;
 
 use super::simulation;
 
+/// ライフゲームのワールドを表すリソース
+///
+/// セルの生死状態をフラット配列 (`Vec<bool>`) で管理する。
+/// ダブルバッファリングにより、世代更新時のアロケーションを回避する。
+/// `initial_cells` にユーザーが配置した初期パターンを保存し、リセット時に復元できる。
 #[derive(Resource, Clone, Debug)]
 pub struct World {
+    /// 現在のセル状態（row-major: y * width + x）
     cells: Vec<bool>,
+    /// 世代更新時の書き込み先バッファ（swap で交互に使用）
     back_buffer: Vec<bool>,
+    /// ユーザーが配置した初期パターン（リセット時に復元）
     initial_cells: Vec<bool>,
+    /// ワールドの幅（セル数）
     pub width: u16,
+    /// ワールドの高さ（セル数）
     pub height: u16,
+    /// 現在の世代数
     pub generation_count: u64,
 }
 
 impl World {
+    /// 全セルが死んだ状態の新しいワールドを生成する
     pub fn new(width: u16, height: u16) -> Self {
         let size = width as usize * height as usize;
         Self {
@@ -24,25 +38,34 @@ impl World {
             generation_count: 0,
         }
     }
+    /// (x, y) 座標をフラット配列のインデックスに変換する
     fn idx(&self, x: u16, y: u16) -> usize {
         y as usize * self.width as usize + x as usize
     }
+    /// 指定座標のセルが生きているかを返す
     pub fn is_alive(&self, x: u16, y: u16) -> bool {
         self.cells[self.idx(x, y)]
     }
+    /// 指定座標のセルの生死状態を設定する
     pub fn set_alive(&mut self, x: u16, y: u16, alive: bool) {
         let i = self.idx(x, y);
         self.cells[i] = alive;
     }
+    /// 初期パターンにおいて指定座標のセルが生きているかを返す
     pub fn is_initial_alive(&self, x: u16, y: u16) -> bool {
         self.initial_cells[self.idx(x, y)]
     }
+    /// 現在のセル状態を初期パターンとして保存する
     pub fn save_as_initial(&mut self) {
         self.initial_cells = self.cells.clone();
     }
+    /// 現在のセル状態のスライスを返す
     pub fn cells(&self) -> &[bool] {
         &self.cells
     }
+    /// コンウェイのルールに従い世代を1つ進める
+    ///
+    /// バックバッファに次世代の状態を計算し、swap で切り替える。
     pub fn progress_generation(&mut self) {
         self.generation_count += 1;
         for y in 0..self.height as usize {
@@ -55,6 +78,9 @@ impl World {
         }
         std::mem::swap(&mut self.cells, &mut self.back_buffer);
     }
+    /// 指定座標のセルの生死をトグルする
+    ///
+    /// 初期パターンも同時に更新し、世代カウントを0にリセットする。
     pub fn toggle_cell(&mut self, x: u16, y: u16) {
         let i = self.idx(x, y);
         let new_state = !self.cells[i];
@@ -62,10 +88,12 @@ impl World {
         self.initial_cells[i] = new_state;
         self.generation_count = 0;
     }
+    /// 初期パターンの状態に復元し、世代カウントを0にリセットする
     pub fn reset(&mut self) {
         self.cells = self.initial_cells.clone();
         self.generation_count = 0;
     }
+    /// 全セルを死んだ状態にし、初期パターンもクリアする
     pub fn clear(&mut self) {
         let size = self.width as usize * self.height as usize;
         self.cells = vec![false; size];

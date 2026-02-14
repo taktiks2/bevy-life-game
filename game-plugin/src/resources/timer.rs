@@ -1,6 +1,11 @@
+//! シミュレーション制御用タイマーリソース
+
 use bevy::prelude::*;
 use common::consts::SPACE_KEY_HOLD_DURATION;
 
+/// シミュレーションのティック間隔を制御するリピートタイマー
+///
+/// タイマー完了ごとに `ProgressGenerationEvent` を発火し、世代を進める。
 #[derive(Resource)]
 pub struct SimulationTimer(pub Timer);
 
@@ -10,6 +15,10 @@ impl SimulationTimer {
     }
 }
 
+/// スペースキー長押し判定用のワンショットタイマー
+///
+/// スペースキー押下から一定時間経過で「長押し」と判定し、
+/// 自動シミュレーションを開始する。
 #[derive(Resource)]
 pub struct SpaceKeyTimer(pub Timer);
 

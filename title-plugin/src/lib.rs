@@ -1,3 +1,9 @@
+//! タイトル画面プラグイン
+//!
+//! アプリ起動時に表示されるタイトル画面を提供する。
+//! 「Conway's Game of Life」の見出しとStartボタンを表示し、
+//! クリックでゲーム画面に遷移する。
+
 use bevy::{color::palettes::css::*, prelude::*};
 
 use common::{
@@ -6,6 +12,7 @@ use common::{
     systems::{despawn_entity, setup_camera},
 };
 
+/// タイトル画面のBevyプラグイン
 pub struct TitlePlugin;
 
 impl Plugin for TitlePlugin {
@@ -24,21 +31,27 @@ impl Plugin for TitlePlugin {
     }
 }
 
+/// タイトル画面に属する全エンティティのマーカー
 #[derive(Component)]
 struct OnTitleScreen;
 
+/// タイトル画面用カメラのマーカー
 #[derive(Component)]
 pub struct TitleCamera;
 
+/// タイトル画面のボタンアクション
 #[derive(Component)]
 enum TitleButtonAction {
+    /// ゲーム画面に遷移する
     Start,
 }
 
+/// タイトル画面用カメラを生成する
 fn setup_title_camera(commands: Commands) {
     setup_camera(commands, TitleCamera);
 }
 
+/// タイトル画面のUIを構築する
 fn setup_title_screen(mut commands: Commands, game_assets: Res<GameAssets>) {
     commands
         .spawn((
@@ -97,6 +110,7 @@ fn setup_title_screen(mut commands: Commands, game_assets: Res<GameAssets>) {
         });
 }
 
+/// Startボタンのクリックハンドラ: ゲーム画面に遷移する
 fn on_start_button_click(_click: On<Pointer<Click>>, mut state: ResMut<NextState<GameState>>) {
     state.set(GameState::Game);
 }

@@ -1,3 +1,8 @@
+//! ゲームプラグイン
+//!
+//! コンウェイのライフゲームのメイン画面を提供する。
+//! サイドメニュー（操作パネル）とワールド（セルグリッド）の2カメラ構成で描画する。
+
 use bevy::{camera::Viewport, prelude::*};
 use common::{
     consts::{INITIAL_CAMERA_SCALE, MAIN_PHYSICAL_WIDTH, PHYSICAL_HEIGHT, SUB_PHYSICAL_WIDTH},
@@ -32,6 +37,10 @@ use systems::{
     screen::spawn_screen,
 };
 
+/// ゲーム画面のBevyプラグイン
+///
+/// カメラ設定・リソース初期化・UI構築・入力処理・シミュレーションの
+/// 全システムを登録する。
 pub struct GamePlugin;
 
 impl Plugin for GamePlugin {
@@ -84,6 +93,10 @@ impl Plugin for GamePlugin {
     }
 }
 
+/// サイドメニュー用カメラを生成する
+///
+/// ウィンドウ左側20%をビューポートとし、操作ボタン群を描画する。
+/// order=1 でワールドカメラより上に描画される。
 pub fn setup_side_menu_camera(mut commands: Commands) {
     commands.spawn((
         Camera2d,
@@ -101,6 +114,10 @@ pub fn setup_side_menu_camera(mut commands: Commands) {
     ));
 }
 
+/// ワールド描画用カメラを生成する
+///
+/// ウィンドウ右側80%をビューポートとし、セルグリッドを描画する。
+/// OrthographicProjectionによるズーム・パン操作に対応する。
 pub fn setup_world_camera(mut commands: Commands) {
     commands.spawn((
         Camera2d,
@@ -123,6 +140,7 @@ pub fn setup_world_camera(mut commands: Commands) {
     ));
 }
 
+/// Worldリソースとシミュレーションタイマーを初期化する
 fn setup_resource(mut commands: Commands, game_assets: Res<GameAssets>) {
     commands.insert_resource(World::new(
         game_assets.world_width,

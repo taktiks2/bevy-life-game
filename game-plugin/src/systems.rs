@@ -1,3 +1,5 @@
+//! ゲーム画面のBevyシステム群
+
 pub mod action;
 pub mod audio;
 pub mod cell_operations;
