@@ -33,7 +33,10 @@ pub fn count_alive_neighbors(
 /// - 生存セル: 隣接2-3で生存、それ以外は死亡（過疎/過密）
 /// - 死亡セル: 隣接ちょうど3で誕生
 pub fn next_cell_state(alive: bool, alive_neighbor_count: usize) -> bool {
-    matches!((alive, alive_neighbor_count), (true, 2) | (true, 3) | (false, 3))
+    matches!(
+        (alive, alive_neighbor_count),
+        (true, 2) | (true, 3) | (false, 3)
+    )
 }
 
 #[cfg(test)]
@@ -50,11 +53,20 @@ mod tests {
 
     #[test]
     fn count_neighbors_center_all_alive() {
-        let cells = make_grid(3, 3, &[
-            (0, 0), (1, 0), (2, 0),
-            (0, 1),         (2, 1),
-            (0, 2), (1, 2), (2, 2),
-        ]);
+        let cells = make_grid(
+            3,
+            3,
+            &[
+                (0, 0),
+                (1, 0),
+                (2, 0),
+                (0, 1),
+                (2, 1),
+                (0, 2),
+                (1, 2),
+                (2, 2),
+            ],
+        );
         assert_eq!(count_alive_neighbors(&cells, 3, 3, 1, 1), 8);
     }
 

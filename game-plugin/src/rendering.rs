@@ -6,8 +6,7 @@ use bevy::{
     prelude::*,
 };
 use common::consts::{
-    CELL_ALIVE_RGB, CELL_DEAD_RGB, GRID_DISPLAY_SIZE, WORLD_HEIGHT, WORLD_WIDTH,
-    cell_size,
+    CELL_ALIVE_RGB, CELL_DEAD_RGB, GRID_DISPLAY_SIZE, WORLD_HEIGHT, WORLD_WIDTH, cell_size,
 };
 
 use crate::components::screen::{CellHighlight, GridTexture, OnGameScreen};
@@ -18,11 +17,7 @@ use crate::resources::world::World;
 ///
 /// 1セル=1ピクセルのRGBA画像を作成し、`ImageSamplerDescriptor::nearest()` で
 /// ピクセルパーフェクトに拡大表示する。
-pub fn spawn_grid_sprite(
-    commands: &mut Commands,
-    images: &mut Assets<Image>,
-    world: &World,
-) {
+pub fn spawn_grid_sprite(commands: &mut Commands, images: &mut Assets<Image>, world: &World) {
     let width = world.width as u32;
     let height = world.height as u32;
     let mut data = vec![255u8; (width * height * 4) as usize];
@@ -46,10 +41,7 @@ pub fn spawn_grid_sprite(
     commands.spawn((
         Sprite {
             image: handle,
-            custom_size: Some(Vec2::new(
-                GRID_DISPLAY_SIZE,
-                GRID_DISPLAY_SIZE,
-            )),
+            custom_size: Some(Vec2::new(GRID_DISPLAY_SIZE, GRID_DISPLAY_SIZE)),
             ..default()
         },
         Layer::World.as_render_layer(),

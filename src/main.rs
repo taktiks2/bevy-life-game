@@ -6,7 +6,7 @@
 use bevy::{asset::AssetMetaCheck, prelude::*, window::WindowResolution};
 
 use common::{
-    consts::{WINDOW_HEIGHT, WINDOW_WIDTH},
+    consts::{MIN_WINDOW_HEIGHT, MIN_WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_WIDTH},
     resources::GameAssets,
     states::GameState,
 };
@@ -23,8 +23,17 @@ fn main() {
                 .set(WindowPlugin {
                     primary_window: Some(Window {
                         title: "Life Game".to_string(),
-                        resolution: WindowResolution::new(WINDOW_WIDTH as u32, WINDOW_HEIGHT as u32), // NOTE: Windowサイズの指定
-                        resizable: false, // NOTE: Windowサイズの変更を不可にする
+                        resolution: WindowResolution::new(
+                            WINDOW_WIDTH as u32,
+                            WINDOW_HEIGHT as u32,
+                        ),
+                        resizable: true,
+                        resize_constraints: WindowResizeConstraints {
+                            min_width: MIN_WINDOW_WIDTH,
+                            min_height: MIN_WINDOW_HEIGHT,
+                            ..default()
+                        },
+                        fit_canvas_to_parent: true, // NOTE: WASM環境でcanvasを親要素に追従させリサイズ可能にする
                         ..default()
                     }),
                     ..default()

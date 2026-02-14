@@ -6,12 +6,12 @@ use common::consts::{
     MAX_CAMERA_SCALE, MAX_TICK_INTERVAL, MIN_CAMERA_SCALE, MIN_TICK_INTERVAL, TICK_INTERVAL_STEP,
 };
 
+use crate::WorldCamera;
 use crate::events::{
     GenerationResetEvent, PlayAudioEvent, ProgressGenerationEvent, WorldClearEvent,
 };
 use crate::resources::timer::SimulationTimer;
 use crate::states::SimulationState;
-use crate::WorldCamera;
 
 /// Startボタンのクリックハンドラ: シミュレーションを開始する
 pub fn handle_start(
@@ -72,10 +72,7 @@ pub fn handle_speed_down(
 }
 
 /// 速度アップボタンのクリックハンドラ: ティック間隔を短縮する
-pub fn handle_speed_up(
-    _click: On<Pointer<Click>>,
-    mut simulation_timer: ResMut<SimulationTimer>,
-) {
+pub fn handle_speed_up(_click: On<Pointer<Click>>, mut simulation_timer: ResMut<SimulationTimer>) {
     let current_duration = simulation_timer.0.duration().as_secs_f32();
     let new_duration = (current_duration - TICK_INTERVAL_STEP).max(MIN_TICK_INTERVAL);
     simulation_timer

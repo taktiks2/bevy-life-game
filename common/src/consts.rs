@@ -3,16 +3,42 @@
 use bevy::color::Color;
 
 // ウィンドウサイズ
-/// ウィンドウの幅（ピクセル）
+/// ウィンドウの初期幅（ピクセル）
 pub const WINDOW_WIDTH: f32 = 1000.;
-/// ウィンドウの高さ（ピクセル）
+/// ウィンドウの初期高さ（ピクセル）
 pub const WINDOW_HEIGHT: f32 = 800.;
-/// ビューポート全幅
-pub const VIEWPORT_WIDTH: u32 = WINDOW_WIDTH as u32;
-/// ボトムパネルのビューポート高さ（ウィンドウ高さの20%）
-pub const PANEL_HEIGHT: u32 = (WINDOW_HEIGHT * 0.2) as u32;
-/// メインビュー（ワールド表示）のビューポート高さ（ウィンドウ高さの80%）
-pub const MAIN_HEIGHT: u32 = (WINDOW_HEIGHT * 0.8) as u32;
+/// ウィンドウの最小幅（ピクセル）
+pub const MIN_WINDOW_WIDTH: f32 = 600.0;
+/// ウィンドウの最小高さ（ピクセル）
+pub const MIN_WINDOW_HEIGHT: f32 = 480.0;
+
+// ビューポート
+/// ボトムパネルの固定高さ（物理ピクセル）
+pub const PANEL_HEIGHT: u32 = 80;
+
+/// ウィンドウの物理サイズから計算されたビューポートサイズ
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct ViewportSizes {
+    /// ビューポート全幅
+    pub viewport_width: u32,
+    /// ワールドカメラの高さ（物理ピクセル）
+    pub main_height: u32,
+    /// ボトムパネルの高さ（物理ピクセル）
+    pub panel_height: u32,
+}
+
+/// ウィンドウの物理サイズからビューポートサイズを計算する
+///
+/// ボトムパネルの高さは `PANEL_HEIGHT` で固定し、残りをワールドカメラに割り当てる。
+pub fn calc_viewport_sizes(physical_width: u32, physical_height: u32) -> ViewportSizes {
+    let panel_height = PANEL_HEIGHT.min(physical_height);
+    let main_height = physical_height - panel_height;
+    ViewportSizes {
+        viewport_width: physical_width,
+        main_height,
+        panel_height,
+    }
+}
 
 // ワールドサイズ（セル数）
 /// ワールドの幅（セル数）
@@ -127,4 +153,49 @@ pub fn cell_size(world_width: u16, world_height: u16) -> (f32, f32) {
         GRID_DISPLAY_SIZE / world_width as f32,
         GRID_DISPLAY_SIZE / world_height as f32,
     )
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn calc_viewport_sizes_default_window() {
+        let sizes = calc_viewport_sizes(1000, 800);
+        assert_eq!(sizes.viewport_width, 1000);
+        assert_eq!(sizes.main_height, 720);
+        assert_eq!(sizes.panel_height, PANEL_HEIGHT);
+    }
+
+    #[test]
+    fn calc_viewport_sizes_panel_height_is_fixed() {
+        // ウィンドウの高さが変わってもパネル高さは固定
+        for height in [480, 600, 800, 1080, 1440] {
+            let sizes = calc_viewport_sizes(1000, height);
+            assert_eq!(
+                sizes.panel_height, PANEL_HEIGHT,
+                "panel_height should be fixed at {PANEL_HEIGHT} for window height={height}"
+            );
+        }
+    }
+
+    #[test]
+    fn calc_viewport_sizes_main_plus_panel_equals_total() {
+        for height in [480, 600, 800, 1080, 1440] {
+            let sizes = calc_viewport_sizes(1000, height);
+            assert_eq!(
+                sizes.main_height + sizes.panel_height,
+                height,
+                "main + panel should equal total for height={height}"
+            );
+        }
+    }
+
+    #[test]
+    fn calc_viewport_sizes_preserves_width() {
+        for width in [600, 800, 1920, 2560] {
+            let sizes = calc_viewport_sizes(width, 800);
+            assert_eq!(sizes.viewport_width, width);
+        }
+    }
 }

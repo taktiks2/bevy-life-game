@@ -1,14 +1,15 @@
 //! グリッドクリックとセルハイライトの処理
 
 use bevy::prelude::*;
+use common::consts::calc_viewport_sizes;
 
+use crate::WorldCamera;
 use crate::components::screen::CellHighlight;
 use crate::events::PlayAudioEvent;
 use crate::resources::{interaction::HoveredCell, world::World};
 use crate::systems::coordinate::{
     is_cursor_over_world_viewport, screen_to_grid_coords, world_to_screen_pos,
 };
-use crate::WorldCamera;
 
 /// グリッド上の左クリックを処理し、クリックされたセルをトグルする
 pub fn handle_grid_click(
@@ -28,7 +29,8 @@ pub fn handle_grid_click(
     };
     // ボトムパネル上ではクリックを無視
     let scale_factor = window.resolution.scale_factor();
-    if !is_cursor_over_world_viewport(cursor_pos, scale_factor) {
+    let sizes = calc_viewport_sizes(window.physical_width(), window.physical_height());
+    if !is_cursor_over_world_viewport(cursor_pos, scale_factor, sizes.main_height) {
         return;
     }
     let Ok((camera, transform)) = camera_query.single() else {
@@ -63,10 +65,11 @@ pub fn update_cell_highlight(
 
     // ボトムパネル上ではハイライトを無効化
     let scale_factor = window.resolution.scale_factor();
+    let sizes = calc_viewport_sizes(window.physical_width(), window.physical_height());
 
     let grid_coords = window
         .cursor_position()
-        .filter(|&pos| is_cursor_over_world_viewport(pos, scale_factor))
+        .filter(|&pos| is_cursor_over_world_viewport(pos, scale_factor, sizes.main_height))
         .and_then(|cursor_pos| camera.viewport_to_world_2d(cam_transform, cursor_pos).ok())
         .and_then(|world_pos| screen_to_grid_coords(world_pos, world.width, world.height));
 

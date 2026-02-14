@@ -7,8 +7,8 @@ use bevy::prelude::*;
 
 use crate::components::screen::{GenerationText, GridTexture};
 use crate::events::{GenerationResetEvent, ProgressGenerationEvent, WorldClearEvent};
-use crate::resources::{timer::SimulationTimer, world::World};
 use crate::rendering::write_world_to_image_data;
+use crate::resources::{timer::SimulationTimer, world::World};
 
 /// Worldの変更をグリッドテクスチャに反映するシステム
 pub fn update_cells(
