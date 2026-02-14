@@ -6,13 +6,11 @@
 use bevy::{color::palettes::css::*, prelude::*};
 
 use common::{
-    consts::{
-        BORDER_RADIUS, FONT_SIZE_LARGE, FONT_SIZE_TITLE, TITLE_BUTTON_HEIGHT, TITLE_BUTTON_WIDTH,
-        TITLE_PADDING,
-    },
+    consts::TITLE_BUTTON_WIDTH,
     resources::GameAssets,
     states::GameState,
     systems::{despawn_entity, setup_camera},
+    ui::{spawn_screen_button, spawn_screen_container, spawn_screen_title},
 };
 
 /// メニュー画面のBevyプラグイン
@@ -59,94 +57,26 @@ fn setup_menu_camera(commands: Commands) {
 
 /// メニュー画面のUIを構築する
 fn setup_menu_screen(mut commands: Commands, game_assets: Res<GameAssets>) {
-    commands
-        .spawn((
-            Node {
+    spawn_screen_container(&mut commands, OnMenuScreen, GRAY.into()).with_children(|parent| {
+        spawn_screen_title(parent, game_assets.font_bold.clone(), "Settings", WHITE.into());
+        parent
+            .spawn(Node {
                 flex_direction: FlexDirection::Column,
                 align_items: AlignItems::Center,
                 justify_content: JustifyContent::SpaceBetween,
-                width: Val::Percent(100.),
-                height: Val::Percent(100.),
-                padding: UiRect {
-                    left: Val::Px(0.),
-                    right: Val::Px(0.),
-                    top: Val::Px(TITLE_PADDING),
-                    bottom: Val::Px(TITLE_PADDING),
-                },
+                width: Val::Px(TITLE_BUTTON_WIDTH),
+                height: Val::Px(TITLE_BUTTON_WIDTH),
                 ..default()
-            },
-            OnMenuScreen,
-            BackgroundColor(GRAY.into()),
-        ))
-        .with_children(|parent| {
-            parent.spawn((
-                Text::new("Settings"),
-                TextFont {
-                    font: game_assets.font_bold.clone(),
-                    font_size: FONT_SIZE_TITLE,
-                    ..default()
-                },
-            ));
-            parent
-                .spawn(Node {
-                    flex_direction: FlexDirection::Column,
-                    align_items: AlignItems::Center,
-                    justify_content: JustifyContent::SpaceBetween,
-                    width: Val::Px(TITLE_BUTTON_WIDTH),
-                    height: Val::Px(TITLE_BUTTON_WIDTH),
-                    ..default()
-                })
-                .with_children(|p| {
-                    p.spawn((
-                        Node {
-                            align_items: AlignItems::Center,
-                            justify_content: JustifyContent::Center,
-                            width: Val::Px(TITLE_BUTTON_WIDTH),
-                            height: Val::Px(TITLE_BUTTON_HEIGHT),
-                            border_radius: BorderRadius::px(BORDER_RADIUS, BORDER_RADIUS, BORDER_RADIUS, BORDER_RADIUS),
-                            ..default()
-                        },
-                        MenuButtonAction::Back,
-                        BackgroundColor(BLACK.into()),
-                        Button,
-                    ))
-                    .observe(on_back_button_click)
-                    .with_children(|p| {
-                        p.spawn((
-                            Text::new("Back"),
-                            TextFont {
-                                font: game_assets.font_bold.clone(),
-                                font_size: FONT_SIZE_LARGE,
-                                ..default()
-                            },
-                        ));
-                    });
-                    p.spawn((
-                        Node {
-                            align_items: AlignItems::Center,
-                            justify_content: JustifyContent::Center,
-                            width: Val::Px(TITLE_BUTTON_WIDTH),
-                            height: Val::Px(TITLE_BUTTON_HEIGHT),
-                            border_radius: BorderRadius::px(BORDER_RADIUS, BORDER_RADIUS, BORDER_RADIUS, BORDER_RADIUS),
-                            ..default()
-                        },
-                        MenuButtonAction::Quit,
-                        BackgroundColor(BLACK.into()),
-                        Button,
-                    ))
-                    .observe(on_quit_button_click)
-                    .with_children(|p| {
-                        p.spawn((
-                            Text::new("Quit"),
-                            TextFont {
-                                font: game_assets.font_bold.clone(),
-                                font_size: FONT_SIZE_LARGE,
-                                ..default()
-                            },
-                        ));
-                    });
-                });
-        });
+            })
+            .with_children(|p| {
+                spawn_screen_button(p, game_assets.font_bold.clone(), "Back")
+                    .insert(MenuButtonAction::Back)
+                    .observe(on_back_button_click);
+                spawn_screen_button(p, game_assets.font_bold.clone(), "Quit")
+                    .insert(MenuButtonAction::Quit)
+                    .observe(on_quit_button_click);
+            });
+    });
 }
 
 /// Backボタンのクリックハンドラ: タイトル画面に遷移する

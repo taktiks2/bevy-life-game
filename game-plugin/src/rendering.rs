@@ -5,7 +5,7 @@ use bevy::{
     image::{ImageSampler, ImageSamplerDescriptor},
     prelude::*,
 };
-use common::consts::{MAIN_PHYSICAL_WIDTH, WINDOW_HEIGHT};
+use common::consts::{MAIN_PHYSICAL_WIDTH, WINDOW_HEIGHT, WORLD_HEIGHT, WORLD_WIDTH, cell_size};
 
 use crate::components::screen::{CellHighlight, GridTexture, OnGameScreen};
 use crate::layer::Layer;
@@ -57,8 +57,7 @@ pub fn spawn_grid_sprite(
 
 /// マウスホバー時のセルハイライトスプライトを生成する
 pub fn spawn_cell_highlight(commands: &mut Commands) {
-    let cell_w = MAIN_PHYSICAL_WIDTH as f32 / 100.0;
-    let cell_h = WINDOW_HEIGHT / 100.0;
+    let (cell_w, cell_h) = cell_size(WORLD_WIDTH, WORLD_HEIGHT);
     commands.spawn((
         Sprite {
             color: Color::srgba(0.0, 0.0, 0.5, 0.3),

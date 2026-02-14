@@ -77,3 +77,11 @@ pub const SQUARE_COORDINATES: [(i8, i8); 8] = [
     (0, 1),
     (1, 1),
 ];
+
+/// 指定ワールドサイズに対する1セルのピクセルサイズ (幅, 高さ) を返す
+pub fn cell_size(world_width: u16, world_height: u16) -> (f32, f32) {
+    (
+        MAIN_PHYSICAL_WIDTH as f32 / world_width as f32,
+        WINDOW_HEIGHT / world_height as f32,
+    )
+}

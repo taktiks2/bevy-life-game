@@ -7,13 +7,10 @@
 use bevy::{color::palettes::css::*, prelude::*};
 
 use common::{
-    consts::{
-        BORDER_RADIUS, FONT_SIZE_LARGE, FONT_SIZE_TITLE, TITLE_BUTTON_HEIGHT, TITLE_BUTTON_WIDTH,
-        TITLE_PADDING,
-    },
     resources::GameAssets,
     states::GameState,
     systems::{despawn_entity, setup_camera},
+    ui::{spawn_screen_button, spawn_screen_container, spawn_screen_title},
 };
 
 /// タイトル画面のBevyプラグイン
@@ -57,61 +54,12 @@ fn setup_title_camera(commands: Commands) {
 
 /// タイトル画面のUIを構築する
 fn setup_title_screen(mut commands: Commands, game_assets: Res<GameAssets>) {
-    commands
-        .spawn((
-            Node {
-                flex_direction: FlexDirection::Column,
-                align_items: AlignItems::Center,
-                justify_content: JustifyContent::SpaceBetween,
-                padding: UiRect {
-                    left: Val::Px(0.),
-                    right: Val::Px(0.),
-                    top: Val::Px(TITLE_PADDING),
-                    bottom: Val::Px(TITLE_PADDING),
-                },
-                width: Val::Percent(100.),
-                height: Val::Percent(100.),
-                ..default()
-            },
-            BackgroundColor(WHITE.into()),
-            OnTitleScreen,
-        ))
-        .with_children(|parent| {
-            parent.spawn((
-                Text::new("Conway's Game of Life"),
-                TextFont {
-                    font: game_assets.font_bold.clone(),
-                    font_size: FONT_SIZE_TITLE,
-                    ..default()
-                },
-                TextColor(BLACK.into()),
-            ));
-            parent
-                .spawn((
-                    Node {
-                        align_items: AlignItems::Center,
-                        justify_content: JustifyContent::Center,
-                        width: Val::Px(TITLE_BUTTON_WIDTH),
-                        height: Val::Px(TITLE_BUTTON_HEIGHT),
-                        border_radius: BorderRadius::px(BORDER_RADIUS, BORDER_RADIUS, BORDER_RADIUS, BORDER_RADIUS),
-                        ..default()
-                    },
-                    Button,
-                    TitleButtonAction::Start,
-                    BackgroundColor(BLACK.into()),
-                ))
-                .observe(on_start_button_click)
-                .with_children(|p| {
-                    p.spawn((
-                        Text::new("Start"),
-                        TextFont {
-                            font: game_assets.font_bold.clone(),
-                            font_size: FONT_SIZE_LARGE,
-                            ..default()
-                        },
-                    ));
-                });
-        });
+    spawn_screen_container(&mut commands, OnTitleScreen, WHITE.into()).with_children(|parent| {
+        spawn_screen_title(parent, game_assets.font_bold.clone(), "Conway's Game of Life", BLACK.into());
+        spawn_screen_button(parent, game_assets.font_bold.clone(), "Start")
+            .insert(TitleButtonAction::Start)
+            .observe(on_start_button_click);
+    });
 }
 
 /// Startボタンのクリックハンドラ: ゲーム画面に遷移する

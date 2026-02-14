@@ -1,12 +1,11 @@
 //! グリッド座標とワールド空間座標の変換
 
 use bevy::prelude::*;
-use common::consts::{MAIN_PHYSICAL_WIDTH, WINDOW_HEIGHT};
+use common::consts::{MAIN_PHYSICAL_WIDTH, WINDOW_HEIGHT, cell_size};
 
 /// グリッド座標をワールド空間の座標に変換する
 pub fn world_to_screen_pos(grid_x: u16, grid_y: u16, world_width: u16, world_height: u16) -> Vec2 {
-    let cell_w = MAIN_PHYSICAL_WIDTH as f32 / world_width as f32;
-    let cell_h = WINDOW_HEIGHT / world_height as f32;
+    let (cell_w, cell_h) = cell_size(world_width, world_height);
     Vec2::new(
         grid_x as f32 * cell_w - MAIN_PHYSICAL_WIDTH as f32 / 2.0 + cell_w / 2.0,
         -(grid_y as f32 * cell_h - WINDOW_HEIGHT / 2.0 + cell_h / 2.0),
@@ -31,8 +30,7 @@ pub fn screen_to_grid_coords(
         return None;
     }
 
-    let cell_w = MAIN_PHYSICAL_WIDTH as f32 / world_width as f32;
-    let cell_h = WINDOW_HEIGHT / world_height as f32;
+    let (cell_w, cell_h) = cell_size(world_width, world_height);
 
     let grid_x = (local_x / cell_w) as u16;
     let grid_y = (local_y / cell_h) as u16;
