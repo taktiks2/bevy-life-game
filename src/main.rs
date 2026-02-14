@@ -22,8 +22,7 @@ fn main() {
             DefaultPlugins
                 .set(WindowPlugin {
                     primary_window: Some(Window {
-                        title: "Conway's Game of Life".to_string(),
-                        resolution: WindowResolution::new(WINDOW_WIDTH as u32, WINDOW_HEIGHT as u32), // NOTE: Windowサイズの指定
+                        title:"Life Game": WindowResolution::new(WINDOW_WIDTH as u32, WINDOW_HEIGHT as u32), // NOTE: Windowサイズの指定
                         resizable: false, // NOTE: Windowサイズの変更を不可にする
                         ..default()
                     }),
