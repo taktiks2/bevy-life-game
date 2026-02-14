@@ -43,6 +43,10 @@ wasm:
         --out-dir ./out/ --out-name "bevy-life-game" \
         ./target/wasm32-unknown-unknown/release/bevy-life-game.wasm
 
+# WASM開発サーバー起動
+dev:
+    trunk serve
+
 # ビルド成果物削除
 clean:
     cargo clean
