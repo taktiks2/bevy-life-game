@@ -5,7 +5,10 @@ use bevy::{
     image::{ImageSampler, ImageSamplerDescriptor},
     prelude::*,
 };
-use common::consts::{MAIN_PHYSICAL_WIDTH, WINDOW_HEIGHT, WORLD_HEIGHT, WORLD_WIDTH, cell_size};
+use common::consts::{
+    CELL_ALIVE_RGB, CELL_DEAD_RGB, MAIN_PHYSICAL_WIDTH, WINDOW_HEIGHT, WORLD_HEIGHT, WORLD_WIDTH,
+    cell_size,
+};
 
 use crate::components::screen::{CellHighlight, GridTexture, OnGameScreen};
 use crate::layer::Layer;
@@ -60,7 +63,7 @@ pub fn spawn_cell_highlight(commands: &mut Commands) {
     let (cell_w, cell_h) = cell_size(WORLD_WIDTH, WORLD_HEIGHT);
     commands.spawn((
         Sprite {
-            color: Color::srgba(0.0, 0.0, 0.5, 0.3),
+            color: Color::srgba(0.0, 0.85, 0.45, 0.25),
             custom_size: Some(Vec2::new(cell_w, cell_h)),
             ..default()
         },
@@ -73,7 +76,7 @@ pub fn spawn_cell_highlight(commands: &mut Commands) {
 
 /// Worldのセル状態をRGBAピクセルデータに書き込む
 ///
-/// 生存セル=黒(0,0,0)、死亡セル=白(255,255,255)、アルファは常に255。
+/// 生存セル=ネオングリーン、死亡セル=ほぼ黒、アルファは常に255。
 pub fn write_world_to_image_data(data: &mut [u8], world: &World) {
     let width = world.width as usize;
     let height = world.height as usize;
@@ -81,9 +84,9 @@ pub fn write_world_to_image_data(data: &mut [u8], world: &World) {
         for x in 0..width {
             let offset = (y * width + x) * 4;
             let (r, g, b) = if world.is_alive(x as u16, y as u16) {
-                (0u8, 0u8, 0u8)
+                CELL_ALIVE_RGB
             } else {
-                (255u8, 255u8, 255u8)
+                CELL_DEAD_RGB
             };
             data[offset] = r;
             data[offset + 1] = g;

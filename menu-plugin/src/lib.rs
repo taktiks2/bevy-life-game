@@ -3,14 +3,17 @@
 //! ゲーム中にEscapeキーで遷移するメニュー画面を提供する。
 //! Back（タイトルに戻る）とQuit（アプリ終了）のボタンを表示する。
 
-use bevy::{color::palettes::css::*, prelude::*};
+use bevy::prelude::*;
 
 use common::{
-    consts::TITLE_BUTTON_WIDTH,
+    consts::{BG_DARK, TEXT_PRIMARY, TITLE_BUTTON_WIDTH},
     resources::GameAssets,
     states::GameState,
     systems::{despawn_entity, setup_camera},
-    ui::{spawn_screen_button, spawn_screen_container, spawn_screen_title},
+    ui::{
+        handle_screen_button_out, handle_screen_button_over, spawn_screen_button,
+        spawn_screen_container, spawn_screen_title,
+    },
 };
 
 /// メニュー画面のBevyプラグイン
@@ -57,8 +60,8 @@ fn setup_menu_camera(commands: Commands) {
 
 /// メニュー画面のUIを構築する
 fn setup_menu_screen(mut commands: Commands, game_assets: Res<GameAssets>) {
-    spawn_screen_container(&mut commands, OnMenuScreen, GRAY.into()).with_children(|parent| {
-        spawn_screen_title(parent, game_assets.font_bold.clone(), "Settings", WHITE.into());
+    spawn_screen_container(&mut commands, OnMenuScreen, BG_DARK).with_children(|parent| {
+        spawn_screen_title(parent, game_assets.font_bold.clone(), "Settings", TEXT_PRIMARY);
         parent
             .spawn(Node {
                 flex_direction: FlexDirection::Column,
@@ -71,10 +74,14 @@ fn setup_menu_screen(mut commands: Commands, game_assets: Res<GameAssets>) {
             .with_children(|p| {
                 spawn_screen_button(p, game_assets.font_bold.clone(), "Back")
                     .insert(MenuButtonAction::Back)
-                    .observe(on_back_button_click);
+                    .observe(on_back_button_click)
+                    .observe(handle_screen_button_over)
+                    .observe(handle_screen_button_out);
                 spawn_screen_button(p, game_assets.font_bold.clone(), "Quit")
                     .insert(MenuButtonAction::Quit)
-                    .observe(on_quit_button_click);
+                    .observe(on_quit_button_click)
+                    .observe(handle_screen_button_over)
+                    .observe(handle_screen_button_out);
             });
     });
 }

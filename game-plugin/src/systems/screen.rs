@@ -1,7 +1,7 @@
 //! ゲーム画面のUI構築
 
-use bevy::{color::palettes::css::*, prelude::*};
-use common::resources::GameAssets;
+use bevy::prelude::*;
+use common::{consts::BG_SURFACE, resources::GameAssets};
 
 use crate::components::{action::GameButtonAction, screen::OnGameScreen};
 use crate::layer::Layer;
@@ -33,7 +33,7 @@ pub fn spawn_screen(
             },
             Layer::SideMenu.as_render_layer(),
             OnGameScreen,
-            BackgroundColor(GRAY.into()),
+            BackgroundColor(BG_SURFACE),
         ))
         .with_children(|p| {
             spawn_generation_text(p, &game_assets, world.generation_count);

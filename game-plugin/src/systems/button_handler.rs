@@ -1,9 +1,9 @@
 //! ボタンクリック・ホバーのアクションハンドラ
 
-use bevy::{color::palettes::css::NAVY, prelude::*};
+use bevy::prelude::*;
 use common::consts::{
-    CAMERA_SCALE_STEP, MAX_CAMERA_SCALE, MAX_TICK_INTERVAL, MIN_CAMERA_SCALE, MIN_TICK_INTERVAL,
-    TICK_INTERVAL_STEP,
+    BG_BUTTON, BG_BUTTON_HOVER, CAMERA_SCALE_STEP, MAX_CAMERA_SCALE, MAX_TICK_INTERVAL,
+    MIN_CAMERA_SCALE, MIN_TICK_INTERVAL, TICK_INTERVAL_STEP,
 };
 
 use crate::events::{
@@ -114,7 +114,7 @@ pub fn handle_over(
     mut events: MessageWriter<PlayAudioEvent>,
 ) {
     if let Ok(mut background_color) = query.get_mut(over.entity) {
-        background_color.0 = NAVY.into();
+        background_color.0 = BG_BUTTON_HOVER;
         events.write(PlayAudioEvent);
     }
 }
@@ -122,6 +122,6 @@ pub fn handle_over(
 /// ボタンホバー終了時のハンドラ: 背景色を元に戻す
 pub fn handle_out(out: On<Pointer<Out>>, mut query: Query<&mut BackgroundColor>) {
     if let Ok(mut background_color) = query.get_mut(out.entity) {
-        background_color.0 = Color::BLACK;
+        background_color.0 = BG_BUTTON;
     }
 }

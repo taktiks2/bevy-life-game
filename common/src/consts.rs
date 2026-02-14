@@ -1,5 +1,7 @@
 //! ゲーム全体で使用する定数定義
 
+use bevy::color::Color;
+
 // ウィンドウサイズ
 /// ウィンドウの幅（ピクセル）
 pub const WINDOW_WIDTH: f32 = 1000.;
@@ -56,13 +58,47 @@ pub const FONT_SIZE_SMALL: f32 = 20.0;
 /// アクションボタンの高さ
 pub const ACTION_BUTTON_HEIGHT: f32 = 60.0;
 /// ボタンの角丸半径
-pub const BORDER_RADIUS: f32 = 5.0;
+pub const BORDER_RADIUS: f32 = 8.0;
 /// タイトル画面のボタン幅
 pub const TITLE_BUTTON_WIDTH: f32 = 200.0;
 /// タイトル画面のボタン高さ
 pub const TITLE_BUTTON_HEIGHT: f32 = 60.0;
 /// タイトル/メニュー画面の上下パディング
 pub const TITLE_PADDING: f32 = 200.0;
+
+// テーマカラー: 背景系（暗い順）
+/// グリッド背景色
+pub const BG_DARKEST: Color = Color::srgb(0.06, 0.06, 0.08);
+/// メイン背景色（タイトル/メニュー画面）
+pub const BG_DARK: Color = Color::srgb(0.09, 0.09, 0.12);
+/// サーフェス色（サイドバー等）
+pub const BG_SURFACE: Color = Color::srgb(0.12, 0.13, 0.16);
+/// ボタン通常色
+pub const BG_BUTTON: Color = Color::srgb(0.16, 0.17, 0.21);
+/// ボタンホバー色（緑がかり）
+pub const BG_BUTTON_HOVER: Color = Color::srgb(0.20, 0.24, 0.22);
+
+// テーマカラー: アクセント（グリーン系）
+/// メインアクセント色（ネオングリーン）
+pub const ACCENT_GREEN: Color = Color::srgb(0.0, 0.85, 0.45);
+/// 控えめアクセント色
+pub const ACCENT_GREEN_DIM: Color = Color::srgb(0.0, 0.55, 0.30);
+
+// テーマカラー: テキスト
+/// 主要テキスト色
+pub const TEXT_PRIMARY: Color = Color::srgb(0.92, 0.93, 0.95);
+/// 控えめテキスト色
+pub const TEXT_MUTED: Color = Color::srgb(0.50, 0.52, 0.58);
+
+// テーマカラー: ボーダー
+/// 控えめボーダー色
+pub const BORDER_SUBTLE: Color = Color::srgb(0.20, 0.21, 0.26);
+
+// テーマカラー: セル描画用RGB値
+/// 生存セルのRGB値（ネオングリーン）
+pub const CELL_ALIVE_RGB: (u8, u8, u8) = (0, 217, 115);
+/// 死亡セルのRGB値（ほぼ黒）
+pub const CELL_DEAD_RGB: (u8, u8, u8) = (15, 15, 20);
 
 /// ムーア近傍の8方向の相対座標
 ///

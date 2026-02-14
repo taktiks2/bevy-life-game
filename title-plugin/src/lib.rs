@@ -4,13 +4,17 @@
 //! 「Conway's Game of Life」の見出しとStartボタンを表示し、
 //! クリックでゲーム画面に遷移する。
 
-use bevy::{color::palettes::css::*, prelude::*};
+use bevy::prelude::*;
 
 use common::{
+    consts::{ACCENT_GREEN, BG_DARK},
     resources::GameAssets,
     states::GameState,
     systems::{despawn_entity, setup_camera},
-    ui::{spawn_screen_button, spawn_screen_container, spawn_screen_title},
+    ui::{
+        handle_screen_button_out, handle_screen_button_over, spawn_screen_button,
+        spawn_screen_container, spawn_screen_title,
+    },
 };
 
 /// タイトル画面のBevyプラグイン
@@ -54,11 +58,13 @@ fn setup_title_camera(commands: Commands) {
 
 /// タイトル画面のUIを構築する
 fn setup_title_screen(mut commands: Commands, game_assets: Res<GameAssets>) {
-    spawn_screen_container(&mut commands, OnTitleScreen, WHITE.into()).with_children(|parent| {
-        spawn_screen_title(parent, game_assets.font_bold.clone(), "Conway's Game of Life", BLACK.into());
+    spawn_screen_container(&mut commands, OnTitleScreen, BG_DARK).with_children(|parent| {
+        spawn_screen_title(parent, game_assets.font_bold.clone(), "Conway's Game of Life", ACCENT_GREEN);
         spawn_screen_button(parent, game_assets.font_bold.clone(), "Start")
             .insert(TitleButtonAction::Start)
-            .observe(on_start_button_click);
+            .observe(on_start_button_click)
+            .observe(handle_screen_button_over)
+            .observe(handle_screen_button_out);
     });
 }
 

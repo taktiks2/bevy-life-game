@@ -1,9 +1,10 @@
 //! UI部品のスポーン関数
 
-use bevy::{color::palettes::css::*, prelude::*};
+use bevy::prelude::*;
 use common::{
     consts::{
-        ACTION_BUTTON_HEIGHT, BORDER_RADIUS, FONT_SIZE_LARGE, FONT_SIZE_MEDIUM, FONT_SIZE_SMALL,
+        ACCENT_GREEN, ACTION_BUTTON_HEIGHT, BG_BUTTON, BORDER_RADIUS, BORDER_SUBTLE,
+        FONT_SIZE_LARGE, FONT_SIZE_MEDIUM, FONT_SIZE_SMALL, TEXT_MUTED, TEXT_PRIMARY,
     },
     resources::GameAssets,
 };
@@ -27,7 +28,7 @@ pub fn spawn_generation_text(
                 font_size: FONT_SIZE_MEDIUM,
                 ..default()
             },
-            TextColor(WHITE.into()),
+            TextColor(TEXT_MUTED),
         ))
         .with_child((
             TextSpan::new(generation_count.to_string()),
@@ -37,7 +38,7 @@ pub fn spawn_generation_text(
                 ..default()
             },
             GenerationText,
-            TextColor(WHITE.into()),
+            TextColor(ACCENT_GREEN),
         ));
 }
 
@@ -56,11 +57,13 @@ pub fn spawn_action_button<'a>(
             justify_content: JustifyContent::Center,
             width: Val::Percent(80.),
             height: Val::Px(ACTION_BUTTON_HEIGHT),
+            border: UiRect::all(Val::Px(1.0)),
             border_radius: BorderRadius::px(BORDER_RADIUS, BORDER_RADIUS, BORDER_RADIUS, BORDER_RADIUS),
             ..default()
         },
         action,
-        BackgroundColor(BLACK.into()),
+        BackgroundColor(BG_BUTTON),
+        BorderColor::all(BORDER_SUBTLE),
     ));
     entity.with_children(|p| {
         p.spawn((
@@ -70,7 +73,7 @@ pub fn spawn_action_button<'a>(
                 font_size: FONT_SIZE_LARGE,
                 ..default()
             },
-            TextColor(WHITE.into()),
+            TextColor(TEXT_PRIMARY),
         ));
     });
     entity
@@ -91,11 +94,13 @@ pub fn spawn_small_button<'a>(
             justify_content: JustifyContent::Center,
             width: Val::Percent(25.),
             height: Val::Percent(100.),
+            border: UiRect::all(Val::Px(1.0)),
             border_radius: BorderRadius::px(BORDER_RADIUS, BORDER_RADIUS, BORDER_RADIUS, BORDER_RADIUS),
             ..default()
         },
         action,
-        BackgroundColor(BLACK.into()),
+        BackgroundColor(BG_BUTTON),
+        BorderColor::all(BORDER_SUBTLE),
     ));
     entity.with_children(|p| {
         p.spawn((
@@ -105,7 +110,7 @@ pub fn spawn_small_button<'a>(
                 font_size: FONT_SIZE_LARGE,
                 ..default()
             },
-            TextColor(WHITE.into()),
+            TextColor(TEXT_PRIMARY),
         ));
     });
     entity
@@ -124,7 +129,7 @@ pub fn spawn_stepper_label(
             font_size: FONT_SIZE_SMALL,
             ..default()
         },
-        TextColor(WHITE.into()),
+        TextColor(TEXT_MUTED),
     ));
 }
 

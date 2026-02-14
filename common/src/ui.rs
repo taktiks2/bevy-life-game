@@ -1,10 +1,10 @@
 //! 複数プラグインで共有されるUI構築ユーティリティ
 
-use bevy::{color::palettes::css::*, prelude::*};
+use bevy::prelude::*;
 
 use crate::consts::{
-    BORDER_RADIUS, FONT_SIZE_LARGE, FONT_SIZE_TITLE, TITLE_BUTTON_HEIGHT, TITLE_BUTTON_WIDTH,
-    TITLE_PADDING,
+    BG_BUTTON, BG_BUTTON_HOVER, BORDER_RADIUS, BORDER_SUBTLE, FONT_SIZE_LARGE, FONT_SIZE_TITLE,
+    TEXT_PRIMARY, TITLE_BUTTON_HEIGHT, TITLE_BUTTON_WIDTH, TITLE_PADDING,
 };
 
 /// 全画面をカバーするルートコンテナを生成する
@@ -38,7 +38,7 @@ pub fn spawn_screen_container<'a, M: Component>(
 
 /// タイトル / メニュー画面用のボタンを生成する
 ///
-/// `TITLE_BUTTON_WIDTH x TITLE_BUTTON_HEIGHT`、黒背景、角丸のボタン。
+/// `TITLE_BUTTON_WIDTH x TITLE_BUTTON_HEIGHT`、ダーク背景、角丸のボタン。
 /// `label` のテキストを中央配置する。
 pub fn spawn_screen_button<'a>(
     parent: &'a mut ChildSpawnerCommands<'_>,
@@ -52,6 +52,7 @@ pub fn spawn_screen_button<'a>(
             justify_content: JustifyContent::Center,
             width: Val::Px(TITLE_BUTTON_WIDTH),
             height: Val::Px(TITLE_BUTTON_HEIGHT),
+            border: UiRect::all(Val::Px(1.0)),
             border_radius: BorderRadius::px(
                 BORDER_RADIUS,
                 BORDER_RADIUS,
@@ -61,7 +62,8 @@ pub fn spawn_screen_button<'a>(
             ..default()
         },
         Button,
-        BackgroundColor(BLACK.into()),
+        BackgroundColor(BG_BUTTON),
+        BorderColor::all(BORDER_SUBTLE),
     ));
     entity.with_children(|p| {
         p.spawn((
@@ -71,6 +73,7 @@ pub fn spawn_screen_button<'a>(
                 font_size: FONT_SIZE_LARGE,
                 ..default()
             },
+            TextColor(TEXT_PRIMARY),
         ));
     });
     entity
@@ -92,4 +95,24 @@ pub fn spawn_screen_title(
         },
         TextColor(color),
     ));
+}
+
+/// 画面ボタンのホバー時ハンドラ: 背景色を変更する
+pub fn handle_screen_button_over(
+    over: On<Pointer<Over>>,
+    mut query: Query<&mut BackgroundColor>,
+) {
+    if let Ok(mut background_color) = query.get_mut(over.entity) {
+        background_color.0 = BG_BUTTON_HOVER;
+    }
+}
+
+/// 画面ボタンのホバー終了ハンドラ: 背景色を元に戻す
+pub fn handle_screen_button_out(
+    out: On<Pointer<Out>>,
+    mut query: Query<&mut BackgroundColor>,
+) {
+    if let Ok(mut background_color) = query.get_mut(out.entity) {
+        background_color.0 = BG_BUTTON;
+    }
 }
