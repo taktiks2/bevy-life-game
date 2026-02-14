@@ -10,9 +10,9 @@ pub const WINDOW_HEIGHT: f32 = 800.;
 /// ビューポート全幅
 pub const VIEWPORT_WIDTH: u32 = WINDOW_WIDTH as u32;
 /// ボトムパネルのビューポート高さ（ウィンドウ高さの20%）
-pub const PANEL_HEIGHT: u32 = (WINDOW_HEIGHT * 0.2) as u32;
+pub const PANEL_HEIGHT: u32 = (WINDOW_HEIGHT * 0.1) as u32;
 /// メインビュー（ワールド表示）のビューポート高さ（ウィンドウ高さの80%）
-pub const MAIN_HEIGHT: u32 = (WINDOW_HEIGHT * 0.8) as u32;
+pub const MAIN_HEIGHT: u32 = (WINDOW_HEIGHT * 0.9) as u32;
 
 // ワールドサイズ（セル数）
 /// ワールドの幅（セル数）
