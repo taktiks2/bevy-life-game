@@ -83,22 +83,24 @@ jobs:
             BUMP_CMD="cog bump --$VERSION_TYPE --skip-ci"
           fi
 
-          if $BUMP_CMD 2>&1 | tee bump_output.txt; then
+          BUMP_OUTPUT=$(mktemp)
+          if $BUMP_CMD 2>&1 | tee "$BUMP_OUTPUT"; then
             echo "バージョンバンプ成功"
-            NEW_VERSION=$(git describe --tags --abbrev=0)
+            NEW_VERSION=$(git describe --tags --abbrev=0 2>/dev/null || git tag --sort=-v:refname | head -n1)
             echo "新しいバージョン: $NEW_VERSION"
             echo "bumped=true" >> $GITHUB_OUTPUT
             echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
           else
-            if grep -q "No conventional commits for your repository that required a bump" bump_output.txt; then
+            if grep -q "No conventional commits for your repository that required a bump" "$BUMP_OUTPUT"; then
               echo "バンプが必要なコミットがありません"
               echo "bumped=false" >> $GITHUB_OUTPUT
             else
               echo "バージョンバンプ失敗"
-              cat bump_output.txt
+              cat "$BUMP_OUTPUT"
               exit 1
             fi
           fi
+          rm -f "$BUMP_OUTPUT"
 
       - name: Cargo.toml バージョン確認
         if: steps.bump.outputs.bumped == 'true'
