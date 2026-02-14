@@ -46,23 +46,6 @@ impl World {
     pub fn is_alive(&self, x: u16, y: u16) -> bool {
         self.cells[self.idx(x, y)]
     }
-    /// 指定座標のセルの生死状態を設定する
-    pub fn set_alive(&mut self, x: u16, y: u16, alive: bool) {
-        let i = self.idx(x, y);
-        self.cells[i] = alive;
-    }
-    /// 初期パターンにおいて指定座標のセルが生きているかを返す
-    pub fn is_initial_alive(&self, x: u16, y: u16) -> bool {
-        self.initial_cells[self.idx(x, y)]
-    }
-    /// 現在のセル状態を初期パターンとして保存する
-    pub fn save_as_initial(&mut self) {
-        self.initial_cells = self.cells.clone();
-    }
-    /// 現在のセル状態のスライスを返す
-    pub fn cells(&self) -> &[bool] {
-        &self.cells
-    }
     /// コンウェイのルールに従い世代を1つ進める
     ///
     /// バックバッファに次世代の状態を計算し、swap で切り替える。
@@ -100,6 +83,23 @@ impl World {
         self.back_buffer = vec![false; size];
         self.initial_cells = vec![false; size];
         self.generation_count = 0;
+    }
+}
+
+#[cfg(test)]
+impl World {
+    /// 指定座標のセルの生死状態を設定する（テスト専用）
+    pub fn set_alive(&mut self, x: u16, y: u16, alive: bool) {
+        let i = self.idx(x, y);
+        self.cells[i] = alive;
+    }
+    /// 初期パターンにおいて指定座標のセルが生きているかを返す（テスト専用）
+    pub fn is_initial_alive(&self, x: u16, y: u16) -> bool {
+        self.initial_cells[self.idx(x, y)]
+    }
+    /// 現在のセル状態を初期パターンとして保存する（テスト専用）
+    pub fn save_as_initial(&mut self) {
+        self.initial_cells = self.cells.clone();
     }
 }
 
