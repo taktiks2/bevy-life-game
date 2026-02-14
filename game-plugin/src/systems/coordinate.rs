@@ -1,7 +1,7 @@
 //! グリッド座標とワールド空間座標の変換
 
 use bevy::prelude::*;
-use common::consts::{GRID_DISPLAY_SIZE, MAIN_HEIGHT, cell_size};
+use common::consts::{GRID_DISPLAY_SIZE, cell_size};
 
 /// グリッド座標をワールド空間の座標に変換する
 pub fn world_to_screen_pos(grid_x: u16, grid_y: u16, world_width: u16, world_height: u16) -> Vec2 {
@@ -41,16 +41,17 @@ pub fn screen_to_grid_coords(
     Some((grid_x, grid_y))
 }
 
-
 /// カーソルがワールドビューポート内にあるかを判定する
 ///
-/// ボトムパネル領域（下部20%）上のカーソルを弾くために使用。
+/// ボトムパネル領域上のカーソルを弾くために使用。
+/// `main_height` はワールドカメラのビューポート高さ（物理ピクセル）。
 /// 物理ピクセル（Viewport定義）と論理ピクセル（cursor_position戻り値）の
 /// スケールファクター変換を考慮する。
-pub fn is_cursor_over_world_viewport(cursor_pos: Vec2, scale_factor: f32) -> bool {
-    let logical_world_height = (MAIN_HEIGHT as f32) / scale_factor;
+pub fn is_cursor_over_world_viewport(cursor_pos: Vec2, scale_factor: f32, main_height: u32) -> bool {
+    let logical_world_height = (main_height as f32) / scale_factor;
     cursor_pos.y < logical_world_height
 }
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -60,21 +61,18 @@ mod tests {
 
     #[test]
     fn center_of_grid_returns_correct_coords() {
-        // World pos (0, 0) = center of grid = cell (50, 50) approximately
         let result = screen_to_grid_coords(Vec2::new(0.0, 0.0), 100, 100);
         assert_eq!(result, Some((50, 50)));
     }
 
     #[test]
     fn top_left_corner_returns_0_0() {
-        // Top-left: world pos (-400, 400)
         let result = screen_to_grid_coords(Vec2::new(-400.0, 400.0), 100, 100);
         assert_eq!(result, Some((0, 0)));
     }
 
     #[test]
     fn bottom_right_returns_99_99() {
-        // Bottom-right: world pos (399, -399)
         let result = screen_to_grid_coords(Vec2::new(399.0, -399.0), 100, 100);
         assert_eq!(result, Some((99, 99)));
     }
@@ -116,41 +114,53 @@ mod tests {
 
     #[test]
     fn cursor_in_world_viewport_with_scale_1() {
-        // scale_factor=1.0, MAIN_HEIGHT=640 physical pixels
-        // ワールド領域: Y=0..640 logical
-        assert!(is_cursor_over_world_viewport(Vec2::new(500., 0.), 1.0));
-        assert!(is_cursor_over_world_viewport(Vec2::new(500., 320.), 1.0));
-        assert!(is_cursor_over_world_viewport(Vec2::new(500., 639.), 1.0));
+        // scale_factor=1.0, main_height=720 physical pixels
+        // ワールド領域: Y=0..720 logical
+        assert!(is_cursor_over_world_viewport(Vec2::new(500., 0.), 1.0, 720));
+        assert!(is_cursor_over_world_viewport(Vec2::new(500., 360.), 1.0, 720));
+        assert!(is_cursor_over_world_viewport(Vec2::new(500., 719.), 1.0, 720));
     }
 
     #[test]
     fn cursor_in_panel_with_scale_1() {
-        // パネル領域: Y>=640 logical
-        assert!(!is_cursor_over_world_viewport(Vec2::new(500., 640.), 1.0));
-        assert!(!is_cursor_over_world_viewport(Vec2::new(500., 700.), 1.0));
-        assert!(!is_cursor_over_world_viewport(Vec2::new(500., 799.), 1.0));
+        // パネル領域: Y>=720 logical
+        assert!(!is_cursor_over_world_viewport(Vec2::new(500., 720.), 1.0, 720));
+        assert!(!is_cursor_over_world_viewport(Vec2::new(500., 750.), 1.0, 720));
+        assert!(!is_cursor_over_world_viewport(Vec2::new(500., 799.), 1.0, 720));
     }
 
     #[test]
     fn cursor_in_world_viewport_with_retina_scale() {
-        // scale_factor=2.0, MAIN_HEIGHT=640 physical = 320 logical
-        assert!(is_cursor_over_world_viewport(Vec2::new(500., 0.), 2.0));
-        assert!(is_cursor_over_world_viewport(Vec2::new(500., 160.), 2.0));
-        assert!(is_cursor_over_world_viewport(Vec2::new(500., 319.), 2.0));
+        // scale_factor=2.0, main_height=720 physical = 360 logical
+        assert!(is_cursor_over_world_viewport(Vec2::new(500., 0.), 2.0, 720));
+        assert!(is_cursor_over_world_viewport(Vec2::new(500., 180.), 2.0, 720));
+        assert!(is_cursor_over_world_viewport(Vec2::new(500., 359.), 2.0, 720));
     }
 
     #[test]
     fn cursor_in_panel_with_retina_scale() {
-        // パネル領域: Y>=320 logical (scale=2.0)
-        assert!(!is_cursor_over_world_viewport(Vec2::new(500., 320.), 2.0));
-        assert!(!is_cursor_over_world_viewport(Vec2::new(500., 350.), 2.0));
-        assert!(!is_cursor_over_world_viewport(Vec2::new(500., 399.), 2.0));
+        // パネル領域: Y>=360 logical (scale=2.0)
+        assert!(!is_cursor_over_world_viewport(Vec2::new(500., 360.), 2.0, 720));
+        assert!(!is_cursor_over_world_viewport(Vec2::new(500., 380.), 2.0, 720));
+        assert!(!is_cursor_over_world_viewport(Vec2::new(500., 399.), 2.0, 720));
     }
 
     #[test]
     fn viewport_boundary_exact() {
-        // 境界値テスト
-        assert!(is_cursor_over_world_viewport(Vec2::new(500., 639.9), 1.0));
-        assert!(!is_cursor_over_world_viewport(Vec2::new(500., 640.0), 1.0));
+        // 境界値テスト: main_height=720, scale=1.0
+        assert!(is_cursor_over_world_viewport(Vec2::new(500., 719.9), 1.0, 720));
+        assert!(!is_cursor_over_world_viewport(Vec2::new(500., 720.0), 1.0, 720));
+    }
+
+    #[test]
+    fn cursor_viewport_with_different_window_sizes() {
+        // 異なるウィンドウサイズでも正しく動作する
+        // main_height=432 (480 * 0.9), scale=1.0
+        assert!(is_cursor_over_world_viewport(Vec2::new(300., 431.), 1.0, 432));
+        assert!(!is_cursor_over_world_viewport(Vec2::new(300., 432.), 1.0, 432));
+
+        // main_height=972 (1080 * 0.9), scale=1.0
+        assert!(is_cursor_over_world_viewport(Vec2::new(500., 971.), 1.0, 972));
+        assert!(!is_cursor_over_world_viewport(Vec2::new(500., 972.), 1.0, 972));
     }
 }

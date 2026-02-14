@@ -5,7 +5,7 @@
 
 use bevy::{camera::Viewport, prelude::*};
 use common::{
-    consts::{INITIAL_CAMERA_SCALE, MAIN_HEIGHT, PANEL_HEIGHT, VIEWPORT_WIDTH},
+    consts::{INITIAL_CAMERA_SCALE, WINDOW_HEIGHT, WINDOW_WIDTH, calc_viewport_sizes},
     resources::GameAssets,
     states::GameState,
     systems::despawn_entity,
@@ -37,6 +37,7 @@ use systems::{
     grid::{handle_grid_click, update_cell_highlight},
     input::*,
     screen::spawn_screen,
+    viewport::update_camera_viewports,
 };
 
 /// ゲーム画面のBevyプラグイン
@@ -82,7 +83,8 @@ impl Plugin for GamePlugin {
         );
         app.add_systems(
             Update,
-            (world_clear, play_audios).run_if(in_state(GameState::Game)),
+            (world_clear, play_audios, update_camera_viewports)
+                .run_if(in_state(GameState::Game)),
         );
         app.insert_resource(SpaceKeyTimer::new());
         app.init_resource::<HoveredCell>();
@@ -97,17 +99,22 @@ impl Plugin for GamePlugin {
 
 /// ボトムパネル用カメラを生成する
 ///
-/// ウィンドウ下部20%をビューポートとし、操作ボタン群を描画する。
+/// ウィンドウ下部をビューポートとし、操作ボタン群を描画する。
 /// order=1 でワールドカメラより上に描画される。
-pub fn setup_bottom_panel_camera(mut commands: Commands) {
+pub fn setup_bottom_panel_camera(mut commands: Commands, windows: Query<&Window>) {
+    let (pw, ph) = windows
+        .single()
+        .map(|w| (w.physical_width(), w.physical_height()))
+        .unwrap_or((WINDOW_WIDTH as u32, WINDOW_HEIGHT as u32));
+    let sizes = calc_viewport_sizes(pw, ph);
+
     commands.spawn((
         Camera2d,
         Camera {
-            // NOTE: 複数のカメラを使う場合、優先順位を付ける必要がある
             order: 1,
             viewport: Some(Viewport {
-                physical_position: [0, MAIN_HEIGHT].into(),
-                physical_size: [VIEWPORT_WIDTH, PANEL_HEIGHT].into(),
+                physical_position: [0, sizes.main_height].into(),
+                physical_size: [sizes.viewport_width, sizes.panel_height].into(),
                 ..default()
             }),
             ..default()
@@ -118,17 +125,22 @@ pub fn setup_bottom_panel_camera(mut commands: Commands) {
 
 /// ワールド描画用カメラを生成する
 ///
-/// ウィンドウ上部80%をビューポートとし、セルグリッドを描画する。
+/// ウィンドウ上部をビューポートとし、セルグリッドを描画する。
 /// OrthographicProjectionによるズーム・パン操作に対応する。
-pub fn setup_world_camera(mut commands: Commands) {
+pub fn setup_world_camera(mut commands: Commands, windows: Query<&Window>) {
+    let (pw, ph) = windows
+        .single()
+        .map(|w| (w.physical_width(), w.physical_height()))
+        .unwrap_or((WINDOW_WIDTH as u32, WINDOW_HEIGHT as u32));
+    let sizes = calc_viewport_sizes(pw, ph);
+
     commands.spawn((
         Camera2d,
         Camera {
-            // NOTE: 複数のカメラを使う場合、優先順位を付ける必要がある
             order: 0,
             viewport: Some(Viewport {
                 physical_position: [0, 0].into(),
-                physical_size: [VIEWPORT_WIDTH, MAIN_HEIGHT].into(),
+                physical_size: [sizes.viewport_width, sizes.main_height].into(),
                 ..default()
             }),
             ..default()
