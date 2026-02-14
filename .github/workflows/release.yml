@@ -52,17 +52,13 @@ jobs:
         with:
           path: ./builds
       - name: Install butler
-        run: |
-          curl -L -o butler.zip https://broth.itch.ovh/butler/linux-amd64/LATEST/archive/default
-          unzip butler.zip
-          chmod +x butler
-          ./butler -V
+        uses: jdno/setup-butler@v1.6.0
       - name: Upload to itch.io
         env:
           BUTLER_API_KEY: ${{ secrets.BUTLER_CREDENTIALS }}
         run: |
           for channel in $(ls builds); do
-            ./butler push \
+            butler push \
                 --fix-permissions \
                 builds/$channel/* \
                 ${{ env.itch_target }}:$channel
