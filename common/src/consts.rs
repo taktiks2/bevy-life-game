@@ -44,6 +44,26 @@ pub const CAMERA_SCALE_STEP: f32 = 0.1;
 /// WASD操作によるカメラ移動速度
 pub const CAMERA_PAN_SPEED: f32 = 10.0;
 
+// UIサイズ
+/// タイトルのフォントサイズ
+pub const FONT_SIZE_TITLE: f32 = 60.0;
+/// 大きいフォントサイズ（ボタンラベル）
+pub const FONT_SIZE_LARGE: f32 = 40.0;
+/// 中程度のフォントサイズ（世代カウンター等）
+pub const FONT_SIZE_MEDIUM: f32 = 30.0;
+/// 小さいフォントサイズ（ステッパーラベル）
+pub const FONT_SIZE_SMALL: f32 = 20.0;
+/// アクションボタンの高さ
+pub const ACTION_BUTTON_HEIGHT: f32 = 60.0;
+/// ボタンの角丸半径
+pub const BORDER_RADIUS: f32 = 5.0;
+/// タイトル画面のボタン幅
+pub const TITLE_BUTTON_WIDTH: f32 = 200.0;
+/// タイトル画面のボタン高さ
+pub const TITLE_BUTTON_HEIGHT: f32 = 60.0;
+/// タイトル/メニュー画面の上下パディング
+pub const TITLE_PADDING: f32 = 200.0;
+
 /// ムーア近傍の8方向の相対座標
 ///
 /// あるセルの周囲8マスを走査するために使用する。

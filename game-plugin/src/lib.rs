@@ -14,6 +14,7 @@ use common::{
 mod components;
 mod events;
 mod layer;
+mod rendering;
 mod resources;
 mod states;
 mod systems;
@@ -29,10 +30,11 @@ use resources::{
     world::World,
 };
 use states::SimulationState;
+use resources::interaction::{AudioCooldown, HoveredCell};
 use systems::{
-    action::{HoveredCell, handle_grid_click, update_cell_highlight},
-    audio::{AudioCooldown, play_audios},
+    audio::play_audios,
     cell_operations::*,
+    grid::{handle_grid_click, update_cell_highlight},
     input::*,
     screen::spawn_screen,
 };

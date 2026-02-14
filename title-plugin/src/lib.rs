@@ -7,6 +7,10 @@
 use bevy::{color::palettes::css::*, prelude::*};
 
 use common::{
+    consts::{
+        BORDER_RADIUS, FONT_SIZE_LARGE, FONT_SIZE_TITLE, TITLE_BUTTON_HEIGHT, TITLE_BUTTON_WIDTH,
+        TITLE_PADDING,
+    },
     resources::GameAssets,
     states::GameState,
     systems::{despawn_entity, setup_camera},
@@ -62,8 +66,8 @@ fn setup_title_screen(mut commands: Commands, game_assets: Res<GameAssets>) {
                 padding: UiRect {
                     left: Val::Px(0.),
                     right: Val::Px(0.),
-                    top: Val::Px(200.),
-                    bottom: Val::Px(200.),
+                    top: Val::Px(TITLE_PADDING),
+                    bottom: Val::Px(TITLE_PADDING),
                 },
                 width: Val::Percent(100.),
                 height: Val::Percent(100.),
@@ -77,7 +81,7 @@ fn setup_title_screen(mut commands: Commands, game_assets: Res<GameAssets>) {
                 Text::new("Conway's Game of Life"),
                 TextFont {
                     font: game_assets.font_bold.clone(),
-                    font_size: 60.0,
+                    font_size: FONT_SIZE_TITLE,
                     ..default()
                 },
                 TextColor(BLACK.into()),
@@ -87,9 +91,9 @@ fn setup_title_screen(mut commands: Commands, game_assets: Res<GameAssets>) {
                     Node {
                         align_items: AlignItems::Center,
                         justify_content: JustifyContent::Center,
-                        width: Val::Px(200.),
-                        height: Val::Px(60.),
-                        border_radius: BorderRadius::px(5., 5., 5., 5.),
+                        width: Val::Px(TITLE_BUTTON_WIDTH),
+                        height: Val::Px(TITLE_BUTTON_HEIGHT),
+                        border_radius: BorderRadius::px(BORDER_RADIUS, BORDER_RADIUS, BORDER_RADIUS, BORDER_RADIUS),
                         ..default()
                     },
                     Button,
@@ -102,7 +106,7 @@ fn setup_title_screen(mut commands: Commands, game_assets: Res<GameAssets>) {
                         Text::new("Start"),
                         TextFont {
                             font: game_assets.font_bold.clone(),
-                            font_size: 40.0,
+                            font_size: FONT_SIZE_LARGE,
                             ..default()
                         },
                     ));
