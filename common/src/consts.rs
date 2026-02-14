@@ -12,11 +12,9 @@ pub const MIN_WINDOW_WIDTH: f32 = 600.0;
 /// ウィンドウの最小高さ（ピクセル）
 pub const MIN_WINDOW_HEIGHT: f32 = 480.0;
 
-// ビューポート比率
-/// ワールドカメラの高さ比率（ウィンドウ高さに対する割合）
-pub const MAIN_HEIGHT_RATIO: f32 = 0.9;
-/// ボトムパネルの高さ比率（ウィンドウ高さに対する割合）
-pub const PANEL_HEIGHT_RATIO: f32 = 0.1;
+// ビューポート
+/// ボトムパネルの固定高さ（物理ピクセル）
+pub const PANEL_HEIGHT: u32 = 80;
 
 /// ウィンドウの物理サイズから計算されたビューポートサイズ
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -30,9 +28,11 @@ pub struct ViewportSizes {
 }
 
 /// ウィンドウの物理サイズからビューポートサイズを計算する
+///
+/// ボトムパネルの高さは `PANEL_HEIGHT` で固定し、残りをワールドカメラに割り当てる。
 pub fn calc_viewport_sizes(physical_width: u32, physical_height: u32) -> ViewportSizes {
-    let main_height = (physical_height as f32 * MAIN_HEIGHT_RATIO) as u32;
-    let panel_height = physical_height - main_height;
+    let panel_height = PANEL_HEIGHT.min(physical_height);
+    let main_height = physical_height - panel_height;
     ViewportSizes {
         viewport_width: physical_width,
         main_height,
@@ -164,15 +164,19 @@ mod tests {
         let sizes = calc_viewport_sizes(1000, 800);
         assert_eq!(sizes.viewport_width, 1000);
         assert_eq!(sizes.main_height, 720);
-        assert_eq!(sizes.panel_height, 80);
+        assert_eq!(sizes.panel_height, PANEL_HEIGHT);
     }
 
     #[test]
-    fn calc_viewport_sizes_small_window() {
-        let sizes = calc_viewport_sizes(600, 480);
-        assert_eq!(sizes.viewport_width, 600);
-        assert_eq!(sizes.main_height, 432);
-        assert_eq!(sizes.panel_height, 48);
+    fn calc_viewport_sizes_panel_height_is_fixed() {
+        // ウィンドウの高さが変わってもパネル高さは固定
+        for height in [480, 600, 800, 1080, 1440] {
+            let sizes = calc_viewport_sizes(1000, height);
+            assert_eq!(
+                sizes.panel_height, PANEL_HEIGHT,
+                "panel_height should be fixed at {PANEL_HEIGHT} for window height={height}"
+            );
+        }
     }
 
     #[test]
