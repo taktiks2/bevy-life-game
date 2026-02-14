@@ -9,8 +9,8 @@ use bevy::camera::visibility::RenderLayers;
 /// 各エンティティとカメラに付与し、対応するカメラのみで描画されるようにする。
 #[derive(Clone, Copy)]
 pub enum Layer {
-    /// サイドメニュー（操作パネル）用レイヤー
-    SideMenu,
+    /// ボトムパネル（操作パネル）用レイヤー
+    BottomPanel,
     /// ワールド（セルグリッド）用レイヤー
     World,
 }

@@ -4,7 +4,8 @@ use bevy::prelude::*;
 use common::{
     consts::{
         ACCENT_GREEN, ACTION_BUTTON_HEIGHT, BG_BUTTON, BORDER_RADIUS, BORDER_SUBTLE,
-        FONT_SIZE_LARGE, FONT_SIZE_MEDIUM, FONT_SIZE_SMALL, TEXT_MUTED, TEXT_PRIMARY,
+        BUTTON_BORDER_WIDTH, FONT_SIZE_LARGE, FONT_SIZE_MEDIUM, FONT_SIZE_SMALL, TEXT_MUTED,
+        TEXT_PRIMARY,
     },
     resources::GameAssets,
 };
@@ -55,9 +56,10 @@ pub fn spawn_action_button<'a>(
         Node {
             align_items: AlignItems::Center,
             justify_content: JustifyContent::Center,
-            width: Val::Percent(80.),
+            width: Val::Auto,
             height: Val::Px(ACTION_BUTTON_HEIGHT),
-            border: UiRect::all(Val::Px(1.0)),
+            padding: UiRect::horizontal(Val::Px(16.)),
+            border: UiRect::all(Val::Px(BUTTON_BORDER_WIDTH)),
             border_radius: BorderRadius::px(BORDER_RADIUS, BORDER_RADIUS, BORDER_RADIUS, BORDER_RADIUS),
             ..default()
         },
@@ -92,9 +94,9 @@ pub fn spawn_small_button<'a>(
         Node {
             align_items: AlignItems::Center,
             justify_content: JustifyContent::Center,
-            width: Val::Percent(25.),
-            height: Val::Percent(100.),
-            border: UiRect::all(Val::Px(1.0)),
+            width: Val::Px(36.),
+            height: Val::Px(36.),
+            border: UiRect::all(Val::Px(BUTTON_BORDER_WIDTH)),
             border_radius: BorderRadius::px(BORDER_RADIUS, BORDER_RADIUS, BORDER_RADIUS, BORDER_RADIUS),
             ..default()
         },
@@ -133,12 +135,24 @@ pub fn spawn_stepper_label(
     ));
 }
 
+/// ボタングループのレイアウトノードを返す
+pub fn button_group_node() -> Node {
+    Node {
+        flex_direction: FlexDirection::Row,
+        align_items: AlignItems::Center,
+        column_gap: Val::Px(6.),
+        ..default()
+    }
+}
+
 /// ステッパー行のレイアウトノードを返す
 pub fn stepper_row_node() -> Node {
     Node {
         align_items: AlignItems::Center,
         justify_content: JustifyContent::SpaceBetween,
-        width: Val::Percent(80.),
+        flex_direction: FlexDirection::Row,
+        column_gap: Val::Px(8.),
+        width: Val::Auto,
         height: Val::Px(ACTION_BUTTON_HEIGHT),
         ..default()
     }

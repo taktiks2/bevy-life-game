@@ -1,11 +1,11 @@
 //! ゲームプラグイン
 //!
 //! コンウェイのライフゲームのメイン画面を提供する。
-//! サイドメニュー（操作パネル）とワールド（セルグリッド）の2カメラ構成で描画する。
+//! ボトムパネル（操作パネル）とワールド（セルグリッド）の2カメラ構成で描画する。
 
 use bevy::{camera::Viewport, prelude::*};
 use common::{
-    consts::{INITIAL_CAMERA_SCALE, MAIN_PHYSICAL_WIDTH, PHYSICAL_HEIGHT, SUB_PHYSICAL_WIDTH},
+    consts::{INITIAL_CAMERA_SCALE, MAIN_HEIGHT, PANEL_HEIGHT, VIEWPORT_WIDTH},
     resources::GameAssets,
     states::GameState,
     systems::despawn_entity,
@@ -20,7 +20,7 @@ mod states;
 mod systems;
 
 use components::{
-    camera::{SideMenuCamera, WorldCamera},
+    camera::{BottomPanelCamera, WorldCamera},
     screen::OnGameScreen,
 };
 use events::*;
@@ -50,7 +50,7 @@ impl Plugin for GamePlugin {
         app.add_systems(
             OnEnter(GameState::Game),
             (
-                setup_side_menu_camera,
+                setup_bottom_panel_camera,
                 setup_world_camera,
                 setup_resource,
                 spawn_screen,
@@ -61,7 +61,7 @@ impl Plugin for GamePlugin {
             OnExit(GameState::Game),
             (
                 despawn_entity::<OnGameScreen>,
-                despawn_entity::<SideMenuCamera>,
+                despawn_entity::<BottomPanelCamera>,
                 despawn_entity::<WorldCamera>,
             ),
         );
@@ -95,30 +95,30 @@ impl Plugin for GamePlugin {
     }
 }
 
-/// サイドメニュー用カメラを生成する
+/// ボトムパネル用カメラを生成する
 ///
-/// ウィンドウ左側20%をビューポートとし、操作ボタン群を描画する。
+/// ウィンドウ下部20%をビューポートとし、操作ボタン群を描画する。
 /// order=1 でワールドカメラより上に描画される。
-pub fn setup_side_menu_camera(mut commands: Commands) {
+pub fn setup_bottom_panel_camera(mut commands: Commands) {
     commands.spawn((
         Camera2d,
         Camera {
             // NOTE: 複数のカメラを使う場合、優先順位を付ける必要がある
             order: 1,
             viewport: Some(Viewport {
-                physical_position: [0, 0].into(),
-                physical_size: [SUB_PHYSICAL_WIDTH, PHYSICAL_HEIGHT].into(),
+                physical_position: [0, MAIN_HEIGHT].into(),
+                physical_size: [VIEWPORT_WIDTH, PANEL_HEIGHT].into(),
                 ..default()
             }),
             ..default()
         },
-        SideMenuCamera,
+        BottomPanelCamera,
     ));
 }
 
 /// ワールド描画用カメラを生成する
 ///
-/// ウィンドウ右側80%をビューポートとし、セルグリッドを描画する。
+/// ウィンドウ上部80%をビューポートとし、セルグリッドを描画する。
 /// OrthographicProjectionによるズーム・パン操作に対応する。
 pub fn setup_world_camera(mut commands: Commands) {
     commands.spawn((
@@ -127,8 +127,8 @@ pub fn setup_world_camera(mut commands: Commands) {
             // NOTE: 複数のカメラを使う場合、優先順位を付ける必要がある
             order: 0,
             viewport: Some(Viewport {
-                physical_position: [SUB_PHYSICAL_WIDTH, 0].into(),
-                physical_size: [MAIN_PHYSICAL_WIDTH, PHYSICAL_HEIGHT].into(),
+                physical_position: [0, 0].into(),
+                physical_size: [VIEWPORT_WIDTH, MAIN_HEIGHT].into(),
                 ..default()
             }),
             ..default()

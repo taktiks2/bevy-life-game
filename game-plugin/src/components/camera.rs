@@ -2,9 +2,9 @@
 
 use bevy::prelude::Component;
 
-/// サイドメニュー描画用カメラのマーカー
+/// ボトムパネル描画用カメラのマーカー
 #[derive(Component)]
-pub struct SideMenuCamera;
+pub struct BottomPanelCamera;
 
 /// ワールド（セルグリッド）描画用カメラのマーカー
 #[derive(Component)]

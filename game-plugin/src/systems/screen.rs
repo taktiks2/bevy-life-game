@@ -12,52 +12,61 @@ use crate::systems::ui::*;
 
 /// ゲーム画面の全UIを構築するシステム
 ///
-/// サイドメニュー（操作ボタン群）とワールド（セルグリッドスプライト＋ハイライト）を生成する。
+/// ボトムパネル（操作ボタン群）とワールド（セルグリッドスプライト＋ハイライト）を生成する。
 pub fn spawn_screen(
     mut commands: Commands,
     world: Res<World>,
     game_assets: Res<GameAssets>,
     mut images: ResMut<Assets<Image>>,
 ) {
-    // NOTE: Side Menu
+    // NOTE: Bottom Panel
     commands
         .spawn((
             Node {
                 width: Val::Percent(100.),
                 height: Val::Percent(100.),
                 align_items: AlignItems::Center,
-                justify_content: JustifyContent::Center,
-                flex_direction: FlexDirection::Column,
-                row_gap: Val::Px(10.),
+                justify_content: JustifyContent::SpaceEvenly,
+                flex_direction: FlexDirection::Row,
+                column_gap: Val::Px(8.),
+                padding: UiRect::horizontal(Val::Px(12.)),
                 ..default()
             },
-            Layer::SideMenu.as_render_layer(),
+            Layer::BottomPanel.as_render_layer(),
             OnGameScreen,
             BackgroundColor(BG_SURFACE),
         ))
         .with_children(|p| {
+            // Generation counter
             spawn_generation_text(p, &game_assets, world.generation_count);
 
-            spawn_action_button(p, &game_assets, "Start", GameButtonAction::Start)
-                .observe(handle_start)
-                .observe(handle_over)
-                .observe(handle_out);
-            spawn_action_button(p, &game_assets, "Stop", GameButtonAction::Stop)
-                .observe(handle_stop)
-                .observe(handle_over)
-                .observe(handle_out);
-            spawn_action_button(p, &game_assets, "Next", GameButtonAction::Next)
-                .observe(handle_next)
-                .observe(handle_over)
-                .observe(handle_out);
-            spawn_action_button(p, &game_assets, "Reset", GameButtonAction::Reset)
-                .observe(handle_reset)
-                .observe(handle_over)
-                .observe(handle_out);
-            spawn_action_button(p, &game_assets, "Clear", GameButtonAction::Clear)
-                .observe(handle_clear)
-                .observe(handle_over)
-                .observe(handle_out);
+            // Simulation controls: Start / Stop / Next
+            p.spawn(button_group_node()).with_children(|p| {
+                spawn_action_button(p, &game_assets, "Start", GameButtonAction::Start)
+                    .observe(handle_start)
+                    .observe(handle_over)
+                    .observe(handle_out);
+                spawn_action_button(p, &game_assets, "Stop", GameButtonAction::Stop)
+                    .observe(handle_stop)
+                    .observe(handle_over)
+                    .observe(handle_out);
+                spawn_action_button(p, &game_assets, "Next", GameButtonAction::Next)
+                    .observe(handle_next)
+                    .observe(handle_over)
+                    .observe(handle_out);
+            });
+
+            // Reset / Clear
+            p.spawn(button_group_node()).with_children(|p| {
+                spawn_action_button(p, &game_assets, "Reset", GameButtonAction::Reset)
+                    .observe(handle_reset)
+                    .observe(handle_over)
+                    .observe(handle_out);
+                spawn_action_button(p, &game_assets, "Clear", GameButtonAction::Clear)
+                    .observe(handle_clear)
+                    .observe(handle_over)
+                    .observe(handle_out);
+            });
 
             // Speed control
             p.spawn(stepper_row_node()).with_children(|p| {

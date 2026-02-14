@@ -6,7 +6,7 @@ use bevy::{
     prelude::*,
 };
 use common::consts::{
-    CELL_ALIVE_RGB, CELL_DEAD_RGB, MAIN_PHYSICAL_WIDTH, WINDOW_HEIGHT, WORLD_HEIGHT, WORLD_WIDTH,
+    CELL_ALIVE_RGB, CELL_DEAD_RGB, GRID_DISPLAY_SIZE, WORLD_HEIGHT, WORLD_WIDTH,
     cell_size,
 };
 
@@ -47,8 +47,8 @@ pub fn spawn_grid_sprite(
         Sprite {
             image: handle,
             custom_size: Some(Vec2::new(
-                MAIN_PHYSICAL_WIDTH as f32,
-                WINDOW_HEIGHT,
+                GRID_DISPLAY_SIZE,
+                GRID_DISPLAY_SIZE,
             )),
             ..default()
         },

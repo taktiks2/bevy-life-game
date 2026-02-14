@@ -7,12 +7,12 @@ use bevy::color::Color;
 pub const WINDOW_WIDTH: f32 = 1000.;
 /// ウィンドウの高さ（ピクセル）
 pub const WINDOW_HEIGHT: f32 = 800.;
-/// サイドメニューの物理幅（ウィンドウ幅の20%）
-pub const SUB_PHYSICAL_WIDTH: u32 = (WINDOW_WIDTH * 0.2) as u32;
-/// メインビュー（ワールド表示）の物理幅（ウィンドウ幅の80%）
-pub const MAIN_PHYSICAL_WIDTH: u32 = (WINDOW_WIDTH * 0.8) as u32;
-/// レンダリング用の物理高さ（Retina対応で2倍）
-pub const PHYSICAL_HEIGHT: u32 = (WINDOW_HEIGHT as u32) * 2;
+/// ビューポート全幅
+pub const VIEWPORT_WIDTH: u32 = WINDOW_WIDTH as u32;
+/// ボトムパネルのビューポート高さ（ウィンドウ高さの20%）
+pub const PANEL_HEIGHT: u32 = (WINDOW_HEIGHT * 0.2) as u32;
+/// メインビュー（ワールド表示）のビューポート高さ（ウィンドウ高さの80%）
+pub const MAIN_HEIGHT: u32 = (WINDOW_HEIGHT * 0.8) as u32;
 
 // ワールドサイズ（セル数）
 /// ワールドの幅（セル数）
@@ -50,13 +50,13 @@ pub const CAMERA_PAN_SPEED: f32 = 10.0;
 /// タイトルのフォントサイズ
 pub const FONT_SIZE_TITLE: f32 = 60.0;
 /// 大きいフォントサイズ（ボタンラベル）
-pub const FONT_SIZE_LARGE: f32 = 40.0;
+pub const FONT_SIZE_LARGE: f32 = 24.0;
 /// 中程度のフォントサイズ（世代カウンター等）
-pub const FONT_SIZE_MEDIUM: f32 = 30.0;
+pub const FONT_SIZE_MEDIUM: f32 = 20.0;
 /// 小さいフォントサイズ（ステッパーラベル）
-pub const FONT_SIZE_SMALL: f32 = 20.0;
+pub const FONT_SIZE_SMALL: f32 = 16.0;
 /// アクションボタンの高さ
-pub const ACTION_BUTTON_HEIGHT: f32 = 60.0;
+pub const ACTION_BUTTON_HEIGHT: f32 = 44.0;
 /// ボタンの角丸半径
 pub const BORDER_RADIUS: f32 = 8.0;
 /// タイトル画面のボタン幅
@@ -93,6 +93,10 @@ pub const TEXT_MUTED: Color = Color::srgb(0.50, 0.52, 0.58);
 // テーマカラー: ボーダー
 /// 控えめボーダー色
 pub const BORDER_SUBTLE: Color = Color::srgb(0.20, 0.21, 0.26);
+/// ボタンボーダー幅
+pub const BUTTON_BORDER_WIDTH: f32 = 1.5;
+/// ボタンホバー時のボーダー色（ネオングリーン）
+pub const BUTTON_BORDER_HOVER: Color = Color::srgb(0.0, 0.85, 0.45);
 
 // テーマカラー: セル描画用RGB値
 /// 生存セルのRGB値（ネオングリーン）
@@ -114,10 +118,13 @@ pub const SQUARE_COORDINATES: [(i8, i8); 8] = [
     (1, 1),
 ];
 
+/// グリッドのワールド空間表示サイズ（正方形）
+pub const GRID_DISPLAY_SIZE: f32 = 800.0;
+
 /// 指定ワールドサイズに対する1セルのピクセルサイズ (幅, 高さ) を返す
 pub fn cell_size(world_width: u16, world_height: u16) -> (f32, f32) {
     (
-        MAIN_PHYSICAL_WIDTH as f32 / world_width as f32,
-        WINDOW_HEIGHT / world_height as f32,
+        GRID_DISPLAY_SIZE / world_width as f32,
+        GRID_DISPLAY_SIZE / world_height as f32,
     )
 }
