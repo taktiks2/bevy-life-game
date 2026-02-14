@@ -22,6 +22,15 @@ jobs:
       - name: チェックアウト
         uses: actions/checkout@v6
 
+      - name: Linux 依存パッケージのインストール
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libasound2-dev \
+            libudev-dev \
+            libwayland-dev \
+            libxkbcommon-dev
+
       - name: Rust ツールチェーンのセットアップ
         uses: actions-rust-lang/setup-rust-toolchain@v1
         with:

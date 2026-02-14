@@ -37,6 +37,15 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Linux 依存パッケージのインストール
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libasound2-dev \
+            libudev-dev \
+            libwayland-dev \
+            libxkbcommon-dev
+
       - name: Rust ツールチェーンのセットアップ
         uses: actions-rust-lang/setup-rust-toolchain@v1
 
