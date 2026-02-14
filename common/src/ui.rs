@@ -98,20 +98,14 @@ pub fn spawn_screen_title(
 }
 
 /// 画面ボタンのホバー時ハンドラ: 背景色を変更する
-pub fn handle_screen_button_over(
-    over: On<Pointer<Over>>,
-    mut query: Query<&mut BackgroundColor>,
-) {
+pub fn handle_screen_button_over(over: On<Pointer<Over>>, mut query: Query<&mut BackgroundColor>) {
     if let Ok(mut background_color) = query.get_mut(over.entity) {
         background_color.0 = BG_BUTTON_HOVER;
     }
 }
 
 /// 画面ボタンのホバー終了ハンドラ: 背景色を元に戻す
-pub fn handle_screen_button_out(
-    out: On<Pointer<Out>>,
-    mut query: Query<&mut BackgroundColor>,
-) {
+pub fn handle_screen_button_out(out: On<Pointer<Out>>, mut query: Query<&mut BackgroundColor>) {
     if let Ok(mut background_color) = query.get_mut(out.entity) {
         background_color.0 = BG_BUTTON;
     }

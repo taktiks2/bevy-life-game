@@ -24,6 +24,9 @@ pub struct SpaceKeyTimer(pub Timer);
 
 impl SpaceKeyTimer {
     pub fn new() -> Self {
-        Self(Timer::from_seconds(SPACE_KEY_HOLD_DURATION, TimerMode::Once))
+        Self(Timer::from_seconds(
+            SPACE_KEY_HOLD_DURATION,
+            TimerMode::Once,
+        ))
     }
 }

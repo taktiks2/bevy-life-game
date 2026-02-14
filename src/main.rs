@@ -23,7 +23,10 @@ fn main() {
                 .set(WindowPlugin {
                     primary_window: Some(Window {
                         title: "Life Game".to_string(),
-                        resolution: WindowResolution::new(WINDOW_WIDTH as u32, WINDOW_HEIGHT as u32),
+                        resolution: WindowResolution::new(
+                            WINDOW_WIDTH as u32,
+                            WINDOW_HEIGHT as u32,
+                        ),
                         resizable: true,
                         resize_constraints: WindowResizeConstraints {
                             min_width: MIN_WINDOW_WIDTH,

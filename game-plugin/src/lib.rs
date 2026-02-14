@@ -25,12 +25,12 @@ use components::{
 };
 use events::*;
 use layer::Layer;
+use resources::interaction::{AudioCooldown, HoveredCell};
 use resources::{
     timer::{SimulationTimer, SpaceKeyTimer},
     world::World,
 };
 use states::SimulationState;
-use resources::interaction::{AudioCooldown, HoveredCell};
 use systems::{
     audio::play_audios,
     cell_operations::*,
@@ -83,8 +83,7 @@ impl Plugin for GamePlugin {
         );
         app.add_systems(
             Update,
-            (world_clear, play_audios, update_camera_viewports)
-                .run_if(in_state(GameState::Game)),
+            (world_clear, play_audios, update_camera_viewports).run_if(in_state(GameState::Game)),
         );
         app.insert_resource(SpaceKeyTimer::new());
         app.init_resource::<HoveredCell>();

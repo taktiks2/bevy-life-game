@@ -10,10 +10,7 @@ use common::{
     resources::GameAssets,
 };
 
-use crate::components::{
-    action::GameButtonAction,
-    screen::GenerationText,
-};
+use crate::components::{action::GameButtonAction, screen::GenerationText};
 
 /// 世代カウンター表示テキストを生成する
 pub fn spawn_generation_text(
@@ -60,7 +57,12 @@ pub fn spawn_action_button<'a>(
             height: Val::Px(ACTION_BUTTON_HEIGHT),
             padding: UiRect::horizontal(Val::Px(16.)),
             border: UiRect::all(Val::Px(BUTTON_BORDER_WIDTH)),
-            border_radius: BorderRadius::px(BORDER_RADIUS, BORDER_RADIUS, BORDER_RADIUS, BORDER_RADIUS),
+            border_radius: BorderRadius::px(
+                BORDER_RADIUS,
+                BORDER_RADIUS,
+                BORDER_RADIUS,
+                BORDER_RADIUS,
+            ),
             ..default()
         },
         action,
@@ -97,7 +99,12 @@ pub fn spawn_small_button<'a>(
             width: Val::Px(36.),
             height: Val::Px(36.),
             border: UiRect::all(Val::Px(BUTTON_BORDER_WIDTH)),
-            border_radius: BorderRadius::px(BORDER_RADIUS, BORDER_RADIUS, BORDER_RADIUS, BORDER_RADIUS),
+            border_radius: BorderRadius::px(
+                BORDER_RADIUS,
+                BORDER_RADIUS,
+                BORDER_RADIUS,
+                BORDER_RADIUS,
+            ),
             ..default()
         },
         action,

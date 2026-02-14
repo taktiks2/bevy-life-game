@@ -61,7 +61,12 @@ fn setup_menu_camera(commands: Commands) {
 /// メニュー画面のUIを構築する
 fn setup_menu_screen(mut commands: Commands, game_assets: Res<GameAssets>) {
     spawn_screen_container(&mut commands, OnMenuScreen, BG_DARK).with_children(|parent| {
-        spawn_screen_title(parent, game_assets.font_bold.clone(), "Settings", TEXT_PRIMARY);
+        spawn_screen_title(
+            parent,
+            game_assets.font_bold.clone(),
+            "Settings",
+            TEXT_PRIMARY,
+        );
         parent
             .spawn(Node {
                 flex_direction: FlexDirection::Column,
@@ -92,10 +97,7 @@ fn on_back_button_click(_click: On<Pointer<Click>>, mut state: ResMut<NextState<
 }
 
 /// Quitボタンのクリックハンドラ: アプリケーションを終了する
-fn on_quit_button_click(
-    _click: On<Pointer<Click>>,
-    mut app_exit_events: MessageWriter<AppExit>,
-) {
+fn on_quit_button_click(_click: On<Pointer<Click>>, mut app_exit_events: MessageWriter<AppExit>) {
     app_exit_events.write(AppExit::Success);
 }
 
