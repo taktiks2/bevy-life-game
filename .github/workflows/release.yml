@@ -1,9 +1,7 @@
 name: Release
 
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
 
 env:
   binary: bevy-life-game
@@ -47,6 +45,15 @@ jobs:
     needs:
       - release-wasm
     steps:
+      - name: チェックアウト
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: バージョン取得
+        id: version
+        run: |
+          VERSION=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
       - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
@@ -57,9 +64,15 @@ jobs:
         env:
           BUTLER_API_KEY: ${{ secrets.BUTLER_CREDENTIALS }}
         run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          VERSION_FLAG=""
+          if [ -n "$VERSION" ]; then
+            VERSION_FLAG="--userversion $VERSION"
+          fi
           for channel in $(ls builds); do
             butler push \
                 --fix-permissions \
+                $VERSION_FLAG \
                 builds/$channel/* \
                 ${{ env.itch_target }}:$channel
           done
