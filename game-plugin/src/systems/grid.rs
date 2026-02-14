@@ -5,7 +5,9 @@ use bevy::prelude::*;
 use crate::components::screen::CellHighlight;
 use crate::events::PlayAudioEvent;
 use crate::resources::{interaction::HoveredCell, world::World};
-use crate::systems::coordinate::{screen_to_grid_coords, world_to_screen_pos};
+use crate::systems::coordinate::{
+    is_cursor_over_world_viewport, screen_to_grid_coords, world_to_screen_pos,
+};
 use crate::WorldCamera;
 
 /// グリッド上の左クリックを処理し、クリックされたセルをトグルする
@@ -24,6 +26,11 @@ pub fn handle_grid_click(
     let Some(cursor_pos) = window.cursor_position() else {
         return;
     };
+    // ボトムパネル上ではクリックを無視
+    let scale_factor = window.resolution.scale_factor();
+    if !is_cursor_over_world_viewport(cursor_pos, scale_factor) {
+        return;
+    }
     let Ok((camera, transform)) = camera_query.single() else {
         return;
     };
@@ -54,8 +61,12 @@ pub fn update_cell_highlight(
         return;
     };
 
+    // ボトムパネル上ではハイライトを無効化
+    let scale_factor = window.resolution.scale_factor();
+
     let grid_coords = window
         .cursor_position()
+        .filter(|&pos| is_cursor_over_world_viewport(pos, scale_factor))
         .and_then(|cursor_pos| camera.viewport_to_world_2d(cam_transform, cursor_pos).ok())
         .and_then(|world_pos| screen_to_grid_coords(world_pos, world.width, world.height));
 
