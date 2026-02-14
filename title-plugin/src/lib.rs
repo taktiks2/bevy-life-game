@@ -59,7 +59,12 @@ fn setup_title_camera(commands: Commands) {
 /// タイトル画面のUIを構築する
 fn setup_title_screen(mut commands: Commands, game_assets: Res<GameAssets>) {
     spawn_screen_container(&mut commands, OnTitleScreen, BG_DARK).with_children(|parent| {
-        spawn_screen_title(parent, game_assets.font_bold.clone(), "Conway's Game of Life", ACCENT_GREEN);
+        spawn_screen_title(
+            parent,
+            game_assets.font_bold.clone(),
+            "Life Game",
+            ACCENT_GREEN,
+        );
         spawn_screen_button(parent, game_assets.font_bold.clone(), "Start")
             .insert(TitleButtonAction::Start)
             .observe(on_start_button_click)
