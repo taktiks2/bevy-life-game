@@ -3,6 +3,7 @@
 //! コンウェイのライフゲームのメイン画面を提供する。
 //! ボトムパネル（操作パネル）とワールド（セルグリッド）の2カメラ構成で描画する。
 
+use bevy::sprite_render::Material2dPlugin;
 use bevy::{camera::Viewport, prelude::*};
 use common::{
     consts::{INITIAL_CAMERA_SCALE, WINDOW_HEIGHT, WINDOW_WIDTH, calc_viewport_sizes},
@@ -13,6 +14,7 @@ use common::{
 
 mod components;
 mod events;
+pub mod grid_material;
 mod layer;
 mod rendering;
 mod resources;
@@ -35,7 +37,7 @@ use systems::button_handler::update_toggle_button_text;
 use systems::{
     audio::play_audios,
     cell_operations::*,
-    chunk::manage_chunks,
+    chunk::{manage_chunks, update_grid_uniforms},
     grid::{handle_grid_click, update_cell_highlight},
     input::*,
     screen::spawn_screen,
@@ -50,6 +52,7 @@ pub struct GamePlugin;
 
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
+        app.add_plugins(Material2dPlugin::<grid_material::GridMaterial>::default());
         app.add_systems(
             OnEnter(GameState::Game),
             (
@@ -93,6 +96,7 @@ impl Plugin for GamePlugin {
                 update_camera_viewports,
                 update_toggle_button_text,
                 systems::slider::sync_slider_thumbs,
+                update_grid_uniforms,
             )
                 .run_if(in_state(GameState::Game)),
         );

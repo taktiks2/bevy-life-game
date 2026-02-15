@@ -158,13 +158,14 @@ pub const SQUARE_COORDINATES: [(i8, i8); 8] = [
 
 /// セル1個を表現するテクスチャピクセル数（幅・高さ）
 pub const CELL_PIXELS: u32 = 8;
-/// グリッドライン1本のテクスチャピクセル数
-pub const GRID_LINE_PIXELS: u32 = 1;
 /// グリッドラインのRGB色（控えめな暗灰色）
-pub const GRID_LINE_RGB: (u8, u8, u8) = (40, 42, 48);
+pub const GRID_LINE_RGB: (u8, u8, u8) = (25, 26, 32);
+/// グリッド線のスクリーンピクセル幅（ズームレベルに依存しない一定幅）
+pub const GRID_LINE_SCREEN_WIDTH: f32 = 0.1;
 
 /// 1チャンクのテクスチャピクセル数（1辺）
-pub const CHUNK_TEX_SIZE: u32 = CHUNK_SIZE as u32 * (CELL_PIXELS + GRID_LINE_PIXELS);
+/// グリッド線はシェーダーで描画するため、テクスチャにはセルデータのみ
+pub const CHUNK_TEX_SIZE: u32 = CHUNK_SIZE as u32 * CELL_PIXELS;
 
 #[cfg(test)]
 mod tests {
@@ -217,8 +218,8 @@ mod chunk_tests {
 
     #[test]
     fn chunk_tex_size_value() {
-        // 64 * (10 + 1) = 704
-        assert_eq!(CHUNK_TEX_SIZE, 704);
+        // 64 * 8 = 512 (グリッド線はシェーダー描画のためテクスチャに含まない)
+        assert_eq!(CHUNK_TEX_SIZE, 512);
     }
 
     #[test]

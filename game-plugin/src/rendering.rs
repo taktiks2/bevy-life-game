@@ -2,20 +2,21 @@
 
 use bevy::{
     asset::RenderAssetUsages,
-    image::{ImageFilterMode, ImageSampler, ImageSamplerDescriptor},
+    image::{ImageSampler, ImageSamplerDescriptor},
     prelude::*,
 };
 use common::consts::{
     CELL_ALIVE_RGB, CELL_DEAD_RGB, CELL_PIXELS, CELL_WORLD_SIZE, CHUNK_SIZE, CHUNK_TEX_SIZE,
-    CHUNK_WORLD_SIZE, GRID_LINE_PIXELS, GRID_LINE_RGB,
+    CHUNK_WORLD_SIZE, GRID_LINE_RGB, GRID_LINE_SCREEN_WIDTH,
 };
 
 use crate::components::chunk::Chunk;
 use crate::components::screen::{CellHighlight, OnGameScreen};
+use crate::grid_material::{GridMaterial, GridUniforms};
 use crate::layer::Layer;
 use crate::resources::world::{ChunkKey, World};
 
-/// チャンクのワールド空間位置を計算する（Sprite中心座標）
+/// チャンクのワールド空間位置を計算する（メッシュ中心座標）
 pub fn chunk_world_pos(chunk_key: ChunkKey) -> Vec3 {
     let (cx, cy) = chunk_key;
     Vec3::new(
@@ -25,18 +26,23 @@ pub fn chunk_world_pos(chunk_key: ChunkKey) -> Vec3 {
     )
 }
 
-/// チャンクのスプライトエンティティを生成する
-pub fn spawn_chunk_sprite(
+/// チャンクのメッシュエンティティを生成する
+///
+/// セルデータはテクスチャに、グリッド線はカスタムシェーダーで描画する。
+pub fn spawn_chunk_mesh(
     commands: &mut Commands,
     images: &mut Assets<Image>,
+    meshes: &mut Assets<Mesh>,
+    materials: &mut Assets<GridMaterial>,
     world: &World,
     chunk_key: ChunkKey,
+    camera_scale: f32,
     grid_visible: bool,
 ) -> Entity {
     let tex_size = CHUNK_TEX_SIZE;
     let mut data = vec![255u8; (tex_size * tex_size * 4) as usize];
 
-    write_chunk_to_image_data(&mut data, world, chunk_key, grid_visible);
+    write_chunk_to_image_data(&mut data, world, chunk_key);
 
     let mut image = Image::new(
         bevy::render::render_resource::Extent3d {
@@ -51,16 +57,31 @@ pub fn spawn_chunk_sprite(
     );
     image.sampler = ImageSampler::Descriptor(ImageSamplerDescriptor::nearest());
 
-    let handle = images.add(image);
+    let image_handle = images.add(image);
+
+    let material = materials.add(GridMaterial {
+        cell_texture: image_handle,
+        uniforms: GridUniforms {
+            camera_scale,
+            grid_visible: if grid_visible { 1.0 } else { 0.0 },
+            chunk_cells: CHUNK_SIZE as f32,
+            grid_line_width: GRID_LINE_SCREEN_WIDTH,
+            grid_color: LinearRgba::new(
+                GRID_LINE_RGB.0 as f32 / 255.0,
+                GRID_LINE_RGB.1 as f32 / 255.0,
+                GRID_LINE_RGB.2 as f32 / 255.0,
+                1.0,
+            ),
+        },
+    });
+
+    let mesh = meshes.add(Rectangle::new(CHUNK_WORLD_SIZE, CHUNK_WORLD_SIZE));
     let pos = chunk_world_pos(chunk_key);
 
     commands
         .spawn((
-            Sprite {
-                image: handle,
-                custom_size: Some(Vec2::new(CHUNK_WORLD_SIZE, CHUNK_WORLD_SIZE)),
-                ..default()
-            },
+            Mesh2d(mesh),
+            MeshMaterial2d(material),
             Transform::from_translation(pos),
             Layer::World.as_render_layer(),
             OnGameScreen,
@@ -86,43 +107,26 @@ pub fn spawn_cell_highlight(commands: &mut Commands) {
 
 /// チャンクのセル状態をRGBAピクセルデータに書き込む
 ///
-/// チャンク内の32×32セルのピクセルデータを生成する。
-/// グリッド線はテクスチャ内の1pxマージンとして描画。
-pub fn write_chunk_to_image_data(
-    data: &mut [u8],
-    world: &World,
-    chunk_key: ChunkKey,
-    grid_visible: bool,
-) {
+/// チャンク内のセルデータのみをテクスチャに書き込む。
+/// グリッド線はシェーダーで描画するため、テクスチャには含まない。
+pub fn write_chunk_to_image_data(data: &mut [u8], world: &World, chunk_key: ChunkKey) {
     let (cx, cy) = chunk_key;
     let base_x = cx * CHUNK_SIZE;
     let base_y = cy * CHUNK_SIZE;
     let tex_w = CHUNK_TEX_SIZE as usize;
-    let gl = GRID_LINE_PIXELS as usize;
     let cp = CELL_PIXELS as usize;
-    let stride = cp + gl;
 
     for tex_y in 0..tex_w {
         for tex_x in 0..tex_w {
             let offset = (tex_y * tex_w + tex_x) * 4;
 
-            // グリッド線かセル領域かを判定
-            let is_grid_x = tex_x % stride < gl;
-            let is_grid_y = tex_y % stride < gl;
+            let cell_x = base_x + (tex_x / cp).min(CHUNK_SIZE as usize - 1) as i32;
+            let cell_y = base_y + (tex_y / cp).min(CHUNK_SIZE as usize - 1) as i32;
 
-            let (r, g, b) = if grid_visible && (is_grid_x || is_grid_y) {
-                GRID_LINE_RGB
+            let (r, g, b) = if world.is_alive(cell_x, cell_y) {
+                CELL_ALIVE_RGB
             } else {
-                let cell_local_x = (tex_x / stride) as i32;
-                let cell_local_y = (tex_y / stride) as i32;
-                let cell_x = base_x + cell_local_x.min(CHUNK_SIZE - 1);
-                let cell_y = base_y + cell_local_y.min(CHUNK_SIZE - 1);
-
-                if world.is_alive(cell_x, cell_y) {
-                    CELL_ALIVE_RGB
-                } else {
-                    CELL_DEAD_RGB
-                }
+                CELL_DEAD_RGB
             };
 
             data[offset] = r;
@@ -137,9 +141,7 @@ pub fn write_chunk_to_image_data(
 mod tests {
     use super::*;
     use crate::resources::world::World;
-    use common::consts::{
-        CELL_ALIVE_RGB, CELL_DEAD_RGB, CELL_PIXELS, CHUNK_TEX_SIZE, GRID_LINE_PIXELS, GRID_LINE_RGB,
-    };
+    use common::consts::{CELL_ALIVE_RGB, CELL_DEAD_RGB, CELL_PIXELS, CHUNK_TEX_SIZE};
 
     fn pixel_rgb(data: &[u8], tex_width: usize, tx: usize, ty: usize) -> (u8, u8, u8) {
         let offset = (ty * tex_width + tx) * 4;
@@ -147,64 +149,44 @@ mod tests {
     }
 
     #[test]
-    fn grid_visible_top_left_is_grid_line() {
+    fn first_pixel_is_dead_cell() {
         let world = World::new();
         let tex_w = CHUNK_TEX_SIZE as usize;
         let mut data = vec![0u8; tex_w * tex_w * 4];
 
-        write_chunk_to_image_data(&mut data, &world, (0, 0), true);
+        write_chunk_to_image_data(&mut data, &world, (0, 0));
 
-        assert_eq!(pixel_rgb(&data, tex_w, 0, 0), GRID_LINE_RGB);
+        // グリッド線はシェーダー描画のため、テクスチャの(0,0)はセルデータ
+        assert_eq!(pixel_rgb(&data, tex_w, 0, 0), CELL_DEAD_RGB);
     }
 
     #[test]
-    fn grid_visible_first_cell_pixel() {
-        let world = World::new();
-        let tex_w = CHUNK_TEX_SIZE as usize;
-        let mut data = vec![0u8; tex_w * tex_w * 4];
-
-        write_chunk_to_image_data(&mut data, &world, (0, 0), true);
-
-        let gl = GRID_LINE_PIXELS as usize;
-        assert_eq!(pixel_rgb(&data, tex_w, gl, gl), CELL_DEAD_RGB);
-    }
-
-    #[test]
-    fn grid_visible_alive_cell() {
+    fn alive_cell_pixel() {
         let mut world = World::new();
         world.toggle_cell(0, 0);
 
         let tex_w = CHUNK_TEX_SIZE as usize;
         let mut data = vec![0u8; tex_w * tex_w * 4];
 
-        write_chunk_to_image_data(&mut data, &world, (0, 0), true);
+        write_chunk_to_image_data(&mut data, &world, (0, 0));
 
-        let gl = GRID_LINE_PIXELS as usize;
-        assert_eq!(pixel_rgb(&data, tex_w, gl, gl), CELL_ALIVE_RGB);
+        assert_eq!(pixel_rgb(&data, tex_w, 0, 0), CELL_ALIVE_RGB);
     }
 
     #[test]
-    fn grid_hidden_grid_line_pixels_are_dead_color() {
-        let world = World::new();
+    fn second_cell_starts_at_cell_pixels_offset() {
+        let mut world = World::new();
+        world.toggle_cell(1, 0);
+
         let tex_w = CHUNK_TEX_SIZE as usize;
         let mut data = vec![0u8; tex_w * tex_w * 4];
 
-        write_chunk_to_image_data(&mut data, &world, (0, 0), false);
+        write_chunk_to_image_data(&mut data, &world, (0, 0));
 
-        assert_eq!(pixel_rgb(&data, tex_w, 0, 0), CELL_DEAD_RGB);
-    }
-
-    #[test]
-    fn grid_line_between_cells() {
-        let world = World::new();
-        let tex_w = CHUNK_TEX_SIZE as usize;
-        let mut data = vec![0u8; tex_w * tex_w * 4];
-
-        write_chunk_to_image_data(&mut data, &world, (0, 0), true);
-
-        let gl = GRID_LINE_PIXELS as usize;
         let cp = CELL_PIXELS as usize;
-        let grid_x = gl + cp; // セル(0,0)の右端の次がグリッド線
-        assert_eq!(pixel_rgb(&data, tex_w, grid_x, gl), GRID_LINE_RGB);
+        // セル(1,0)の先頭ピクセル
+        assert_eq!(pixel_rgb(&data, tex_w, cp, 0), CELL_ALIVE_RGB);
+        // セル(0,0)の範囲内はdead
+        assert_eq!(pixel_rgb(&data, tex_w, cp - 1, 0), CELL_DEAD_RGB);
     }
 }

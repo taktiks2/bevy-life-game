@@ -6,7 +6,8 @@ use rustc_hash::FxHashSet;
 
 use crate::WorldCamera;
 use crate::components::chunk::Chunk;
-use crate::rendering::{spawn_chunk_sprite, write_chunk_to_image_data};
+use crate::grid_material::GridMaterial;
+use crate::rendering::{spawn_chunk_mesh, write_chunk_to_image_data};
 use crate::resources::interaction::GridVisible;
 use crate::resources::world::{ChunkKey, World};
 
@@ -52,11 +53,13 @@ pub fn calc_visible_chunks(
 pub fn manage_chunks(
     mut commands: Commands,
     mut images: ResMut<Assets<Image>>,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut grid_materials: ResMut<Assets<GridMaterial>>,
     mut world: ResMut<World>,
     grid_visible: Res<GridVisible>,
     camera_query: Query<(&Transform, &Projection), With<WorldCamera>>,
     windows: Query<&Window>,
-    existing_chunks: Query<(Entity, &Chunk, &Sprite)>,
+    existing_chunks: Query<(Entity, &Chunk, &MeshMaterial2d<GridMaterial>)>,
 ) {
     let Ok((camera_transform, projection)) = camera_query.single() else {
         return;
@@ -83,10 +86,13 @@ pub fn manage_chunks(
     }
 
     // ビューポート外のチャンクをデスポーン
-    for (entity, chunk, sprite) in &existing_chunks {
+    for (entity, chunk, material_handle) in &existing_chunks {
         if !visible_chunks.contains(&chunk.0) {
-            // Imageアセットも削除してメモリリークを防止
-            images.remove(&sprite.image);
+            // マテリアル内のImageアセットも削除してメモリリークを防止
+            if let Some(material) = grid_materials.get(&material_handle.0) {
+                images.remove(&material.cell_texture);
+            }
+            grid_materials.remove(&material_handle.0);
             commands.entity(entity).despawn();
         }
     }
@@ -94,30 +100,31 @@ pub fn manage_chunks(
     // 新規チャンクをスポーン
     for &chunk_key in &visible_chunks {
         if !existing_map.contains(&chunk_key) {
-            spawn_chunk_sprite(
+            spawn_chunk_mesh(
                 &mut commands,
                 &mut images,
+                &mut meshes,
+                &mut grid_materials,
                 &world,
                 chunk_key,
+                camera_scale,
                 grid_visible.0,
             );
         }
     }
 
-    // GridVisible変更時: 全チャンクのテクスチャを再描画
-    let force_redraw = grid_visible.is_changed();
-
-    // dirtyチャンクまたはGridVisible変更時のテクスチャ更新
-    if world.is_changed() || force_redraw {
-        for (_, chunk, sprite) in &existing_chunks {
+    // dirtyチャンクのテクスチャ更新
+    if world.is_changed() {
+        for (_, chunk, material_handle) in &existing_chunks {
             if !visible_chunks.contains(&chunk.0) {
                 continue;
             }
-            let needs_update = force_redraw || world.dirty_chunks().contains(&chunk.0);
-            if needs_update {
-                if let Some(image) = images.get_mut(&sprite.image) {
-                    if let Some(ref mut data) = image.data {
-                        write_chunk_to_image_data(data, &world, chunk.0, grid_visible.0);
+            if world.dirty_chunks().contains(&chunk.0) {
+                if let Some(material) = grid_materials.get(&material_handle.0) {
+                    if let Some(image) = images.get_mut(&material.cell_texture) {
+                        if let Some(ref mut data) = image.data {
+                            write_chunk_to_image_data(data, &world, chunk.0);
+                        }
                     }
                 }
             }
@@ -126,6 +133,29 @@ pub fn manage_chunks(
 
     // dirtyチャンクをクリア
     world.clear_dirty_chunks();
+}
+
+/// カメラスケール・GridVisibleの変更をマテリアルuniformに反映する
+pub fn update_grid_uniforms(
+    camera_query: Query<&Projection, With<WorldCamera>>,
+    grid_visible: Res<GridVisible>,
+    chunk_query: Query<&MeshMaterial2d<GridMaterial>, With<Chunk>>,
+    mut materials: ResMut<Assets<GridMaterial>>,
+) {
+    let Ok(projection) = camera_query.single() else {
+        return;
+    };
+    let camera_scale = match projection {
+        Projection::Orthographic(ortho) => ortho.scale,
+        _ => 1.0,
+    };
+
+    for material_handle in &chunk_query {
+        if let Some(material) = materials.get_mut(&material_handle.0) {
+            material.uniforms.camera_scale = camera_scale;
+            material.uniforms.grid_visible = if grid_visible.0 { 1.0 } else { 0.0 };
+        }
+    }
 }
 
 #[cfg(test)]
