@@ -32,18 +32,19 @@ fn fragment(mesh: VertexOutput) -> @location(0) vec4<f32> {
     let cell_fract = fract(cell_coord);
     let dist_to_edge = min(cell_fract, 1.0 - cell_fract);
 
-    // グリッド線幅（セル単位）: grid_line_width スクリーンピクセル分
-    let line_half_width = uniforms.grid_line_width * fw * 0.5;
-
-    // アンチエイリアシング: fwidthの1ピクセル分でスムーズに遷移
-    let grid_x = smoothstep(line_half_width.x + fw.x, line_half_width.x, dist_to_edge.x);
-    let grid_y = smoothstep(line_half_width.y + fw.y, line_half_width.y, dist_to_edge.y);
+    // アンチエイリアシング: AA幅は常に1ピクセル分（均一な描画を保証）
+    let grid_x = smoothstep(fw.x, 0.0, dist_to_edge.x);
+    let grid_y = smoothstep(fw.y, 0.0, dist_to_edge.y);
     let grid_factor = max(grid_x, grid_y);
+
+    // grid_line_width で線の強度（不透明度）を制御
+    // 値が小さいほど薄く細く見える
+    let intensity = clamp(uniforms.grid_line_width, 0.0, 1.0);
 
     // セルのスクリーンピクセルサイズ（fwidthの逆数）
     let cell_screen_pixels = 1.0 / max(fw.x, fw.y);
     // セルが小さすぎる場合はグリッド線をフェードアウト
     let fade = smoothstep(2.0, 6.0, cell_screen_pixels);
 
-    return mix(cell_color, uniforms.grid_color, grid_factor * fade);
+    return mix(cell_color, uniforms.grid_color, grid_factor * intensity * fade);
 }
