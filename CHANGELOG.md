@@ -2,6 +2,18 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## [0.2.0](https://github.com/taktiks2/bevy-life-game/compare/1fc83a37a7705bc60f71deb5c664ed23b2a9ef26..0.2.0) - 2026-02-15
+#### Features
+- セル間のグリッドライン表示機能を追加 - ([04c692c](https://github.com/taktiks2/bevy-life-game/commit/04c692caef72858b16c35f94bd9f3023f59d90d5)) - taktiks2
+- ワールドのサイズ調整 - ([13b576b](https://github.com/taktiks2/bevy-life-game/commit/13b576b745146a3d337f16c0fd7bb002d084940b)) - taktiks2
+#### Bug Fixes
+- グリッド非表示時にセル色で塗りつぶし＆ズームアウト時の線省略を防止 - ([149e6ab](https://github.com/taktiks2/bevy-life-game/commit/149e6ab1b3dbbca35c469b7bc70f894641745813)) - taktiks2
+- ボタンテキストのホバーによる二重イベント発火を修正 - ([266a5cc](https://github.com/taktiks2/bevy-life-game/commit/266a5cccd73e088e6e173e538145278a10aba5a4)) - taktiks2
+#### Miscellaneous Chores
+- コメントの追加 - ([1fc83a3](https://github.com/taktiks2/bevy-life-game/commit/1fc83a37a7705bc60f71deb5c664ed23b2a9ef26)) - taktiks2
+
+- - -
+
 ## [0.1.0](https://github.com/taktiks2/bevy-life-game/compare/88fc59a3817a21e5bc8275b4777952512145f0c4..0.1.0) - 2026-02-15
 #### Features
 - 初期ウィンドウサイズの変更 - ([a309dd8](https://github.com/taktiks2/bevy-life-game/commit/a309dd8501343d102d5aa798f5aac2b8ca4ede71)) - taktiks2
