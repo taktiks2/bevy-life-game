@@ -8,10 +8,8 @@ use bevy::prelude::Component;
 /// Observerでクリックイベントを処理する。
 #[derive(Component)]
 pub enum GameButtonAction {
-    /// シミュレーション開始
-    Start,
-    /// シミュレーション停止
-    Stop,
+    /// シミュレーション開始/停止トグル
+    ToggleSimulation,
     /// 1世代進める
     Next,
     /// 初期状態にリセット

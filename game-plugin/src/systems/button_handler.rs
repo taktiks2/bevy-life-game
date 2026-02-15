@@ -7,6 +7,7 @@ use common::consts::{
 };
 
 use crate::WorldCamera;
+use crate::components::action::GameButtonAction;
 use crate::events::{
     GenerationResetEvent, PlayAudioEvent, ProgressGenerationEvent, WorldClearEvent,
 };
@@ -14,25 +15,36 @@ use crate::resources::interaction::GridVisible;
 use crate::resources::timer::SimulationTimer;
 use crate::states::SimulationState;
 
-/// Startボタンのクリックハンドラ: シミュレーションを開始する
-pub fn handle_start(
+/// シミュレーション開始/停止トグルボタンのクリックハンドラ
+pub fn handle_toggle_simulation(
     _click: On<Pointer<Click>>,
     simulation_state: Res<State<SimulationState>>,
     mut simulation_next_state: ResMut<NextState<SimulationState>>,
 ) {
-    if *simulation_state.get() == SimulationState::Paused {
-        simulation_next_state.set(SimulationState::Simulating);
+    match simulation_state.get() {
+        SimulationState::Paused => simulation_next_state.set(SimulationState::Simulating),
+        SimulationState::Simulating => simulation_next_state.set(SimulationState::Paused),
     }
 }
 
-/// Stopボタンのクリックハンドラ: シミュレーションを一時停止する
-pub fn handle_stop(
-    _click: On<Pointer<Click>>,
+/// シミュレーション状態に応じてトグルボタンのテキストを更新するシステム
+pub fn update_toggle_button_text(
     simulation_state: Res<State<SimulationState>>,
-    mut simulation_next_state: ResMut<NextState<SimulationState>>,
+    query_button: Query<(&GameButtonAction, &Children)>,
+    mut query_text: Query<&mut Text>,
 ) {
-    if *simulation_state.get() == SimulationState::Simulating {
-        simulation_next_state.set(SimulationState::Paused);
+    let label = match simulation_state.get() {
+        SimulationState::Paused => "Start",
+        SimulationState::Simulating => "Stop",
+    };
+    for (action, children) in query_button.iter() {
+        if matches!(action, GameButtonAction::ToggleSimulation) {
+            for child in children.iter() {
+                if let Ok(mut text) = query_text.get_mut(child) {
+                    **text = label.to_string();
+                }
+            }
+        }
     }
 }
 

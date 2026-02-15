@@ -40,14 +40,10 @@ pub fn spawn_screen(
             // Generation counter
             spawn_generation_text(p, &game_assets, world.generation_count);
 
-            // Simulation controls: Start / Stop / Next
+            // Simulation controls: Start/Stop toggle + Next
             p.spawn(button_group_node()).with_children(|p| {
-                spawn_action_button(p, &game_assets, "Start", GameButtonAction::Start)
-                    .observe(handle_start)
-                    .observe(handle_over)
-                    .observe(handle_out);
-                spawn_action_button(p, &game_assets, "Stop", GameButtonAction::Stop)
-                    .observe(handle_stop)
+                spawn_action_button(p, &game_assets, "Start", GameButtonAction::ToggleSimulation)
+                    .observe(handle_toggle_simulation)
                     .observe(handle_over)
                     .observe(handle_out);
                 spawn_action_button(p, &game_assets, "Next", GameButtonAction::Next)
