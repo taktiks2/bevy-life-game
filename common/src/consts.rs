@@ -4,9 +4,9 @@ use bevy::color::Color;
 
 // ウィンドウサイズ
 /// ウィンドウの初期幅（ピクセル）
-pub const WINDOW_WIDTH: f32 = 1000.;
+pub const WINDOW_WIDTH: f32 = 1280.;
 /// ウィンドウの初期高さ（ピクセル）
-pub const WINDOW_HEIGHT: f32 = 800.;
+pub const WINDOW_HEIGHT: f32 = 720.;
 /// ウィンドウの最小幅（ピクセル）
 pub const MIN_WINDOW_WIDTH: f32 = 600.0;
 /// ウィンドウの最小高さ（ピクセル）
@@ -161,9 +161,9 @@ mod tests {
 
     #[test]
     fn calc_viewport_sizes_default_window() {
-        let sizes = calc_viewport_sizes(1000, 800);
-        assert_eq!(sizes.viewport_width, 1000);
-        assert_eq!(sizes.main_height, 720);
+        let sizes = calc_viewport_sizes(1280, 720);
+        assert_eq!(sizes.viewport_width, 1280);
+        assert_eq!(sizes.main_height, 640);
         assert_eq!(sizes.panel_height, PANEL_HEIGHT);
     }
 
