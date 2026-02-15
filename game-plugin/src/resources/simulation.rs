@@ -17,12 +17,12 @@ pub fn count_alive_neighbors(
     SQUARE_COORDINATES
         .iter()
         .filter(|(rel_y, rel_x)| {
-            let target_abs_y = abs_y as i8 + rel_y;
-            let target_abs_x = abs_x as i8 + rel_x;
+            let target_abs_y = abs_y as i16 + *rel_y as i16;
+            let target_abs_x = abs_x as i16 + *rel_x as i16;
             target_abs_y >= 0
-                && target_abs_y < height as i8
+                && target_abs_y < height as i16
                 && target_abs_x >= 0
-                && target_abs_x < width as i8
+                && target_abs_x < width as i16
                 && cells[target_abs_y as usize * width as usize + target_abs_x as usize]
         })
         .count()

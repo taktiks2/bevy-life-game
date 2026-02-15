@@ -42,9 +42,9 @@ pub fn calc_viewport_sizes(physical_width: u32, physical_height: u32) -> Viewpor
 
 // ワールドサイズ（セル数）
 /// ワールドの幅（セル数）
-pub const WORLD_WIDTH: u16 = 100;
+pub const WORLD_WIDTH: u16 = 300;
 /// ワールドの高さ（セル数）
-pub const WORLD_HEIGHT: u16 = 100;
+pub const WORLD_HEIGHT: u16 = 300;
 
 // シミュレーション速度
 /// デフォルトのティック間隔（秒）
