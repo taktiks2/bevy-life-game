@@ -78,6 +78,9 @@ pub fn spawn_action_button<'a>(
                 ..default()
             },
             TextColor(TEXT_PRIMARY),
+            // テキストをピッキング対象外にし、ホバーイベントが子要素から
+            // バブリングしてボタンの Over/Out が二重発火するのを防ぐ
+            Pickable::IGNORE,
         ));
     });
     entity
@@ -120,6 +123,9 @@ pub fn spawn_small_button<'a>(
                 ..default()
             },
             TextColor(TEXT_PRIMARY),
+            // テキストをピッキング対象外にし、ホバーイベントが子要素から
+            // バブリングしてボタンの Over/Out が二重発火するのを防ぐ
+            Pickable::IGNORE,
         ));
     });
     entity
