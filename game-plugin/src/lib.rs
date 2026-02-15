@@ -25,7 +25,7 @@ use components::{
 };
 use events::*;
 use layer::Layer;
-use resources::interaction::{AudioCooldown, HoveredCell};
+use resources::interaction::{AudioCooldown, GridVisible, HoveredCell};
 use resources::{
     timer::{SimulationTimer, SpaceKeyTimer},
     world::World,
@@ -160,4 +160,5 @@ fn setup_resource(mut commands: Commands, game_assets: Res<GameAssets>) {
         game_assets.world_height,
     ));
     commands.insert_resource(SimulationTimer::new(game_assets.tick_interval));
+    commands.insert_resource(GridVisible::default());
 }

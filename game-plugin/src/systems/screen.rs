@@ -68,6 +68,14 @@ pub fn spawn_screen(
                     .observe(handle_out);
             });
 
+            // Grid toggle
+            p.spawn(button_group_node()).with_children(|p| {
+                spawn_action_button(p, &game_assets, "Grid", GameButtonAction::GridToggle)
+                    .observe(handle_grid_toggle)
+                    .observe(handle_over)
+                    .observe(handle_out);
+            });
+
             // Speed control
             p.spawn(stepper_row_node()).with_children(|p| {
                 spawn_small_button(p, &game_assets, "<", GameButtonAction::SpeedDown)

@@ -5,7 +5,6 @@ use common::consts::calc_viewport_sizes;
 
 use crate::WorldCamera;
 use crate::components::screen::CellHighlight;
-use crate::events::PlayAudioEvent;
 use crate::resources::{interaction::HoveredCell, world::World};
 use crate::systems::coordinate::{
     is_cursor_over_world_viewport, screen_to_grid_coords, world_to_screen_pos,
@@ -46,15 +45,14 @@ pub fn handle_grid_click(
 
 /// マウスカーソル位置に応じてセルハイライトを更新する
 ///
-/// カーソルがグリッド上にある場合は該当セル位置にハイライトを表示し、
-/// セルが変わった時に効果音を再生する。グリッド外では非表示にする。
+/// カーソルがグリッド上にある場合は該当セル位置にハイライトを表示する。
+/// グリッド外では非表示にする。
 pub fn update_cell_highlight(
     windows: Query<&Window>,
     camera_query: Query<(&Camera, &GlobalTransform), With<WorldCamera>>,
     world: Res<World>,
     mut highlight_query: Query<(&mut Transform, &mut Visibility), With<CellHighlight>>,
     mut hovered: ResMut<HoveredCell>,
-    mut events: MessageWriter<PlayAudioEvent>,
 ) {
     let Ok(window) = windows.single() else {
         return;
@@ -85,11 +83,7 @@ pub fn update_cell_highlight(
             transform.translation.y = pos.y;
             transform.translation.z = 1.0;
 
-            let new_hover = Some((gx, gy));
-            if hovered.0 != new_hover {
-                hovered.0 = new_hover;
-                events.write(PlayAudioEvent);
-            }
+            hovered.0 = Some((gx, gy));
         }
         None => {
             *vis = Visibility::Hidden;

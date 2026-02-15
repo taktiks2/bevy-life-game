@@ -11,6 +11,10 @@ pub struct HoveredCell(pub Option<(u16, u16)>);
 #[derive(Resource)]
 pub struct AudioCooldown(pub Timer);
 
+/// グリッドラインの表示/非表示状態を管理するリソース
+#[derive(Resource, Default)]
+pub struct GridVisible(pub bool);
+
 impl Default for AudioCooldown {
     fn default() -> Self {
         Self(Timer::from_seconds(0.05, TimerMode::Once))
