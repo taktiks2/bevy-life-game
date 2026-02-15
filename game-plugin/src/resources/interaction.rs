@@ -15,6 +15,20 @@ pub struct AudioCooldown(pub Timer);
 #[derive(Resource, Default)]
 pub struct GridVisible(pub bool);
 
+/// マウスドラッグ状態を管理するリソース
+///
+/// 左クリック＋ドラッグでカメラパンを行うために、
+/// クリック開始位置と前フレーム位置を追跡する。
+#[derive(Resource, Default)]
+pub struct DragState {
+    /// ドラッグ開始時のカーソル位置（スクリーン座標）
+    pub start_pos: Option<Vec2>,
+    /// 前フレームのカーソル位置（スクリーン座標）
+    pub last_pos: Option<Vec2>,
+    /// ドラッグ判定済みか（閾値を超えたらtrue）
+    pub is_dragging: bool,
+}
+
 impl Default for AudioCooldown {
     fn default() -> Self {
         Self(Timer::from_seconds(0.05, TimerMode::Once))

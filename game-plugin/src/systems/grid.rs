@@ -5,19 +5,27 @@ use common::consts::calc_viewport_sizes;
 
 use crate::WorldCamera;
 use crate::components::screen::CellHighlight;
-use crate::resources::{interaction::HoveredCell, world::World};
+use crate::resources::interaction::{DragState, HoveredCell};
+use crate::resources::world::World;
 use crate::systems::coordinate::{
     is_cursor_over_world_viewport, screen_to_grid_coords, world_to_screen_pos,
 };
 
 /// グリッド上の左クリックを処理し、クリックされたセルをトグルする
+///
+/// ドラッグ操作後のリリースではセルをトグルしない。
 pub fn handle_grid_click(
     mouse: Res<ButtonInput<MouseButton>>,
     windows: Query<&Window>,
     camera_query: Query<(&Camera, &GlobalTransform), With<WorldCamera>>,
     mut world: ResMut<World>,
+    drag_state: Res<DragState>,
 ) {
-    if !mouse.just_pressed(MouseButton::Left) {
+    if !mouse.just_released(MouseButton::Left) {
+        return;
+    }
+    // ドラッグ操作だった場合はセルトグルをスキップ
+    if drag_state.is_dragging {
         return;
     }
     let Ok(window) = windows.single() else {

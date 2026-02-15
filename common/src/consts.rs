@@ -69,6 +69,10 @@ pub const MAX_CAMERA_SCALE: f32 = 1.0;
 pub const CAMERA_SCALE_STEP: f32 = 0.1;
 /// WASD操作によるカメラ移動速度
 pub const CAMERA_PAN_SPEED: f32 = 10.0;
+/// ドラッグ判定の移動ピクセル閾値（スクリーン座標）
+pub const DRAG_THRESHOLD: f32 = 5.0;
+/// マウスホイールズーム感度
+pub const MOUSE_WHEEL_ZOOM_SENSITIVITY: f32 = 0.1;
 
 // UIサイズ
 /// タイトルのフォントサイズ

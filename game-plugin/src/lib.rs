@@ -25,7 +25,7 @@ use components::{
 };
 use events::*;
 use layer::Layer;
-use resources::interaction::{AudioCooldown, GridVisible, HoveredCell};
+use resources::interaction::{AudioCooldown, DragState, GridVisible, HoveredCell};
 use resources::{
     timer::{SimulationTimer, SpaceKeyTimer},
     world::World,
@@ -77,7 +77,9 @@ impl Plugin for GamePlugin {
                 progress_generation_trigger.run_if(in_state(SimulationState::Simulating)),
                 update_generation,
                 reset_generation,
+                mouse_wheel_zoom,
                 handle_grid_click,
+                mouse_drag_pan.after(handle_grid_click),
                 update_cell_highlight,
             )
                 .run_if(in_state(GameState::Game)),
@@ -96,6 +98,7 @@ impl Plugin for GamePlugin {
         app.insert_resource(SpaceKeyTimer::new());
         app.init_resource::<HoveredCell>();
         app.init_resource::<AudioCooldown>();
+        app.init_resource::<DragState>();
         app.init_state::<SimulationState>();
         app.add_message::<ProgressGenerationEvent>();
         app.add_message::<GenerationResetEvent>();
