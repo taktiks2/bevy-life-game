@@ -35,6 +35,7 @@ use systems::button_handler::update_toggle_button_text;
 use systems::{
     audio::play_audios,
     cell_operations::*,
+    chunk::manage_chunks,
     grid::{handle_grid_click, update_cell_highlight},
     input::*,
     screen::spawn_screen,
@@ -70,7 +71,7 @@ impl Plugin for GamePlugin {
         app.add_systems(
             Update,
             (
-                update_cells,
+                manage_chunks,
                 game_input_keyboard_handling,
                 game_input_zoom_handling,
                 progress_generation,
@@ -108,9 +109,6 @@ impl Plugin for GamePlugin {
 }
 
 /// ボトムパネル用カメラを生成する
-///
-/// ウィンドウ下部をビューポートとし、操作ボタン群を描画する。
-/// order=1 でワールドカメラより上に描画される。
 pub fn setup_bottom_panel_camera(mut commands: Commands, windows: Query<&Window>) {
     let (pw, ph) = windows
         .single()
@@ -134,9 +132,6 @@ pub fn setup_bottom_panel_camera(mut commands: Commands, windows: Query<&Window>
 }
 
 /// ワールド描画用カメラを生成する
-///
-/// ウィンドウ上部をビューポートとし、セルグリッドを描画する。
-/// OrthographicProjectionによるズーム・パン操作に対応する。
 pub fn setup_world_camera(mut commands: Commands, windows: Query<&Window>) {
     let (pw, ph) = windows
         .single()
@@ -166,10 +161,7 @@ pub fn setup_world_camera(mut commands: Commands, windows: Query<&Window>) {
 
 /// Worldリソースとシミュレーションタイマーを初期化する
 fn setup_resource(mut commands: Commands, game_assets: Res<GameAssets>) {
-    commands.insert_resource(World::new(
-        game_assets.world_width,
-        game_assets.world_height,
-    ));
+    commands.insert_resource(World::new());
     commands.insert_resource(SimulationTimer::new(game_assets.tick_interval));
     commands.insert_resource(GridVisible::default());
 }

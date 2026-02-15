@@ -40,11 +40,13 @@ pub fn calc_viewport_sizes(physical_width: u32, physical_height: u32) -> Viewpor
     }
 }
 
-// ワールドサイズ（セル数）
-/// ワールドの幅（セル数）
-pub const WORLD_WIDTH: u16 = 480;
-/// ワールドの高さ（セル数）
-pub const WORLD_HEIGHT: u16 = 270;
+// チャンク設定
+/// 1チャンクの1辺のセル数
+pub const CHUNK_SIZE: i32 = 32;
+/// 1セルのワールド空間サイズ
+pub const CELL_WORLD_SIZE: f32 = 1.0;
+/// 1チャンクのワールド空間サイズ
+pub const CHUNK_WORLD_SIZE: f32 = CHUNK_SIZE as f32 * CELL_WORLD_SIZE;
 
 // シミュレーション速度
 /// デフォルトのティック間隔（秒）
@@ -60,11 +62,11 @@ pub const SPACE_KEY_HOLD_DURATION: f32 = 0.5;
 
 // カメラ設定
 /// カメラの初期ズームスケール
-pub const INITIAL_CAMERA_SCALE: f32 = 0.2;
+pub const INITIAL_CAMERA_SCALE: f32 = 0.35;
 /// カメラのズーム最小値（最も拡大）
-pub const MIN_CAMERA_SCALE: f32 = 0.1;
+pub const MIN_CAMERA_SCALE: f32 = 0.05;
 /// カメラのズーム最大値（最も縮小）
-pub const MAX_CAMERA_SCALE: f32 = 1.0;
+pub const MAX_CAMERA_SCALE: f32 = 2.0;
 /// ズーム変更時のステップ幅
 pub const CAMERA_SCALE_STEP: f32 = 0.1;
 /// WASD操作によるカメラ移動速度
@@ -154,22 +156,6 @@ pub const SQUARE_COORDINATES: [(i8, i8); 8] = [
     (1, 1),
 ];
 
-/// グリッドのワールド空間表示サイズ（高さ基準）
-pub const GRID_DISPLAY_HEIGHT: f32 = 800.0;
-/// グリッドのワールド空間表示サイズ（幅はセル数の比率で算出）
-pub const GRID_DISPLAY_WIDTH: f32 =
-    GRID_DISPLAY_HEIGHT * (WORLD_WIDTH as f32 / WORLD_HEIGHT as f32);
-
-/// 指定ワールドサイズに対する1セルのピクセルサイズ (幅, 高さ) を返す
-///
-/// セルは正方形になるよう、高さ基準で統一する。
-pub fn cell_size(world_width: u16, world_height: u16) -> (f32, f32) {
-    (
-        GRID_DISPLAY_WIDTH / world_width as f32,
-        GRID_DISPLAY_HEIGHT / world_height as f32,
-    )
-}
-
 /// セル1個を表現するテクスチャピクセル数（幅・高さ）
 pub const CELL_PIXELS: u32 = 10;
 /// グリッドライン1本のテクスチャピクセル数
@@ -177,10 +163,9 @@ pub const GRID_LINE_PIXELS: u32 = 1;
 /// グリッドラインのRGB色（控えめな暗灰色）
 pub const GRID_LINE_RGB: (u8, u8, u8) = (40, 42, 48);
 
-/// ワールドのセル数からテクスチャのピクセル数を計算する
-pub fn texture_size(cells: u16) -> u32 {
-    cells as u32 * CELL_PIXELS + (cells as u32 + 1) * GRID_LINE_PIXELS
-}
+/// 1チャンクのテクスチャピクセル数（1辺）
+pub const CHUNK_TEX_SIZE: u32 =
+    CHUNK_SIZE as u32 * (CELL_PIXELS + GRID_LINE_PIXELS) + GRID_LINE_PIXELS;
 
 #[cfg(test)]
 mod tests {
@@ -228,25 +213,22 @@ mod tests {
 }
 
 #[cfg(test)]
-mod grid_tests {
+mod chunk_tests {
     use super::*;
 
     #[test]
-    fn texture_size_basic() {
-        // 10セル: 10*CELL_PIXELS + 11*GRID_LINE_PIXELS
-        assert_eq!(texture_size(10), 10 * CELL_PIXELS + 11 * GRID_LINE_PIXELS);
+    fn chunk_tex_size_value() {
+        // 32 * (10 + 1) + 1 = 353
+        assert_eq!(CHUNK_TEX_SIZE, 353);
     }
 
     #[test]
-    fn texture_size_300_cells() {
-        assert_eq!(
-            texture_size(300),
-            300 * CELL_PIXELS + 301 * GRID_LINE_PIXELS
-        );
+    fn chunk_world_size_value() {
+        assert_eq!(CHUNK_WORLD_SIZE, 32.0);
     }
 
     #[test]
-    fn texture_size_1_cell() {
-        assert_eq!(texture_size(1), 1 * CELL_PIXELS + 2 * GRID_LINE_PIXELS);
+    fn cell_world_size_value() {
+        assert_eq!(CELL_WORLD_SIZE, 1.0);
     }
 }

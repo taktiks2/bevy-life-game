@@ -24,7 +24,6 @@ pub fn handle_grid_click(
     if !mouse.just_released(MouseButton::Left) {
         return;
     }
-    // ドラッグ操作だった場合はセルトグルをスキップ
     if drag_state.is_dragging {
         return;
     }
@@ -34,7 +33,6 @@ pub fn handle_grid_click(
     let Some(cursor_pos) = window.cursor_position() else {
         return;
     };
-    // ボトムパネル上ではクリックを無視
     let scale_factor = window.resolution.scale_factor();
     let sizes = calc_viewport_sizes(window.physical_width(), window.physical_height());
     if !is_cursor_over_world_viewport(cursor_pos, scale_factor, sizes.main_height) {
@@ -46,19 +44,17 @@ pub fn handle_grid_click(
     let Ok(world_pos) = camera.viewport_to_world_2d(transform, cursor_pos) else {
         return;
     };
-    if let Some((gx, gy)) = screen_to_grid_coords(world_pos, world.width, world.height) {
-        world.toggle_cell(gx, gy);
-    }
+    let (gx, gy) = screen_to_grid_coords(world_pos);
+    world.toggle_cell(gx, gy);
 }
 
 /// マウスカーソル位置に応じてセルハイライトを更新する
 ///
-/// カーソルがグリッド上にある場合は該当セル位置にハイライトを表示する。
-/// グリッド外では非表示にする。
+/// カーソルがワールドビューポート上にある場合は該当セル位置にハイライトを表示する。
+/// ビューポート外では非表示にする。
 pub fn update_cell_highlight(
     windows: Query<&Window>,
     camera_query: Query<(&Camera, &GlobalTransform), With<WorldCamera>>,
-    world: Res<World>,
     mut highlight_query: Query<(&mut Transform, &mut Visibility), With<CellHighlight>>,
     mut hovered: ResMut<HoveredCell>,
 ) {
@@ -69,7 +65,6 @@ pub fn update_cell_highlight(
         return;
     };
 
-    // ボトムパネル上ではハイライトを無効化
     let scale_factor = window.resolution.scale_factor();
     let sizes = calc_viewport_sizes(window.physical_width(), window.physical_height());
 
@@ -77,7 +72,7 @@ pub fn update_cell_highlight(
         .cursor_position()
         .filter(|&pos| is_cursor_over_world_viewport(pos, scale_factor, sizes.main_height))
         .and_then(|cursor_pos| camera.viewport_to_world_2d(cam_transform, cursor_pos).ok())
-        .and_then(|world_pos| screen_to_grid_coords(world_pos, world.width, world.height));
+        .map(|world_pos| screen_to_grid_coords(world_pos));
 
     let Ok((mut transform, mut vis)) = highlight_query.single_mut() else {
         return;
@@ -86,7 +81,7 @@ pub fn update_cell_highlight(
     match grid_coords {
         Some((gx, gy)) => {
             *vis = Visibility::Inherited;
-            let pos = world_to_screen_pos(gx, gy, world.width, world.height);
+            let pos = world_to_screen_pos(gx, gy);
             transform.translation.x = pos.x;
             transform.translation.y = pos.y;
             transform.translation.z = 1.0;
