@@ -11,8 +11,8 @@ use crate::consts::{DEFAULT_TICK_INTERVAL, WORLD_HEIGHT, WORLD_WIDTH};
 #[derive(Resource, Debug, Clone)]
 pub struct GameAssets {
     /// 通常テキスト用フォント
-    pub font_regular: Handle<Font>,
-    /// 見出し用太字フォント
+    pub font: Handle<Font>,
+    /// 見出し・ボタン用太字フォント
     pub font_bold: Handle<Font>,
     /// ホバー時の効果音
     pub audio_hover: Handle<AudioSource>,
@@ -28,8 +28,8 @@ impl FromWorld for GameAssets {
     fn from_world(world: &mut World) -> Self {
         let asset_server = world.resource::<AssetServer>();
         Self {
-            font_bold: asset_server.load("fonts/NotoSansJP-Bold.ttf"),
-            font_regular: asset_server.load("fonts/NotoSansJP-Regular.ttf"),
+            font: asset_server.load("fonts/PixelMplus12-Regular.ttf"),
+            font_bold: asset_server.load("fonts/PixelMplus12-Bold.ttf"),
             audio_hover: asset_server.load("audios/appear-online.ogg"),
             tick_interval: DEFAULT_TICK_INTERVAL,
             world_width: WORLD_WIDTH,

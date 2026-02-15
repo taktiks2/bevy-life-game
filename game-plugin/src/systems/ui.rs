@@ -22,7 +22,7 @@ pub fn spawn_generation_text(
         .spawn((
             Text::new("Gen: ".to_string()),
             TextFont {
-                font: game_assets.font_regular.clone(),
+                font: game_assets.font.clone(),
                 font_size: FONT_SIZE_MEDIUM,
                 ..default()
             },
@@ -31,7 +31,7 @@ pub fn spawn_generation_text(
         .with_child((
             TextSpan::new(generation_count.to_string()),
             TextFont {
-                font: game_assets.font_regular.clone(),
+                font: game_assets.font.clone(),
                 font_size: FONT_SIZE_MEDIUM,
                 ..default()
             },
@@ -136,7 +136,7 @@ pub fn spawn_stepper_label(
     parent.spawn((
         Text::new(label),
         TextFont {
-            font: game_assets.font_regular.clone(),
+            font: game_assets.font.clone(),
             font_size: FONT_SIZE_SMALL,
             ..default()
         },
