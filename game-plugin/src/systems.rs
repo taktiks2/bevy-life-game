@@ -7,5 +7,6 @@ pub mod coordinate;
 pub mod grid;
 pub mod input;
 pub mod screen;
+pub mod slider;
 pub mod ui;
 pub mod viewport;

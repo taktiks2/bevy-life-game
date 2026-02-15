@@ -7,8 +7,7 @@ use bevy::{
 };
 use common::consts::{
     CELL_ALIVE_RGB, CELL_DEAD_RGB, CELL_PIXELS, GRID_DISPLAY_HEIGHT, GRID_DISPLAY_WIDTH,
-    GRID_LINE_PIXELS,
-    GRID_LINE_RGB, WORLD_HEIGHT, WORLD_WIDTH, cell_size, texture_size,
+    GRID_LINE_PIXELS, GRID_LINE_RGB, WORLD_HEIGHT, WORLD_WIDTH, cell_size, texture_size,
 };
 
 use crate::components::screen::{CellHighlight, GridTexture, OnGameScreen};
@@ -140,7 +139,9 @@ pub fn write_world_to_image_data(data: &mut [u8], world: &World, grid_visible: b
 mod tests {
     use super::*;
     use crate::resources::world::World;
-    use common::consts::{CELL_ALIVE_RGB, CELL_DEAD_RGB, CELL_PIXELS, GRID_LINE_PIXELS, GRID_LINE_RGB, texture_size};
+    use common::consts::{
+        CELL_ALIVE_RGB, CELL_DEAD_RGB, CELL_PIXELS, GRID_LINE_PIXELS, GRID_LINE_RGB, texture_size,
+    };
 
     /// テクスチャ上のピクセル(tx,ty)のRGB値を取得するヘルパー
     fn pixel_rgb(data: &[u8], tex_width: usize, tx: usize, ty: usize) -> (u8, u8, u8) {

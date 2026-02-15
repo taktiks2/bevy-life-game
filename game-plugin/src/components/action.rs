@@ -16,14 +16,6 @@ pub enum GameButtonAction {
     Reset,
     /// 全セルクリア
     Clear,
-    /// シミュレーション速度を上げる（ティック間隔を短縮）
-    SpeedUp,
-    /// シミュレーション速度を下げる（ティック間隔を延長）
-    SpeedDown,
-    /// ズームイン（カメラスケール縮小）
-    ZoomUp,
-    /// ズームアウト（カメラスケール拡大）
-    ZoomDown,
     /// グリッドライン表示/非表示切り替え
     GridToggle,
 }

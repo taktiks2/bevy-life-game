@@ -1,18 +1,13 @@
 //! ボタンクリック・ホバーのアクションハンドラ
 
 use bevy::prelude::*;
-use common::consts::{
-    BG_BUTTON, BG_BUTTON_HOVER, CAMERA_SCALE_STEP,
-    MAX_CAMERA_SCALE, MAX_TICK_INTERVAL, MIN_CAMERA_SCALE, MIN_TICK_INTERVAL, TICK_INTERVAL_STEP,
-};
+use common::consts::{BG_BUTTON, BG_BUTTON_HOVER};
 
-use crate::WorldCamera;
 use crate::components::action::GameButtonAction;
 use crate::events::{
     GenerationResetEvent, PlayAudioEvent, ProgressGenerationEvent, WorldClearEvent,
 };
 use crate::resources::interaction::GridVisible;
-use crate::resources::timer::SimulationTimer;
 use crate::states::SimulationState;
 
 /// シミュレーション開始/停止トグルボタンのクリックハンドラ
@@ -72,51 +67,6 @@ pub fn handle_clear(
     world_clear_event_writer.write(WorldClearEvent);
 }
 
-/// 速度ダウンボタンのクリックハンドラ: ティック間隔を延長する
-pub fn handle_speed_down(
-    _click: On<Pointer<Click>>,
-    mut simulation_timer: ResMut<SimulationTimer>,
-) {
-    let current_duration = simulation_timer.0.duration().as_secs_f32();
-    let new_duration = (current_duration + TICK_INTERVAL_STEP).min(MAX_TICK_INTERVAL);
-    simulation_timer
-        .0
-        .set_duration(std::time::Duration::from_secs_f32(new_duration));
-}
-
-/// 速度アップボタンのクリックハンドラ: ティック間隔を短縮する
-pub fn handle_speed_up(_click: On<Pointer<Click>>, mut simulation_timer: ResMut<SimulationTimer>) {
-    let current_duration = simulation_timer.0.duration().as_secs_f32();
-    let new_duration = (current_duration - TICK_INTERVAL_STEP).max(MIN_TICK_INTERVAL);
-    simulation_timer
-        .0
-        .set_duration(std::time::Duration::from_secs_f32(new_duration));
-}
-
-/// ズームアウトボタンのクリックハンドラ: カメラスケールを拡大する
-pub fn handle_zoom_down(
-    _click: On<Pointer<Click>>,
-    mut query_camera: Query<&mut Projection, With<WorldCamera>>,
-) {
-    for mut projection in query_camera.iter_mut() {
-        if let Projection::Orthographic(ref mut ortho) = *projection {
-            ortho.scale = (ortho.scale + CAMERA_SCALE_STEP).min(MAX_CAMERA_SCALE);
-        }
-    }
-}
-
-/// ズームインボタンのクリックハンドラ: カメラスケールを縮小する
-pub fn handle_zoom_up(
-    _click: On<Pointer<Click>>,
-    mut query_camera: Query<&mut Projection, With<WorldCamera>>,
-) {
-    for mut projection in query_camera.iter_mut() {
-        if let Projection::Orthographic(ref mut ortho) = *projection {
-            ortho.scale = (ortho.scale - CAMERA_SCALE_STEP).max(MIN_CAMERA_SCALE);
-        }
-    }
-}
-
 /// ボタンホバー時のハンドラ: 背景色を変更し効果音を再生する
 pub fn handle_over(
     over: On<Pointer<Over>>,
@@ -130,19 +80,13 @@ pub fn handle_over(
 }
 
 /// ボタンホバー終了時のハンドラ: 背景色を元に戻す
-pub fn handle_out(
-    out: On<Pointer<Out>>,
-    mut query: Query<&mut BackgroundColor>,
-) {
+pub fn handle_out(out: On<Pointer<Out>>, mut query: Query<&mut BackgroundColor>) {
     if let Ok(mut background_color) = query.get_mut(out.entity) {
         background_color.0 = BG_BUTTON;
     }
 }
 
 /// Gridボタンのクリックハンドラ: グリッドライン表示を切り替える
-pub fn handle_grid_toggle(
-    _click: On<Pointer<Click>>,
-    mut grid_visible: ResMut<GridVisible>,
-) {
+pub fn handle_grid_toggle(_click: On<Pointer<Click>>, mut grid_visible: ResMut<GridVisible>) {
     grid_visible.0 = !grid_visible.0;
 }

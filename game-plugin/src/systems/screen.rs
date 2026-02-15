@@ -3,7 +3,7 @@
 use bevy::prelude::*;
 use common::{consts::BG_SURFACE, resources::GameAssets};
 
-use crate::components::{action::GameButtonAction, screen::OnGameScreen};
+use crate::components::{action::GameButtonAction, screen::OnGameScreen, slider::SliderKind};
 use crate::layer::Layer;
 use crate::rendering::{spawn_cell_highlight, spawn_grid_sprite};
 use crate::resources::world::World;
@@ -72,31 +72,11 @@ pub fn spawn_screen(
                     .observe(handle_out);
             });
 
-            // Speed control
-            p.spawn(stepper_row_node()).with_children(|p| {
-                spawn_small_button(p, &game_assets, "<", GameButtonAction::SpeedDown)
-                    .observe(handle_speed_down)
-                    .observe(handle_over)
-                    .observe(handle_out);
-                spawn_stepper_label(p, &game_assets, "Speed");
-                spawn_small_button(p, &game_assets, ">", GameButtonAction::SpeedUp)
-                    .observe(handle_speed_up)
-                    .observe(handle_over)
-                    .observe(handle_out);
-            });
+            // Speed slider
+            spawn_slider(p, &game_assets, "Speed", SliderKind::Speed);
 
-            // Zoom control
-            p.spawn(stepper_row_node()).with_children(|p| {
-                spawn_small_button(p, &game_assets, "<", GameButtonAction::ZoomDown)
-                    .observe(handle_zoom_down)
-                    .observe(handle_over)
-                    .observe(handle_out);
-                spawn_stepper_label(p, &game_assets, "Zoom");
-                spawn_small_button(p, &game_assets, ">", GameButtonAction::ZoomUp)
-                    .observe(handle_zoom_up)
-                    .observe(handle_over)
-                    .observe(handle_out);
-            });
+            // Zoom slider
+            spawn_slider(p, &game_assets, "Zoom", SliderKind::Zoom);
         });
 
     // NOTE: World

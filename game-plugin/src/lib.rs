@@ -31,6 +31,7 @@ use resources::{
     world::World,
 };
 use states::SimulationState;
+use systems::button_handler::update_toggle_button_text;
 use systems::{
     audio::play_audios,
     cell_operations::*,
@@ -39,7 +40,6 @@ use systems::{
     screen::spawn_screen,
     viewport::update_camera_viewports,
 };
-use systems::button_handler::update_toggle_button_text;
 
 /// ゲーム画面のBevyプラグイン
 ///
@@ -84,7 +84,13 @@ impl Plugin for GamePlugin {
         );
         app.add_systems(
             Update,
-            (world_clear, play_audios, update_camera_viewports, update_toggle_button_text)
+            (
+                world_clear,
+                play_audios,
+                update_camera_viewports,
+                update_toggle_button_text,
+                systems::slider::sync_slider_thumbs,
+            )
                 .run_if(in_state(GameState::Game)),
         );
         app.insert_resource(SpaceKeyTimer::new());

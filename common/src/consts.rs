@@ -48,13 +48,11 @@ pub const WORLD_HEIGHT: u16 = 270;
 
 // シミュレーション速度
 /// デフォルトのティック間隔（秒）
-pub const DEFAULT_TICK_INTERVAL: f32 = 0.2;
+pub const DEFAULT_TICK_INTERVAL: f32 = 1.0;
 /// ティック間隔の最小値（秒）
 pub const MIN_TICK_INTERVAL: f32 = 0.1;
 /// ティック間隔の最大値（秒）
-pub const MAX_TICK_INTERVAL: f32 = 5.0;
-/// 速度変更時のステップ幅（秒）
-pub const TICK_INTERVAL_STEP: f32 = 0.1;
+pub const MAX_TICK_INTERVAL: f32 = 2.0;
 
 // スペースキー長押し判定
 /// スペースキーを「長押し」と判定するまでの時間（秒）
@@ -62,7 +60,7 @@ pub const SPACE_KEY_HOLD_DURATION: f32 = 0.5;
 
 // カメラ設定
 /// カメラの初期ズームスケール
-pub const INITIAL_CAMERA_SCALE: f32 = 0.5;
+pub const INITIAL_CAMERA_SCALE: f32 = 0.2;
 /// カメラのズーム最小値（最も拡大）
 pub const MIN_CAMERA_SCALE: f32 = 0.1;
 /// カメラのズーム最大値（最も縮小）
@@ -91,6 +89,14 @@ pub const TITLE_BUTTON_WIDTH: f32 = 200.0;
 pub const TITLE_BUTTON_HEIGHT: f32 = 60.0;
 /// タイトル/メニュー画面の上下パディング
 pub const TITLE_PADDING: f32 = 200.0;
+
+// スライダーUI
+/// スライダートラックの幅（ピクセル）
+pub const SLIDER_TRACK_WIDTH: f32 = 100.0;
+/// スライダートラックの高さ（ピクセル）
+pub const SLIDER_TRACK_HEIGHT: f32 = 8.0;
+/// スライダーサムのサイズ（ピクセル）
+pub const SLIDER_THUMB_SIZE: f32 = 20.0;
 
 // テーマカラー: 背景系（暗い順）
 /// グリッド背景色
