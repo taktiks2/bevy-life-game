@@ -26,4 +26,6 @@ pub enum GameButtonAction {
     ZoomUp,
     /// ズームアウト（カメラスケール拡大）
     ZoomDown,
+    /// グリッドライン表示/非表示切り替え
+    GridToggle,
 }

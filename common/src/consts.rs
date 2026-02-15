@@ -155,6 +155,18 @@ pub fn cell_size(world_width: u16, world_height: u16) -> (f32, f32) {
     )
 }
 
+/// セル1個を表現するテクスチャピクセル数（幅・高さ）
+pub const CELL_PIXELS: u32 = 8;
+/// グリッドライン1本のテクスチャピクセル数
+pub const GRID_LINE_PIXELS: u32 = 1;
+/// グリッドラインのRGB色（控えめな暗灰色）
+pub const GRID_LINE_RGB: (u8, u8, u8) = (40, 42, 48);
+
+/// ワールドのセル数からテクスチャのピクセル数を計算する
+pub fn texture_size(cells: u16) -> u32 {
+    cells as u32 * CELL_PIXELS + (cells as u32 + 1) * GRID_LINE_PIXELS
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -197,5 +209,28 @@ mod tests {
             let sizes = calc_viewport_sizes(width, 800);
             assert_eq!(sizes.viewport_width, width);
         }
+    }
+}
+
+#[cfg(test)]
+mod grid_tests {
+    use super::*;
+
+    #[test]
+    fn texture_size_basic() {
+        // 10セル: 10*2 + 11*1 = 31
+        assert_eq!(texture_size(10), 31);
+    }
+
+    #[test]
+    fn texture_size_300_cells() {
+        // 300セル: 300*2 + 301*1 = 901
+        assert_eq!(texture_size(300), 901);
+    }
+
+    #[test]
+    fn texture_size_1_cell() {
+        // 1セル: 1*2 + 2*1 = 4
+        assert_eq!(texture_size(1), 4);
     }
 }

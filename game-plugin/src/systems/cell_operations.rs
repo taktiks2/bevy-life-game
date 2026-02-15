@@ -8,15 +8,16 @@ use bevy::prelude::*;
 use crate::components::screen::{GenerationText, GridTexture};
 use crate::events::{GenerationResetEvent, ProgressGenerationEvent, WorldClearEvent};
 use crate::rendering::write_world_to_image_data;
-use crate::resources::{timer::SimulationTimer, world::World};
+use crate::resources::{interaction::GridVisible, timer::SimulationTimer, world::World};
 
 /// Worldの変更をグリッドテクスチャに反映するシステム
 pub fn update_cells(
     world: Res<World>,
+    grid_visible: Res<GridVisible>,
     grid_query: Query<&Sprite, With<GridTexture>>,
     mut images: ResMut<Assets<Image>>,
 ) {
-    if !world.is_changed() {
+    if !world.is_changed() && !grid_visible.is_changed() {
         return;
     }
     let Ok(sprite) = grid_query.single() else {
@@ -28,7 +29,7 @@ pub fn update_cells(
     let Some(ref mut data) = image.data else {
         return;
     };
-    write_world_to_image_data(data, &world);
+    write_world_to_image_data(data, &world, grid_visible.0);
 }
 
 /// 世代カウンターのUI表示を更新するシステム

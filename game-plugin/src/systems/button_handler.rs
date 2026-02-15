@@ -10,6 +10,7 @@ use crate::WorldCamera;
 use crate::events::{
     GenerationResetEvent, PlayAudioEvent, ProgressGenerationEvent, WorldClearEvent,
 };
+use crate::resources::interaction::GridVisible;
 use crate::resources::timer::SimulationTimer;
 use crate::states::SimulationState;
 
@@ -126,4 +127,12 @@ pub fn handle_out(
         background_color.0 = BG_BUTTON;
         *border_color = BorderColor::all(BORDER_SUBTLE);
     }
+}
+
+/// Gridボタンのクリックハンドラ: グリッドライン表示を切り替える
+pub fn handle_grid_toggle(
+    _click: On<Pointer<Click>>,
+    mut grid_visible: ResMut<GridVisible>,
+) {
+    grid_visible.0 = !grid_visible.0;
 }
