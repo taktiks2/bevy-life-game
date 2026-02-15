@@ -2,11 +2,11 @@
 
 use bevy::prelude::{AssetServer, AudioSource, Font, FromWorld, Handle, Resource, World};
 
-use crate::consts::{DEFAULT_TICK_INTERVAL, WORLD_HEIGHT, WORLD_WIDTH};
+use crate::consts::DEFAULT_TICK_INTERVAL;
 
 /// ゲーム全体で使用するアセットと設定を保持するリソース
 ///
-/// フォント・効果音のハンドルに加え、ワールドサイズやシミュレーション速度など
+/// フォント・効果音のハンドルに加え、シミュレーション速度など
 /// 各プラグインから参照される設定値を含む。
 #[derive(Resource, Debug, Clone)]
 pub struct GameAssets {
@@ -18,10 +18,6 @@ pub struct GameAssets {
     pub audio_hover: Handle<AudioSource>,
     /// シミュレーションのティック間隔（秒）
     pub tick_interval: f32,
-    /// ワールドの幅（セル数）
-    pub world_width: u16,
-    /// ワールドの高さ（セル数）
-    pub world_height: u16,
 }
 
 impl FromWorld for GameAssets {
@@ -32,8 +28,6 @@ impl FromWorld for GameAssets {
             font_bold: asset_server.load("fonts/PixelMplus12-Bold.ttf"),
             audio_hover: asset_server.load("audios/appear-online.ogg"),
             tick_interval: DEFAULT_TICK_INTERVAL,
-            world_width: WORLD_WIDTH,
-            world_height: WORLD_HEIGHT,
         }
     }
 }

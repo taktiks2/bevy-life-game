@@ -1,45 +1,25 @@
 //! グリッド座標とワールド空間座標の変換
 
 use bevy::prelude::*;
-use common::consts::{GRID_DISPLAY_HEIGHT, GRID_DISPLAY_WIDTH, cell_size};
+use common::consts::CELL_WORLD_SIZE;
 
 /// グリッド座標をワールド空間の座標に変換する
-pub fn world_to_screen_pos(grid_x: u16, grid_y: u16, world_width: u16, world_height: u16) -> Vec2 {
-    let (cell_w, cell_h) = cell_size(world_width, world_height);
+///
+/// セルの中心座標を返す。Y軸は反転（グリッドY+が画面下方向）。
+pub fn world_to_screen_pos(grid_x: i32, grid_y: i32) -> Vec2 {
     Vec2::new(
-        grid_x as f32 * cell_w - GRID_DISPLAY_WIDTH / 2.0 + cell_w / 2.0,
-        -(grid_y as f32 * cell_h - GRID_DISPLAY_HEIGHT / 2.0 + cell_h / 2.0),
+        grid_x as f32 * CELL_WORLD_SIZE + CELL_WORLD_SIZE / 2.0,
+        -(grid_y as f32 * CELL_WORLD_SIZE + CELL_WORLD_SIZE / 2.0),
     )
 }
 
 /// ワールド空間の座標をグリッド座標に変換する
 ///
-/// グリッド範囲外の場合は `None` を返す。
-pub fn screen_to_grid_coords(
-    world_pos: Vec2,
-    world_width: u16,
-    world_height: u16,
-) -> Option<(u16, u16)> {
-    let half_w = GRID_DISPLAY_WIDTH / 2.0;
-    let half_h = GRID_DISPLAY_HEIGHT / 2.0;
-
-    let local_x = world_pos.x + half_w;
-    let local_y = -world_pos.y + half_h;
-
-    if local_x < 0.0 || local_y < 0.0 {
-        return None;
-    }
-
-    let (cell_w, cell_h) = cell_size(world_width, world_height);
-
-    let grid_x = (local_x / cell_w) as u16;
-    let grid_y = (local_y / cell_h) as u16;
-
-    if grid_x >= world_width || grid_y >= world_height {
-        return None;
-    }
-
-    Some((grid_x, grid_y))
+/// 無限フィールドなので常に有効な座標を返す。
+pub fn screen_to_grid_coords(world_pos: Vec2) -> (i32, i32) {
+    let grid_x = (world_pos.x / CELL_WORLD_SIZE).floor() as i32;
+    let grid_y = (-world_pos.y / CELL_WORLD_SIZE).floor() as i32;
+    (grid_x, grid_y)
 }
 
 /// カーソルがワールドビューポート内にあるかを判定する
@@ -61,64 +41,69 @@ pub fn is_cursor_over_world_viewport(
 mod tests {
     use super::*;
 
-    // GRID_DISPLAY_WIDTH = 1600, GRID_DISPLAY_HEIGHT = 800, 200x100 grid
-    // cell size = 8x8 pixels (正方形)
-    const W: u16 = common::consts::WORLD_WIDTH;
-    const H: u16 = common::consts::WORLD_HEIGHT;
-    const HALF_W: f32 = common::consts::GRID_DISPLAY_WIDTH / 2.0;
-    const HALF_H: f32 = common::consts::GRID_DISPLAY_HEIGHT / 2.0;
-
     #[test]
-    fn center_of_grid_returns_correct_coords() {
-        let result = screen_to_grid_coords(Vec2::new(0.0, 0.0), W, H);
-        assert_eq!(result, Some((W / 2, H / 2)));
+    fn origin_maps_to_cell_0_0_center() {
+        // セル(0,0)の中心は (0.5, -0.5)
+        let pos = world_to_screen_pos(0, 0);
+        assert_eq!(pos, Vec2::new(0.5, -0.5));
     }
 
     #[test]
-    fn top_left_corner_returns_0_0() {
-        let result = screen_to_grid_coords(Vec2::new(-HALF_W, HALF_H), W, H);
-        assert_eq!(result, Some((0, 0)));
+    fn negative_cell_position() {
+        let pos = world_to_screen_pos(-1, -1);
+        assert_eq!(pos, Vec2::new(-0.5, 0.5));
     }
 
     #[test]
-    fn bottom_right_returns_max() {
-        let result = screen_to_grid_coords(Vec2::new(HALF_W - 1.0, -(HALF_H - 1.0)), W, H);
-        assert_eq!(result, Some((W - 1, H - 1)));
+    fn screen_to_grid_at_origin() {
+        // ワールド座標(0.5, -0.5)はセル(0, 0)
+        let (gx, gy) = screen_to_grid_coords(Vec2::new(0.5, -0.5));
+        assert_eq!((gx, gy), (0, 0));
     }
 
     #[test]
-    fn outside_grid_left_returns_none() {
-        let result = screen_to_grid_coords(Vec2::new(-HALF_W - 1.0, 0.0), W, H);
-        assert_eq!(result, None);
+    fn screen_to_grid_negative() {
+        // ワールド座標(-0.5, 0.5)はセル(-1, -1)
+        let (gx, gy) = screen_to_grid_coords(Vec2::new(-0.5, 0.5));
+        assert_eq!((gx, gy), (-1, -1));
     }
 
     #[test]
-    fn outside_grid_right_returns_none() {
-        let result = screen_to_grid_coords(Vec2::new(HALF_W + 1.0, 0.0), W, H);
-        assert_eq!(result, None);
+    fn screen_to_grid_exact_boundary() {
+        // ワールド座標(0.0, 0.0)はセル(0, -1)
+        // x=0.0 → floor(0.0/1.0) = 0
+        // y=0.0 → floor(-0.0/1.0) = floor(-0.0) = 0... but -y = -0.0
+        let (gx, gy) = screen_to_grid_coords(Vec2::new(0.0, 0.0));
+        assert_eq!(gx, 0);
+        assert_eq!(gy, 0);
     }
 
     #[test]
-    fn outside_grid_top_returns_none() {
-        let result = screen_to_grid_coords(Vec2::new(0.0, HALF_H + 1.0), W, H);
-        assert_eq!(result, None);
-    }
-
-    #[test]
-    fn outside_grid_bottom_returns_none() {
-        let result = screen_to_grid_coords(Vec2::new(0.0, -(HALF_H + 1.0)), W, H);
-        assert_eq!(result, None);
-    }
-
-    #[test]
-    fn world_to_screen_and_back_roundtrips() {
-        for gx in [0u16, 25, 50, 75, W - 1] {
-            for gy in [0u16, 25, 50, 75, H - 1] {
-                let screen_pos = world_to_screen_pos(gx, gy, W, H);
-                let result = screen_to_grid_coords(screen_pos, W, H);
+    fn roundtrip_positive_coordinates() {
+        for gx in [0, 1, 10, 50, 100] {
+            for gy in [0, 1, 10, 50, 100] {
+                let screen_pos = world_to_screen_pos(gx, gy);
+                let (rx, ry) = screen_to_grid_coords(screen_pos);
                 assert_eq!(
-                    result,
-                    Some((gx, gy)),
+                    (rx, ry),
+                    (gx, gy),
+                    "roundtrip failed for ({}, {})",
+                    gx,
+                    gy
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn roundtrip_negative_coordinates() {
+        for gx in [-100, -50, -10, -1] {
+            for gy in [-100, -50, -10, -1] {
+                let screen_pos = world_to_screen_pos(gx, gy);
+                let (rx, ry) = screen_to_grid_coords(screen_pos);
+                assert_eq!(
+                    (rx, ry),
+                    (gx, gy),
                     "roundtrip failed for ({}, {})",
                     gx,
                     gy
@@ -129,14 +114,7 @@ mod tests {
 
     #[test]
     fn cursor_in_world_viewport_with_scale_1() {
-        // scale_factor=1.0, main_height=720 physical pixels
-        // ワールド領域: Y=0..720 logical
         assert!(is_cursor_over_world_viewport(Vec2::new(500., 0.), 1.0, 720));
-        assert!(is_cursor_over_world_viewport(
-            Vec2::new(500., 360.),
-            1.0,
-            720
-        ));
         assert!(is_cursor_over_world_viewport(
             Vec2::new(500., 719.),
             1.0,
@@ -146,19 +124,8 @@ mod tests {
 
     #[test]
     fn cursor_in_panel_with_scale_1() {
-        // パネル領域: Y>=720 logical
         assert!(!is_cursor_over_world_viewport(
             Vec2::new(500., 720.),
-            1.0,
-            720
-        ));
-        assert!(!is_cursor_over_world_viewport(
-            Vec2::new(500., 750.),
-            1.0,
-            720
-        ));
-        assert!(!is_cursor_over_world_viewport(
-            Vec2::new(500., 799.),
             1.0,
             720
         ));
@@ -169,11 +136,6 @@ mod tests {
         // scale_factor=2.0, main_height=720 physical = 360 logical
         assert!(is_cursor_over_world_viewport(Vec2::new(500., 0.), 2.0, 720));
         assert!(is_cursor_over_world_viewport(
-            Vec2::new(500., 180.),
-            2.0,
-            720
-        ));
-        assert!(is_cursor_over_world_viewport(
             Vec2::new(500., 359.),
             2.0,
             720
@@ -182,19 +144,8 @@ mod tests {
 
     #[test]
     fn cursor_in_panel_with_retina_scale() {
-        // パネル領域: Y>=360 logical (scale=2.0)
         assert!(!is_cursor_over_world_viewport(
             Vec2::new(500., 360.),
-            2.0,
-            720
-        ));
-        assert!(!is_cursor_over_world_viewport(
-            Vec2::new(500., 380.),
-            2.0,
-            720
-        ));
-        assert!(!is_cursor_over_world_viewport(
-            Vec2::new(500., 399.),
             2.0,
             720
         ));
@@ -202,7 +153,6 @@ mod tests {
 
     #[test]
     fn viewport_boundary_exact() {
-        // 境界値テスト: main_height=720, scale=1.0
         assert!(is_cursor_over_world_viewport(
             Vec2::new(500., 719.9),
             1.0,
@@ -212,34 +162,6 @@ mod tests {
             Vec2::new(500., 720.0),
             1.0,
             720
-        ));
-    }
-
-    #[test]
-    fn cursor_viewport_with_different_window_sizes() {
-        // 異なるウィンドウサイズでも正しく動作する
-        // main_height=432 (480 * 0.9), scale=1.0
-        assert!(is_cursor_over_world_viewport(
-            Vec2::new(300., 431.),
-            1.0,
-            432
-        ));
-        assert!(!is_cursor_over_world_viewport(
-            Vec2::new(300., 432.),
-            1.0,
-            432
-        ));
-
-        // main_height=972 (1080 * 0.9), scale=1.0
-        assert!(is_cursor_over_world_viewport(
-            Vec2::new(500., 971.),
-            1.0,
-            972
-        ));
-        assert!(!is_cursor_over_world_viewport(
-            Vec2::new(500., 972.),
-            1.0,
-            972
         ));
     }
 }

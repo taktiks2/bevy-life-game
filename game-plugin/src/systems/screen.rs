@@ -5,19 +5,19 @@ use common::{consts::BG_SURFACE, resources::GameAssets};
 
 use crate::components::{action::GameButtonAction, screen::OnGameScreen, slider::SliderKind};
 use crate::layer::Layer;
-use crate::rendering::{spawn_cell_highlight, spawn_grid_sprite};
+use crate::rendering::spawn_cell_highlight;
 use crate::resources::world::World;
 use crate::systems::button_handler::*;
 use crate::systems::ui::*;
 
 /// ゲーム画面の全UIを構築するシステム
 ///
-/// ボトムパネル（操作ボタン群）とワールド（セルグリッドスプライト＋ハイライト）を生成する。
+/// ボトムパネル（操作ボタン群）とセルハイライトを生成する。
+/// チャンクスプライトは `manage_chunks` システムが動的に管理する。
 pub fn spawn_screen(
     mut commands: Commands,
     world: Res<World>,
     game_assets: Res<GameAssets>,
-    mut images: ResMut<Assets<Image>>,
 ) {
     // NOTE: Bottom Panel
     commands
@@ -79,7 +79,6 @@ pub fn spawn_screen(
             spawn_slider(p, &game_assets, "Zoom", SliderKind::Zoom);
         });
 
-    // NOTE: World
-    spawn_grid_sprite(&mut commands, &mut images, &world);
+    // NOTE: Cell highlight (チャンクスプライトはmanage_chunksが管理)
     spawn_cell_highlight(&mut commands);
 }

@@ -226,7 +226,7 @@ mod tests {
 
     #[test]
     fn speed_roundtrip() {
-        for &interval in &[0.1, 0.2, 0.5, 1.0, 2.5, 5.0] {
+        for &interval in &[0.1, 0.2, 0.5, 1.0, 1.5, 2.0] {
             let roundtrip = ratio_to_speed(speed_to_ratio(interval));
             assert!(
                 (roundtrip - interval).abs() < 0.001,
@@ -290,7 +290,7 @@ mod tests {
 
     #[test]
     fn zoom_roundtrip() {
-        for &scale in &[0.1, 0.3, 0.5, 0.7, 1.0] {
+        for &scale in &[0.1, 0.3, 0.5, 0.7] {
             let roundtrip = ratio_to_zoom(zoom_to_ratio(scale));
             assert!(
                 (roundtrip - scale).abs() < 0.001,

@@ -42,7 +42,7 @@ pub fn calc_viewport_sizes(physical_width: u32, physical_height: u32) -> Viewpor
 
 // チャンク設定
 /// 1チャンクの1辺のセル数
-pub const CHUNK_SIZE: i32 = 32;
+pub const CHUNK_SIZE: i32 = 64;
 /// 1セルのワールド空間サイズ
 pub const CELL_WORLD_SIZE: f32 = 1.0;
 /// 1チャンクのワールド空間サイズ
@@ -62,13 +62,13 @@ pub const SPACE_KEY_HOLD_DURATION: f32 = 0.5;
 
 // カメラ設定
 /// カメラの初期ズームスケール
-pub const INITIAL_CAMERA_SCALE: f32 = 0.35;
+pub const INITIAL_CAMERA_SCALE: f32 = 0.1;
 /// カメラのズーム最小値（最も拡大）
 pub const MIN_CAMERA_SCALE: f32 = 0.05;
 /// カメラのズーム最大値（最も縮小）
-pub const MAX_CAMERA_SCALE: f32 = 2.0;
+pub const MAX_CAMERA_SCALE: f32 = 0.3;
 /// ズーム変更時のステップ幅
-pub const CAMERA_SCALE_STEP: f32 = 0.1;
+pub const CAMERA_SCALE_STEP: f32 = 0.01;
 /// WASD操作によるカメラ移動速度
 pub const CAMERA_PAN_SPEED: f32 = 10.0;
 /// ドラッグ判定の移動ピクセル閾値（スクリーン座標）
@@ -164,8 +164,7 @@ pub const GRID_LINE_PIXELS: u32 = 1;
 pub const GRID_LINE_RGB: (u8, u8, u8) = (40, 42, 48);
 
 /// 1チャンクのテクスチャピクセル数（1辺）
-pub const CHUNK_TEX_SIZE: u32 =
-    CHUNK_SIZE as u32 * (CELL_PIXELS + GRID_LINE_PIXELS) + GRID_LINE_PIXELS;
+pub const CHUNK_TEX_SIZE: u32 = CHUNK_SIZE as u32 * (CELL_PIXELS + GRID_LINE_PIXELS);
 
 #[cfg(test)]
 mod tests {
@@ -218,13 +217,13 @@ mod chunk_tests {
 
     #[test]
     fn chunk_tex_size_value() {
-        // 32 * (10 + 1) + 1 = 353
-        assert_eq!(CHUNK_TEX_SIZE, 353);
+        // 64 * (10 + 1) = 704
+        assert_eq!(CHUNK_TEX_SIZE, 704);
     }
 
     #[test]
     fn chunk_world_size_value() {
-        assert_eq!(CHUNK_WORLD_SIZE, 32.0);
+        assert_eq!(CHUNK_WORLD_SIZE, 64.0);
     }
 
     #[test]

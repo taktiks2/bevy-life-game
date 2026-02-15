@@ -3,6 +3,7 @@
 pub mod audio;
 pub mod button_handler;
 pub mod cell_operations;
+pub mod chunk;
 pub mod coordinate;
 pub mod grid;
 pub mod input;

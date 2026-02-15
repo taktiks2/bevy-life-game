@@ -2,5 +2,6 @@
 
 pub mod action;
 pub mod camera;
+pub mod chunk;
 pub mod screen;
 pub mod slider;

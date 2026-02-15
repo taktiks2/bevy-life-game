@@ -13,7 +13,7 @@ use common::{
 use crate::components::{
     action::GameButtonAction,
     screen::GenerationText,
-    slider::{SliderKind, SliderThumb, SliderTrack, SliderValueText},
+    slider::{SliderKind, SliderThumb, SliderTrack},
 };
 use crate::systems::slider::{handle_slider_click, handle_slider_drag};
 

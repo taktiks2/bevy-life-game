@@ -1,4 +1,4 @@
-//! グリッド描画ユーティリティ
+//! チャンクベースのグリッド描画ユーティリティ
 
 use bevy::{
     asset::RenderAssetUsages,
@@ -6,33 +6,42 @@ use bevy::{
     prelude::*,
 };
 use common::consts::{
-    CELL_ALIVE_RGB, CELL_DEAD_RGB, CELL_PIXELS, GRID_DISPLAY_HEIGHT, GRID_DISPLAY_WIDTH,
-    GRID_LINE_PIXELS, GRID_LINE_RGB, WORLD_HEIGHT, WORLD_WIDTH, cell_size, texture_size,
+    CELL_ALIVE_RGB, CELL_DEAD_RGB, CELL_PIXELS, CELL_WORLD_SIZE, CHUNK_SIZE, CHUNK_TEX_SIZE,
+    CHUNK_WORLD_SIZE, GRID_LINE_PIXELS, GRID_LINE_RGB,
 };
 
-use crate::components::screen::{CellHighlight, GridTexture, OnGameScreen};
+use crate::components::chunk::Chunk;
+use crate::components::screen::{CellHighlight, OnGameScreen};
 use crate::layer::Layer;
-use crate::resources::world::World;
+use crate::resources::world::{ChunkKey, World};
 
-/// セルグリッドのテクスチャスプライトを生成する
-///
-/// 各セルをCELL_PIXELS四方で描画し、セル間にGRID_LINE_PIXELSのグリッド線領域を持つ
-/// RGBAテクスチャを作成する。`ImageSamplerDescriptor::nearest()` でピクセルパーフェクトに拡大表示。
-pub fn spawn_grid_sprite(commands: &mut Commands, images: &mut Assets<Image>, world: &World) {
-    let tex_width = texture_size(world.width);
-    let tex_height = texture_size(world.height);
+/// チャンクのワールド空間位置を計算する（Sprite中心座標）
+pub fn chunk_world_pos(chunk_key: ChunkKey) -> Vec3 {
+    let (cx, cy) = chunk_key;
+    Vec3::new(
+        cx as f32 * CHUNK_WORLD_SIZE + CHUNK_WORLD_SIZE / 2.0,
+        -(cy as f32 * CHUNK_WORLD_SIZE + CHUNK_WORLD_SIZE / 2.0),
+        0.0,
+    )
+}
 
-    // RGBA(4バイト/ピクセル)のバッファを確保し、全ピクセルのアルファを255で初期化
-    let mut data = vec![255u8; (tex_width * tex_height * 4) as usize];
+/// チャンクのスプライトエンティティを生成する
+pub fn spawn_chunk_sprite(
+    commands: &mut Commands,
+    images: &mut Assets<Image>,
+    world: &World,
+    chunk_key: ChunkKey,
+    grid_visible: bool,
+) -> Entity {
+    let tex_size = CHUNK_TEX_SIZE;
+    let mut data = vec![255u8; (tex_size * tex_size * 4) as usize];
 
-    // Worldのセル状態に基づいてピクセルのRGB値を書き込む（初期状態はグリッド非表示）
-    write_world_to_image_data(&mut data, world, false);
+    write_chunk_to_image_data(&mut data, world, chunk_key, grid_visible);
 
-    // Bevy用のImage構造体を構築
     let mut image = Image::new(
         bevy::render::render_resource::Extent3d {
-            width: tex_width,
-            height: tex_height,
+            width: tex_size,
+            height: tex_size,
             depth_or_array_layers: 1,
         },
         bevy::render::render_resource::TextureDimension::D2,
@@ -40,7 +49,6 @@ pub fn spawn_grid_sprite(commands: &mut Commands, images: &mut Assets<Image>, wo
         bevy::render::render_resource::TextureFormat::Rgba8UnormSrgb,
         RenderAssetUsages::MAIN_WORLD | RenderAssetUsages::RENDER_WORLD,
     );
-    // 拡大時: nearest（ピクセルパーフェクト）、縮小時: linear（グリッド線の省略を防止）
     image.sampler = ImageSampler::Descriptor(ImageSamplerDescriptor {
         mag_filter: ImageFilterMode::Nearest,
         min_filter: ImageFilterMode::Linear,
@@ -48,77 +56,71 @@ pub fn spawn_grid_sprite(commands: &mut Commands, images: &mut Assets<Image>, wo
     });
 
     let handle = images.add(image);
+    let pos = chunk_world_pos(chunk_key);
 
-    commands.spawn((
-        Sprite {
-            image: handle,
-            custom_size: Some(Vec2::new(GRID_DISPLAY_WIDTH, GRID_DISPLAY_HEIGHT)),
-            ..default()
-        },
-        Layer::World.as_render_layer(),
-        OnGameScreen,
-        GridTexture,
-    ));
+    commands
+        .spawn((
+            Sprite {
+                image: handle,
+                custom_size: Some(Vec2::new(CHUNK_WORLD_SIZE, CHUNK_WORLD_SIZE)),
+                ..default()
+            },
+            Transform::from_translation(pos),
+            Layer::World.as_render_layer(),
+            OnGameScreen,
+            Chunk(chunk_key),
+        ))
+        .id()
 }
 
 /// マウスホバー時のセルハイライトスプライトを生成する
 pub fn spawn_cell_highlight(commands: &mut Commands) {
-    // グリッドの幅・高さから、1セルあたりのワールド単位サイズを計算
-    let (cell_w, cell_h) = cell_size(WORLD_WIDTH, WORLD_HEIGHT);
-
     commands.spawn((
         Sprite {
-            // 半透明の緑色（ネオングリーン系、アルファ0.25で透過）
             color: Color::srgba(0.0, 0.85, 0.45, 0.25),
-            // 1セル分の大きさに設定
-            custom_size: Some(Vec2::new(cell_w, cell_h)),
+            custom_size: Some(Vec2::new(CELL_WORLD_SIZE, CELL_WORLD_SIZE)),
             ..default()
         },
-        // 初期状態では非表示（マウスがセル上にあるときだけVisibleに切り替える）
         Visibility::Hidden,
-        // ワールドレイヤーに配置（グリッドスプライトと同じレイヤー）
         Layer::World.as_render_layer(),
-        // ゲーム画面用マーカー（画面遷移時のクリーンアップ対象）
         OnGameScreen,
-        // セルハイライト用マーカー（ホバーシステムがこのエンティティを検索・更新するために使用）
         CellHighlight,
     ));
 }
 
-/// Worldのセル状態をRGBAピクセルデータに書き込む
+/// チャンクのセル状態をRGBAピクセルデータに書き込む
 ///
-/// テクスチャ上で各セルはCELL_PIXELS四方、セル間にGRID_LINE_PIXELSのグリッド線を配置。
-/// `grid_visible`がtrueの場合、グリッド線をGRID_LINE_RGBで描画する。
-/// falseの場合、グリッド線領域も隣接セルの色で塗りつぶす。
-pub fn write_world_to_image_data(data: &mut [u8], world: &World, grid_visible: bool) {
-    let tex_width = texture_size(world.width) as usize;
-    let tex_height = texture_size(world.height) as usize;
+/// チャンク内の32×32セルのピクセルデータを生成する。
+/// グリッド線はテクスチャ内の1pxマージンとして描画。
+pub fn write_chunk_to_image_data(
+    data: &mut [u8],
+    world: &World,
+    chunk_key: ChunkKey,
+    grid_visible: bool,
+) {
+    let (cx, cy) = chunk_key;
+    let base_x = cx * CHUNK_SIZE;
+    let base_y = cy * CHUNK_SIZE;
+    let tex_w = CHUNK_TEX_SIZE as usize;
     let gl = GRID_LINE_PIXELS as usize;
     let cp = CELL_PIXELS as usize;
     let stride = cp + gl;
 
-    for tex_y in 0..tex_height {
-        for tex_x in 0..tex_width {
-            let offset = (tex_y * tex_width + tex_x) * 4;
+    for tex_y in 0..tex_w {
+        for tex_x in 0..tex_w {
+            let offset = (tex_y * tex_w + tex_x) * 4;
 
             // グリッド線かセル領域かを判定
-            let is_grid_x = tex_x < gl || (tex_x - gl) % stride >= cp;
-            let is_grid_y = tex_y < gl || (tex_y - gl) % stride >= cp;
+            let is_grid_x = tex_x % stride < gl;
+            let is_grid_y = tex_y % stride < gl;
 
             let (r, g, b) = if grid_visible && (is_grid_x || is_grid_y) {
                 GRID_LINE_RGB
             } else {
-                // セル領域またはグリッド非表示時: 最も近いセルの色を使用
-                let cell_x = if tex_x < gl {
-                    0
-                } else {
-                    (((tex_x - gl) / stride) as u16).min(world.width - 1)
-                };
-                let cell_y = if tex_y < gl {
-                    0
-                } else {
-                    (((tex_y - gl) / stride) as u16).min(world.height - 1)
-                };
+                let cell_local_x = (tex_x / stride) as i32;
+                let cell_local_y = (tex_y / stride) as i32;
+                let cell_x = base_x + cell_local_x.min(CHUNK_SIZE - 1);
+                let cell_y = base_y + cell_local_y.min(CHUNK_SIZE - 1);
 
                 if world.is_alive(cell_x, cell_y) {
                     CELL_ALIVE_RGB
@@ -139,11 +141,8 @@ pub fn write_world_to_image_data(data: &mut [u8], world: &World, grid_visible: b
 mod tests {
     use super::*;
     use crate::resources::world::World;
-    use common::consts::{
-        CELL_ALIVE_RGB, CELL_DEAD_RGB, CELL_PIXELS, GRID_LINE_PIXELS, GRID_LINE_RGB, texture_size,
-    };
+    use common::consts::{CELL_ALIVE_RGB, CELL_DEAD_RGB, CELL_PIXELS, GRID_LINE_PIXELS, GRID_LINE_RGB, CHUNK_TEX_SIZE};
 
-    /// テクスチャ上のピクセル(tx,ty)のRGB値を取得するヘルパー
     fn pixel_rgb(data: &[u8], tex_width: usize, tx: usize, ty: usize) -> (u8, u8, u8) {
         let offset = (ty * tex_width + tx) * 4;
         (data[offset], data[offset + 1], data[offset + 2])
@@ -151,75 +150,63 @@ mod tests {
 
     #[test]
     fn grid_visible_top_left_is_grid_line() {
-        let world = World::new(10, 10);
-        let tex_w = texture_size(10) as usize;
-        let tex_h = texture_size(10) as usize;
-        let mut data = vec![0u8; tex_w * tex_h * 4];
+        let world = World::new();
+        let tex_w = CHUNK_TEX_SIZE as usize;
+        let mut data = vec![0u8; tex_w * tex_w * 4];
 
-        write_world_to_image_data(&mut data, &world, true);
+        write_chunk_to_image_data(&mut data, &world, (0, 0), true);
 
-        // (0,0)はグリッド線
         assert_eq!(pixel_rgb(&data, tex_w, 0, 0), GRID_LINE_RGB);
     }
 
     #[test]
     fn grid_visible_first_cell_pixel() {
-        let world = World::new(10, 10);
-        let tex_w = texture_size(10) as usize;
-        let tex_h = texture_size(10) as usize;
-        let mut data = vec![0u8; tex_w * tex_h * 4];
+        let world = World::new();
+        let tex_w = CHUNK_TEX_SIZE as usize;
+        let mut data = vec![0u8; tex_w * tex_w * 4];
 
-        write_world_to_image_data(&mut data, &world, true);
+        write_chunk_to_image_data(&mut data, &world, (0, 0), true);
 
-        // 最初のセルピクセルは(GRID_LINE_PIXELS, GRID_LINE_PIXELS)の位置
         let gl = GRID_LINE_PIXELS as usize;
         assert_eq!(pixel_rgb(&data, tex_w, gl, gl), CELL_DEAD_RGB);
     }
 
     #[test]
     fn grid_visible_alive_cell() {
-        let mut world = World::new(10, 10);
+        let mut world = World::new();
         world.toggle_cell(0, 0);
 
-        let tex_w = texture_size(10) as usize;
-        let tex_h = texture_size(10) as usize;
-        let mut data = vec![0u8; tex_w * tex_h * 4];
+        let tex_w = CHUNK_TEX_SIZE as usize;
+        let mut data = vec![0u8; tex_w * tex_w * 4];
 
-        write_world_to_image_data(&mut data, &world, true);
+        write_chunk_to_image_data(&mut data, &world, (0, 0), true);
 
-        // セル(0,0)の最初のピクセル → 生存色
         let gl = GRID_LINE_PIXELS as usize;
         assert_eq!(pixel_rgb(&data, tex_w, gl, gl), CELL_ALIVE_RGB);
     }
 
     #[test]
     fn grid_hidden_grid_line_pixels_are_dead_color() {
-        let world = World::new(10, 10);
-        let tex_w = texture_size(10) as usize;
-        let tex_h = texture_size(10) as usize;
-        let mut data = vec![0u8; tex_w * tex_h * 4];
+        let world = World::new();
+        let tex_w = CHUNK_TEX_SIZE as usize;
+        let mut data = vec![0u8; tex_w * tex_w * 4];
 
-        write_world_to_image_data(&mut data, &world, false);
+        write_chunk_to_image_data(&mut data, &world, (0, 0), false);
 
-        // グリッド非表示時、(0,0)はCELL_DEAD_RGBになるべき
         assert_eq!(pixel_rgb(&data, tex_w, 0, 0), CELL_DEAD_RGB);
     }
 
     #[test]
     fn grid_line_between_cells() {
-        let world = World::new(10, 10);
-        let tex_w = texture_size(10) as usize;
-        let tex_h = texture_size(10) as usize;
-        let mut data = vec![0u8; tex_w * tex_h * 4];
+        let world = World::new();
+        let tex_w = CHUNK_TEX_SIZE as usize;
+        let mut data = vec![0u8; tex_w * tex_w * 4];
 
-        write_world_to_image_data(&mut data, &world, true);
+        write_chunk_to_image_data(&mut data, &world, (0, 0), true);
 
-        // セル(0,0)とセル(1,0)の間のグリッド線
-        // セル(0,0): x=[GL..GL+CP), セル(1,0): x=[GL+CP+GL..GL+CP+GL+CP)
-        // 間のグリッド線: x=GL+CP
         let gl = GRID_LINE_PIXELS as usize;
         let cp = CELL_PIXELS as usize;
-        let grid_x = gl + cp; // 最初のセルの右端の次
+        let grid_x = gl + cp; // セル(0,0)の右端の次がグリッド線
         assert_eq!(pixel_rgb(&data, tex_w, grid_x, gl), GRID_LINE_RGB);
     }
 }
