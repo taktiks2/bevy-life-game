@@ -290,7 +290,7 @@ mod tests {
 
     #[test]
     fn zoom_roundtrip() {
-        for &scale in &[0.1, 0.3, 0.5, 0.7] {
+        for &scale in &[0.05, 0.1, 0.2, 0.3] {
             let roundtrip = ratio_to_zoom(zoom_to_ratio(scale));
             assert!(
                 (roundtrip - scale).abs() < 0.001,

@@ -66,7 +66,7 @@ pub const INITIAL_CAMERA_SCALE: f32 = 0.1;
 /// カメラのズーム最小値（最も拡大）
 pub const MIN_CAMERA_SCALE: f32 = 0.05;
 /// カメラのズーム最大値（最も縮小）
-pub const MAX_CAMERA_SCALE: f32 = 0.3;
+pub const MAX_CAMERA_SCALE: f32 = 0.25;
 /// ズーム変更時のステップ幅
 pub const CAMERA_SCALE_STEP: f32 = 0.01;
 /// WASD操作によるカメラ移動速度
@@ -157,7 +157,7 @@ pub const SQUARE_COORDINATES: [(i8, i8); 8] = [
 ];
 
 /// セル1個を表現するテクスチャピクセル数（幅・高さ）
-pub const CELL_PIXELS: u32 = 10;
+pub const CELL_PIXELS: u32 = 8;
 /// グリッドライン1本のテクスチャピクセル数
 pub const GRID_LINE_PIXELS: u32 = 1;
 /// グリッドラインのRGB色（控えめな暗灰色）

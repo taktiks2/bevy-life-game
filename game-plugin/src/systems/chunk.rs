@@ -94,7 +94,13 @@ pub fn manage_chunks(
     // 新規チャンクをスポーン
     for &chunk_key in &visible_chunks {
         if !existing_map.contains(&chunk_key) {
-            spawn_chunk_sprite(&mut commands, &mut images, &world, chunk_key, grid_visible.0);
+            spawn_chunk_sprite(
+                &mut commands,
+                &mut images,
+                &world,
+                chunk_key,
+                grid_visible.0,
+            );
         }
     }
 

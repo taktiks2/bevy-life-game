@@ -424,16 +424,16 @@ mod tests {
     #[test]
     fn chunk_key_positive_coordinates() {
         assert_eq!(World::chunk_key(0, 0), (0, 0));
-        assert_eq!(World::chunk_key(31, 31), (0, 0));
-        assert_eq!(World::chunk_key(32, 0), (1, 0));
-        assert_eq!(World::chunk_key(63, 31), (1, 0));
+        assert_eq!(World::chunk_key(63, 63), (0, 0));
+        assert_eq!(World::chunk_key(64, 0), (1, 0));
+        assert_eq!(World::chunk_key(127, 63), (1, 0));
     }
 
     #[test]
     fn chunk_key_negative_coordinates() {
         assert_eq!(World::chunk_key(-1, -1), (-1, -1));
-        assert_eq!(World::chunk_key(-32, -32), (-1, -1));
-        assert_eq!(World::chunk_key(-33, -33), (-2, -2));
+        assert_eq!(World::chunk_key(-64, -64), (-1, -1));
+        assert_eq!(World::chunk_key(-65, -65), (-2, -2));
     }
 
     // --- dirty_chunks ---

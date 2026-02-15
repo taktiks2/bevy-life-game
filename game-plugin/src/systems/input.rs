@@ -326,8 +326,8 @@ mod tests {
     #[test]
     fn calc_zoom_scroll_down_zooms_out() {
         // スクロール下（負値）→ スケール増加（ズームアウト）
-        let result = calc_zoom_scale(0.5, -1.0);
-        assert!(result > 0.5);
+        let result = calc_zoom_scale(0.15, -1.0);
+        assert!(result > 0.15);
     }
 
     #[test]
@@ -346,8 +346,8 @@ mod tests {
 
     #[test]
     fn calc_zoom_zero_scroll_no_change() {
-        let result = calc_zoom_scale(0.5, 0.0);
-        assert_eq!(result, 0.5);
+        let result = calc_zoom_scale(0.15, 0.0);
+        assert_eq!(result, 0.15);
     }
 
     // --- ドラッグ閾値判定テスト ---

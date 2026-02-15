@@ -84,13 +84,7 @@ mod tests {
             for gy in [0, 1, 10, 50, 100] {
                 let screen_pos = world_to_screen_pos(gx, gy);
                 let (rx, ry) = screen_to_grid_coords(screen_pos);
-                assert_eq!(
-                    (rx, ry),
-                    (gx, gy),
-                    "roundtrip failed for ({}, {})",
-                    gx,
-                    gy
-                );
+                assert_eq!((rx, ry), (gx, gy), "roundtrip failed for ({}, {})", gx, gy);
             }
         }
     }
@@ -101,13 +95,7 @@ mod tests {
             for gy in [-100, -50, -10, -1] {
                 let screen_pos = world_to_screen_pos(gx, gy);
                 let (rx, ry) = screen_to_grid_coords(screen_pos);
-                assert_eq!(
-                    (rx, ry),
-                    (gx, gy),
-                    "roundtrip failed for ({}, {})",
-                    gx,
-                    gy
-                );
+                assert_eq!((rx, ry), (gx, gy), "roundtrip failed for ({}, {})", gx, gy);
             }
         }
     }

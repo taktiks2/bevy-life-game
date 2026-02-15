@@ -14,11 +14,7 @@ use crate::systems::ui::*;
 ///
 /// ボトムパネル（操作ボタン群）とセルハイライトを生成する。
 /// チャンクスプライトは `manage_chunks` システムが動的に管理する。
-pub fn spawn_screen(
-    mut commands: Commands,
-    world: Res<World>,
-    game_assets: Res<GameAssets>,
-) {
+pub fn spawn_screen(mut commands: Commands, world: Res<World>, game_assets: Res<GameAssets>) {
     // NOTE: Bottom Panel
     commands
         .spawn((

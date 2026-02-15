@@ -49,11 +49,7 @@ pub fn spawn_chunk_sprite(
         bevy::render::render_resource::TextureFormat::Rgba8UnormSrgb,
         RenderAssetUsages::MAIN_WORLD | RenderAssetUsages::RENDER_WORLD,
     );
-    image.sampler = ImageSampler::Descriptor(ImageSamplerDescriptor {
-        mag_filter: ImageFilterMode::Nearest,
-        min_filter: ImageFilterMode::Linear,
-        ..ImageSamplerDescriptor::nearest()
-    });
+    image.sampler = ImageSampler::Descriptor(ImageSamplerDescriptor::nearest());
 
     let handle = images.add(image);
     let pos = chunk_world_pos(chunk_key);
@@ -141,7 +137,9 @@ pub fn write_chunk_to_image_data(
 mod tests {
     use super::*;
     use crate::resources::world::World;
-    use common::consts::{CELL_ALIVE_RGB, CELL_DEAD_RGB, CELL_PIXELS, GRID_LINE_PIXELS, GRID_LINE_RGB, CHUNK_TEX_SIZE};
+    use common::consts::{
+        CELL_ALIVE_RGB, CELL_DEAD_RGB, CELL_PIXELS, CHUNK_TEX_SIZE, GRID_LINE_PIXELS, GRID_LINE_RGB,
+    };
 
     fn pixel_rgb(data: &[u8], tex_width: usize, tx: usize, ty: usize) -> (u8, u8, u8) {
         let offset = (ty * tex_width + tx) * 4;
