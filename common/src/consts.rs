@@ -156,7 +156,7 @@ pub fn cell_size(world_width: u16, world_height: u16) -> (f32, f32) {
 }
 
 /// セル1個を表現するテクスチャピクセル数（幅・高さ）
-pub const CELL_PIXELS: u32 = 8;
+pub const CELL_PIXELS: u32 = 12;
 /// グリッドライン1本のテクスチャピクセル数
 pub const GRID_LINE_PIXELS: u32 = 1;
 /// グリッドラインのRGB色（控えめな暗灰色）
@@ -218,19 +218,20 @@ mod grid_tests {
 
     #[test]
     fn texture_size_basic() {
-        // 10セル: 10*2 + 11*1 = 31
-        assert_eq!(texture_size(10), 31);
+        // 10セル: 10*CELL_PIXELS + 11*GRID_LINE_PIXELS
+        assert_eq!(texture_size(10), 10 * CELL_PIXELS + 11 * GRID_LINE_PIXELS);
     }
 
     #[test]
     fn texture_size_300_cells() {
-        // 300セル: 300*2 + 301*1 = 901
-        assert_eq!(texture_size(300), 901);
+        assert_eq!(
+            texture_size(300),
+            300 * CELL_PIXELS + 301 * GRID_LINE_PIXELS
+        );
     }
 
     #[test]
     fn texture_size_1_cell() {
-        // 1セル: 1*2 + 2*1 = 4
-        assert_eq!(texture_size(1), 4);
+        assert_eq!(texture_size(1), 1 * CELL_PIXELS + 2 * GRID_LINE_PIXELS);
     }
 }

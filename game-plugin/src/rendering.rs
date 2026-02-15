@@ -2,7 +2,7 @@
 
 use bevy::{
     asset::RenderAssetUsages,
-    image::{ImageSampler, ImageSamplerDescriptor},
+    image::{ImageFilterMode, ImageSampler, ImageSamplerDescriptor},
     prelude::*,
 };
 use common::consts::{
@@ -40,8 +40,12 @@ pub fn spawn_grid_sprite(commands: &mut Commands, images: &mut Assets<Image>, wo
         bevy::render::render_resource::TextureFormat::Rgba8UnormSrgb,
         RenderAssetUsages::MAIN_WORLD | RenderAssetUsages::RENDER_WORLD,
     );
-    // 最近傍補間でピクセルパーフェクト表示
-    image.sampler = ImageSampler::Descriptor(ImageSamplerDescriptor::nearest());
+    // 拡大時: nearest（ピクセルパーフェクト）、縮小時: linear（グリッド線の省略を防止）
+    image.sampler = ImageSampler::Descriptor(ImageSamplerDescriptor {
+        mag_filter: ImageFilterMode::Nearest,
+        min_filter: ImageFilterMode::Linear,
+        ..ImageSamplerDescriptor::nearest()
+    });
 
     let handle = images.add(image);
 
@@ -85,19 +89,13 @@ pub fn spawn_cell_highlight(commands: &mut Commands) {
 ///
 /// テクスチャ上で各セルはCELL_PIXELS四方、セル間にGRID_LINE_PIXELSのグリッド線を配置。
 /// `grid_visible`がtrueの場合、グリッド線をGRID_LINE_RGBで描画する。
-/// falseの場合、グリッド線領域もCELL_DEAD_RGBで塗りつぶす。
+/// falseの場合、グリッド線領域も隣接セルの色で塗りつぶす。
 pub fn write_world_to_image_data(data: &mut [u8], world: &World, grid_visible: bool) {
     let tex_width = texture_size(world.width) as usize;
     let tex_height = texture_size(world.height) as usize;
     let gl = GRID_LINE_PIXELS as usize;
     let cp = CELL_PIXELS as usize;
     let stride = cp + gl;
-
-    let grid_rgb = if grid_visible {
-        GRID_LINE_RGB
-    } else {
-        CELL_DEAD_RGB
-    };
 
     for tex_y in 0..tex_height {
         for tex_x in 0..tex_width {
@@ -107,14 +105,22 @@ pub fn write_world_to_image_data(data: &mut [u8], world: &World, grid_visible: b
             let is_grid_x = tex_x < gl || (tex_x - gl) % stride >= cp;
             let is_grid_y = tex_y < gl || (tex_y - gl) % stride >= cp;
 
-            let (r, g, b) = if is_grid_x || is_grid_y {
-                grid_rgb
+            let (r, g, b) = if grid_visible && (is_grid_x || is_grid_y) {
+                GRID_LINE_RGB
             } else {
-                // セル領域: グリッド座標を算出
-                let grid_x = ((tex_x - gl) / stride) as u16;
-                let grid_y = ((tex_y - gl) / stride) as u16;
+                // セル領域またはグリッド非表示時: 最も近いセルの色を使用
+                let cell_x = if tex_x < gl {
+                    0
+                } else {
+                    (((tex_x - gl) / stride) as u16).min(world.width - 1)
+                };
+                let cell_y = if tex_y < gl {
+                    0
+                } else {
+                    (((tex_y - gl) / stride) as u16).min(world.height - 1)
+                };
 
-                if world.is_alive(grid_x, grid_y) {
+                if world.is_alive(cell_x, cell_y) {
                     CELL_ALIVE_RGB
                 } else {
                     CELL_DEAD_RGB
