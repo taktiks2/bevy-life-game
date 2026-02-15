@@ -3,8 +3,8 @@
 use bevy::prelude::*;
 use common::{
     consts::{
-        ACCENT_GREEN, ACTION_BUTTON_HEIGHT, BG_BUTTON, BORDER_RADIUS, BORDER_SUBTLE,
-        BUTTON_BORDER_WIDTH, FONT_SIZE_LARGE, FONT_SIZE_MEDIUM, FONT_SIZE_SMALL, TEXT_MUTED,
+        ACCENT_GREEN, ACTION_BUTTON_HEIGHT, BG_BUTTON, BORDER_RADIUS, FONT_SIZE_LARGE,
+        FONT_SIZE_MEDIUM, FONT_SIZE_SMALL, TEXT_MUTED,
         TEXT_PRIMARY,
     },
     resources::GameAssets,
@@ -56,7 +56,6 @@ pub fn spawn_action_button<'a>(
             width: Val::Auto,
             height: Val::Px(ACTION_BUTTON_HEIGHT),
             padding: UiRect::horizontal(Val::Px(16.)),
-            border: UiRect::all(Val::Px(BUTTON_BORDER_WIDTH)),
             border_radius: BorderRadius::px(
                 BORDER_RADIUS,
                 BORDER_RADIUS,
@@ -67,7 +66,6 @@ pub fn spawn_action_button<'a>(
         },
         action,
         BackgroundColor(BG_BUTTON),
-        BorderColor::all(BORDER_SUBTLE),
     ));
     entity.with_children(|p| {
         p.spawn((
@@ -101,7 +99,6 @@ pub fn spawn_small_button<'a>(
             justify_content: JustifyContent::Center,
             width: Val::Px(36.),
             height: Val::Px(36.),
-            border: UiRect::all(Val::Px(BUTTON_BORDER_WIDTH)),
             border_radius: BorderRadius::px(
                 BORDER_RADIUS,
                 BORDER_RADIUS,
@@ -112,7 +109,6 @@ pub fn spawn_small_button<'a>(
         },
         action,
         BackgroundColor(BG_BUTTON),
-        BorderColor::all(BORDER_SUBTLE),
     ));
     entity.with_children(|p| {
         p.spawn((

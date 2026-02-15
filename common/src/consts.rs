@@ -42,9 +42,9 @@ pub fn calc_viewport_sizes(physical_width: u32, physical_height: u32) -> Viewpor
 
 // ワールドサイズ（セル数）
 /// ワールドの幅（セル数）
-pub const WORLD_WIDTH: u16 = 300;
+pub const WORLD_WIDTH: u16 = 480;
 /// ワールドの高さ（セル数）
-pub const WORLD_HEIGHT: u16 = 300;
+pub const WORLD_HEIGHT: u16 = 270;
 
 // シミュレーション速度
 /// デフォルトのティック間隔（秒）
@@ -144,19 +144,24 @@ pub const SQUARE_COORDINATES: [(i8, i8); 8] = [
     (1, 1),
 ];
 
-/// グリッドのワールド空間表示サイズ（正方形）
-pub const GRID_DISPLAY_SIZE: f32 = 800.0;
+/// グリッドのワールド空間表示サイズ（高さ基準）
+pub const GRID_DISPLAY_HEIGHT: f32 = 800.0;
+/// グリッドのワールド空間表示サイズ（幅はセル数の比率で算出）
+pub const GRID_DISPLAY_WIDTH: f32 =
+    GRID_DISPLAY_HEIGHT * (WORLD_WIDTH as f32 / WORLD_HEIGHT as f32);
 
 /// 指定ワールドサイズに対する1セルのピクセルサイズ (幅, 高さ) を返す
+///
+/// セルは正方形になるよう、高さ基準で統一する。
 pub fn cell_size(world_width: u16, world_height: u16) -> (f32, f32) {
     (
-        GRID_DISPLAY_SIZE / world_width as f32,
-        GRID_DISPLAY_SIZE / world_height as f32,
+        GRID_DISPLAY_WIDTH / world_width as f32,
+        GRID_DISPLAY_HEIGHT / world_height as f32,
     )
 }
 
 /// セル1個を表現するテクスチャピクセル数（幅・高さ）
-pub const CELL_PIXELS: u32 = 12;
+pub const CELL_PIXELS: u32 = 10;
 /// グリッドライン1本のテクスチャピクセル数
 pub const GRID_LINE_PIXELS: u32 = 1;
 /// グリッドラインのRGB色（控えめな暗灰色）

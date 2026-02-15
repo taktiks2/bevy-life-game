@@ -2,7 +2,7 @@
 
 use bevy::prelude::*;
 use common::consts::{
-    BG_BUTTON, BG_BUTTON_HOVER, BORDER_SUBTLE, BUTTON_BORDER_HOVER, CAMERA_SCALE_STEP,
+    BG_BUTTON, BG_BUTTON_HOVER, CAMERA_SCALE_STEP,
     MAX_CAMERA_SCALE, MAX_TICK_INTERVAL, MIN_CAMERA_SCALE, MIN_TICK_INTERVAL, TICK_INTERVAL_STEP,
 };
 
@@ -117,27 +117,25 @@ pub fn handle_zoom_up(
     }
 }
 
-/// ボタンホバー時のハンドラ: 背景色・ボーダー色を変更し効果音を再生する
+/// ボタンホバー時のハンドラ: 背景色を変更し効果音を再生する
 pub fn handle_over(
     over: On<Pointer<Over>>,
-    mut query: Query<(&mut BackgroundColor, &mut BorderColor)>,
+    mut query: Query<&mut BackgroundColor>,
     mut events: MessageWriter<PlayAudioEvent>,
 ) {
-    if let Ok((mut background_color, mut border_color)) = query.get_mut(over.entity) {
+    if let Ok(mut background_color) = query.get_mut(over.entity) {
         background_color.0 = BG_BUTTON_HOVER;
-        *border_color = BorderColor::all(BUTTON_BORDER_HOVER);
         events.write(PlayAudioEvent);
     }
 }
 
-/// ボタンホバー終了時のハンドラ: 背景色・ボーダー色を元に戻す
+/// ボタンホバー終了時のハンドラ: 背景色を元に戻す
 pub fn handle_out(
     out: On<Pointer<Out>>,
-    mut query: Query<(&mut BackgroundColor, &mut BorderColor)>,
+    mut query: Query<&mut BackgroundColor>,
 ) {
-    if let Ok((mut background_color, mut border_color)) = query.get_mut(out.entity) {
+    if let Ok(mut background_color) = query.get_mut(out.entity) {
         background_color.0 = BG_BUTTON;
-        *border_color = BorderColor::all(BORDER_SUBTLE);
     }
 }
 

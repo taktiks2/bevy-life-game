@@ -6,7 +6,8 @@ use bevy::{
     prelude::*,
 };
 use common::consts::{
-    CELL_ALIVE_RGB, CELL_DEAD_RGB, CELL_PIXELS, GRID_DISPLAY_SIZE, GRID_LINE_PIXELS,
+    CELL_ALIVE_RGB, CELL_DEAD_RGB, CELL_PIXELS, GRID_DISPLAY_HEIGHT, GRID_DISPLAY_WIDTH,
+    GRID_LINE_PIXELS,
     GRID_LINE_RGB, WORLD_HEIGHT, WORLD_WIDTH, cell_size, texture_size,
 };
 
@@ -52,7 +53,7 @@ pub fn spawn_grid_sprite(commands: &mut Commands, images: &mut Assets<Image>, wo
     commands.spawn((
         Sprite {
             image: handle,
-            custom_size: Some(Vec2::new(GRID_DISPLAY_SIZE, GRID_DISPLAY_SIZE)),
+            custom_size: Some(Vec2::new(GRID_DISPLAY_WIDTH, GRID_DISPLAY_HEIGHT)),
             ..default()
         },
         Layer::World.as_render_layer(),

@@ -1,14 +1,14 @@
 //! グリッド座標とワールド空間座標の変換
 
 use bevy::prelude::*;
-use common::consts::{GRID_DISPLAY_SIZE, cell_size};
+use common::consts::{GRID_DISPLAY_HEIGHT, GRID_DISPLAY_WIDTH, cell_size};
 
 /// グリッド座標をワールド空間の座標に変換する
 pub fn world_to_screen_pos(grid_x: u16, grid_y: u16, world_width: u16, world_height: u16) -> Vec2 {
     let (cell_w, cell_h) = cell_size(world_width, world_height);
     Vec2::new(
-        grid_x as f32 * cell_w - GRID_DISPLAY_SIZE / 2.0 + cell_w / 2.0,
-        -(grid_y as f32 * cell_h - GRID_DISPLAY_SIZE / 2.0 + cell_h / 2.0),
+        grid_x as f32 * cell_w - GRID_DISPLAY_WIDTH / 2.0 + cell_w / 2.0,
+        -(grid_y as f32 * cell_h - GRID_DISPLAY_HEIGHT / 2.0 + cell_h / 2.0),
     )
 }
 
@@ -20,10 +20,11 @@ pub fn screen_to_grid_coords(
     world_width: u16,
     world_height: u16,
 ) -> Option<(u16, u16)> {
-    let half = GRID_DISPLAY_SIZE / 2.0;
+    let half_w = GRID_DISPLAY_WIDTH / 2.0;
+    let half_h = GRID_DISPLAY_HEIGHT / 2.0;
 
-    let local_x = world_pos.x + half;
-    let local_y = -world_pos.y + half;
+    let local_x = world_pos.x + half_w;
+    let local_y = -world_pos.y + half_h;
 
     if local_x < 0.0 || local_y < 0.0 {
         return None;
@@ -60,57 +61,61 @@ pub fn is_cursor_over_world_viewport(
 mod tests {
     use super::*;
 
-    // GRID_DISPLAY_SIZE = 800, 100x100 grid
-    // cell size = 8x8 pixels
+    // GRID_DISPLAY_WIDTH = 1600, GRID_DISPLAY_HEIGHT = 800, 200x100 grid
+    // cell size = 8x8 pixels (正方形)
+    const W: u16 = common::consts::WORLD_WIDTH;
+    const H: u16 = common::consts::WORLD_HEIGHT;
+    const HALF_W: f32 = common::consts::GRID_DISPLAY_WIDTH / 2.0;
+    const HALF_H: f32 = common::consts::GRID_DISPLAY_HEIGHT / 2.0;
 
     #[test]
     fn center_of_grid_returns_correct_coords() {
-        let result = screen_to_grid_coords(Vec2::new(0.0, 0.0), 100, 100);
-        assert_eq!(result, Some((50, 50)));
+        let result = screen_to_grid_coords(Vec2::new(0.0, 0.0), W, H);
+        assert_eq!(result, Some((W / 2, H / 2)));
     }
 
     #[test]
     fn top_left_corner_returns_0_0() {
-        let result = screen_to_grid_coords(Vec2::new(-400.0, 400.0), 100, 100);
+        let result = screen_to_grid_coords(Vec2::new(-HALF_W, HALF_H), W, H);
         assert_eq!(result, Some((0, 0)));
     }
 
     #[test]
-    fn bottom_right_returns_99_99() {
-        let result = screen_to_grid_coords(Vec2::new(399.0, -399.0), 100, 100);
-        assert_eq!(result, Some((99, 99)));
+    fn bottom_right_returns_max() {
+        let result = screen_to_grid_coords(Vec2::new(HALF_W - 1.0, -(HALF_H - 1.0)), W, H);
+        assert_eq!(result, Some((W - 1, H - 1)));
     }
 
     #[test]
     fn outside_grid_left_returns_none() {
-        let result = screen_to_grid_coords(Vec2::new(-401.0, 0.0), 100, 100);
+        let result = screen_to_grid_coords(Vec2::new(-HALF_W - 1.0, 0.0), W, H);
         assert_eq!(result, None);
     }
 
     #[test]
     fn outside_grid_right_returns_none() {
-        let result = screen_to_grid_coords(Vec2::new(401.0, 0.0), 100, 100);
+        let result = screen_to_grid_coords(Vec2::new(HALF_W + 1.0, 0.0), W, H);
         assert_eq!(result, None);
     }
 
     #[test]
     fn outside_grid_top_returns_none() {
-        let result = screen_to_grid_coords(Vec2::new(0.0, 401.0), 100, 100);
+        let result = screen_to_grid_coords(Vec2::new(0.0, HALF_H + 1.0), W, H);
         assert_eq!(result, None);
     }
 
     #[test]
     fn outside_grid_bottom_returns_none() {
-        let result = screen_to_grid_coords(Vec2::new(0.0, -401.0), 100, 100);
+        let result = screen_to_grid_coords(Vec2::new(0.0, -(HALF_H + 1.0)), W, H);
         assert_eq!(result, None);
     }
 
     #[test]
     fn world_to_screen_and_back_roundtrips() {
-        for gx in [0u16, 25, 50, 75, 99] {
-            for gy in [0u16, 25, 50, 75, 99] {
-                let screen_pos = world_to_screen_pos(gx, gy, 100, 100);
-                let result = screen_to_grid_coords(screen_pos, 100, 100);
+        for gx in [0u16, 25, 50, 75, W - 1] {
+            for gy in [0u16, 25, 50, 75, H - 1] {
+                let screen_pos = world_to_screen_pos(gx, gy, W, H);
+                let result = screen_to_grid_coords(screen_pos, W, H);
                 assert_eq!(
                     result,
                     Some((gx, gy)),
