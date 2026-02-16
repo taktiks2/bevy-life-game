@@ -22,7 +22,7 @@ jobs:
         with:
           targets: wasm32-unknown-unknown
       - name: Install cargo-binstall
-        uses: cargo-bins/cargo-binstall@v1.7.4
+        uses: cargo-bins/cargo-binstall@v1.17.5
       - name: Install Trunk
         run: |
           cargo binstall trunk --no-confirm
