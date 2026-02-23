@@ -101,7 +101,7 @@ mod tests {
     }
 
     #[test]
-    fn ミュート時は音声を再生しない() {
+    fn mute_disables_audio_playback() {
         let mut app = setup_test_app();
         app.insert_resource(AudioMuted(true));
 
@@ -118,7 +118,7 @@ mod tests {
     }
 
     #[test]
-    fn ミュート解除時は音声を再生する() {
+    fn unmute_enables_audio_playback() {
         let mut app = setup_test_app();
         app.insert_resource(AudioMuted(false));
 
@@ -135,7 +135,7 @@ mod tests {
     }
 
     #[test]
-    fn デフォルトではミュートされていない() {
+    fn default_is_not_muted() {
         let muted = AudioMuted::default();
         assert!(!muted.0, "デフォルトではミュートされていないべき");
     }

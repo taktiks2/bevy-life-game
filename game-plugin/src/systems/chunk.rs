@@ -128,10 +128,10 @@ pub fn manage_chunks(
                 write_chunk_to_image_data(data, &world, chunk.0);
             }
         }
-    }
 
-    // dirtyチャンクをクリア
-    world.clear_dirty_chunks();
+        // dirtyチャンクをクリア
+        world.clear_dirty_chunks();
+    }
 }
 
 /// カメラスケール・GridVisibleの変更をマテリアルuniformに反映する
