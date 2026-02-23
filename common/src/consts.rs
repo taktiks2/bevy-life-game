@@ -94,7 +94,7 @@ pub const TITLE_BUTTON_WIDTH: f32 = 200.0;
 /// タイトル画面のボタン高さ
 pub const TITLE_BUTTON_HEIGHT: f32 = 60.0;
 /// タイトル/メニュー画面の上下パディング
-pub const TITLE_PADDING: f32 = 200.0;
+pub const TITLE_PADDING: f32 = 80.0;
 
 // スライダーUI
 /// スライダートラックの幅（ピクセル）
