@@ -15,7 +15,7 @@ Conway's Game of Life implementation using Bevy game engine (Rust).
 - **common** — Shared: GameState enum (Title/Game/Menu), GameAssets, constants (`consts.rs`)
 - **game-plugin** — Core: simulation, input, rendering, UI, audio
 - **title-plugin** — Title screen
-- **menu-plugin** — Menu screen (pause)
+- ****menu-plugin** — Menu screen (pause) with pattern placement buttons (pause)
 
 ## Architecture
 - Grid: 100x100, rendered as single Image texture + Sprite (not individual entities)

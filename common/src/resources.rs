@@ -3,6 +3,7 @@
 use bevy::prelude::{AssetServer, AudioSource, Font, FromWorld, Handle, Resource, World};
 
 use crate::consts::DEFAULT_TICK_INTERVAL;
+use crate::patterns::LifePattern;
 
 /// ゲーム全体で使用するアセットと設定を保持するリソース
 ///
@@ -26,6 +27,13 @@ pub struct GameAssets {
 /// メニュー画面のトグルボタンで切り替え可能。
 #[derive(Resource, Debug, Clone, Default)]
 pub struct AudioMuted(pub bool);
+
+/// メニューから選択されたパターンを保持するリソース
+///
+/// パターンが選択されると `GameState::Game` 遷移時にワールドに配置される。
+/// 配置後は `None` にリセットされる。
+#[derive(Resource, Debug, Clone, Default)]
+pub struct SelectedPattern(pub LifePattern);
 
 impl FromWorld for GameAssets {
     fn from_world(world: &mut World) -> Self {

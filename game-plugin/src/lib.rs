@@ -7,7 +7,8 @@ use bevy::sprite_render::Material2dPlugin;
 use bevy::{camera::Viewport, prelude::*};
 use common::{
     consts::{INITIAL_CAMERA_SCALE, WINDOW_HEIGHT, WINDOW_WIDTH, calc_viewport_sizes},
-    resources::{AudioMuted, GameAssets},
+    patterns::LifePattern,
+    resources::{AudioMuted, GameAssets, SelectedPattern},
     states::GameState,
     systems::despawn_entity,
 };
@@ -165,8 +166,21 @@ pub fn setup_world_camera(mut commands: Commands, windows: Query<&Window>) {
 }
 
 /// Worldリソースとシミュレーションタイマーを初期化する
-fn setup_resource(mut commands: Commands, game_assets: Res<GameAssets>) {
-    commands.insert_resource(World::new());
+fn setup_resource(
+    mut commands: Commands,
+    game_assets: Res<GameAssets>,
+    mut selected_pattern: ResMut<SelectedPattern>,
+) {
+    let mut world = World::new();
+
+    // 選択されたパターンがあれば配置してリセット
+    let pattern = selected_pattern.0;
+    if pattern != LifePattern::None {
+        world.place_pattern(pattern.cells());
+        selected_pattern.0 = LifePattern::None;
+    }
+
+    commands.insert_resource(world);
     commands.insert_resource(SimulationTimer::new(game_assets.tick_interval));
     commands.insert_resource(GridVisible::default());
 }

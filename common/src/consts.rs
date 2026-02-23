@@ -96,6 +96,12 @@ pub const TITLE_BUTTON_HEIGHT: f32 = 60.0;
 /// タイトル/メニュー画面の上下パディング
 pub const TITLE_PADDING: f32 = 80.0;
 
+// パターンボタンUI
+/// パターンボタンの幅（ピクセル）
+pub const PATTERN_BUTTON_WIDTH: f32 = 140.0;
+/// パターンボタンの高さ（ピクセル）
+pub const PATTERN_BUTTON_HEIGHT: f32 = 40.0;
+
 // スライダーUI
 /// スライダートラックの幅（ピクセル）
 pub const SLIDER_TRACK_WIDTH: f32 = 100.0;

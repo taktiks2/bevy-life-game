@@ -140,6 +140,19 @@ impl World {
     pub fn clear_dirty_chunks(&mut self) {
         self.dirty_chunks.clear();
     }
+
+    /// 指定したセル群をワールドに配置する
+    ///
+    /// セルを生存状態にし、初期パターンにも記録する。
+    /// 世代カウントを0にリセットし、対応チャンクをdirtyにする。
+    pub fn place_pattern(&mut self, cells: &[(i32, i32)]) {
+        for &(x, y) in cells {
+            self.cells.insert((x, y));
+            self.initial_cells.insert((x, y));
+            self.dirty_chunks.insert(Self::chunk_key(x, y));
+        }
+        self.generation_count = 0;
+    }
 }
 
 #[cfg(test)]
@@ -491,5 +504,46 @@ mod tests {
         assert!(world.is_alive(32, -1));
         assert!(world.is_alive(32, 0));
         assert!(world.is_alive(32, 1));
+    }
+
+    #[test]
+    fn place_pattern_sets_cells_alive() {
+        let mut world = World::new();
+        let cells = &[(0, 0), (1, 0), (0, 1)];
+        world.place_pattern(cells);
+        assert!(world.is_alive(0, 0));
+        assert!(world.is_alive(1, 0));
+        assert!(world.is_alive(0, 1));
+        assert!(!world.is_alive(1, 1));
+    }
+
+    #[test]
+    fn place_pattern_records_initial_cells() {
+        let mut world = World::new();
+        let cells = &[(0, 0), (1, 0)];
+        world.place_pattern(cells);
+        assert!(world.is_initial_alive(0, 0));
+        assert!(world.is_initial_alive(1, 0));
+    }
+
+    #[test]
+    fn place_pattern_resets_generation_count() {
+        let mut world = World::new();
+        world.toggle_cell(0, 0);
+        world.clear_dirty_chunks();
+        world.progress_generation();
+        assert!(world.generation_count > 0);
+        world.place_pattern(&[(5, 5)]);
+        assert_eq!(world.generation_count, 0);
+    }
+
+    #[test]
+    fn place_pattern_marks_dirty_chunks() {
+        let mut world = World::new();
+        world.clear_dirty_chunks();
+        world.place_pattern(&[(0, 0), (100, 100)]);
+        let dirty = world.dirty_chunks();
+        assert!(dirty.contains(&World::chunk_key(0, 0)));
+        assert!(dirty.contains(&World::chunk_key(100, 100)));
     }
 }
