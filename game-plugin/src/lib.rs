@@ -7,7 +7,7 @@ use bevy::sprite_render::Material2dPlugin;
 use bevy::{camera::Viewport, prelude::*};
 use common::{
     consts::{INITIAL_CAMERA_SCALE, WINDOW_HEIGHT, WINDOW_WIDTH, calc_viewport_sizes},
-    resources::GameAssets,
+    resources::{AudioMuted, GameAssets},
     states::GameState,
     systems::despawn_entity,
 };
@@ -53,6 +53,7 @@ pub struct GamePlugin;
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins(Material2dPlugin::<grid_material::GridMaterial>::default());
+        app.init_resource::<AudioMuted>();
         app.add_systems(
             OnEnter(GameState::Game),
             (

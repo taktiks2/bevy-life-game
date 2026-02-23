@@ -20,6 +20,13 @@ pub struct GameAssets {
     pub tick_interval: f32,
 }
 
+/// オーディオのミュート状態を管理するリソース
+///
+/// `true` の場合、効果音の再生をスキップする。
+/// メニュー画面のトグルボタンで切り替え可能。
+#[derive(Resource, Debug, Clone, Default)]
+pub struct AudioMuted(pub bool);
+
 impl FromWorld for GameAssets {
     fn from_world(world: &mut World) -> Self {
         let asset_server = world.resource::<AssetServer>();

@@ -7,7 +7,7 @@ use bevy::prelude::*;
 
 use common::{
     consts::{BG_DARK, TEXT_PRIMARY, TITLE_BUTTON_WIDTH},
-    resources::GameAssets,
+    resources::{AudioMuted, GameAssets},
     states::GameState,
     systems::{despawn_entity, setup_camera},
     ui::{
@@ -53,13 +53,28 @@ enum MenuButtonAction {
     Quit,
 }
 
+
 /// メニュー画面用カメラを生成する
 fn setup_menu_camera(commands: Commands) {
     setup_camera(commands, MenuCamera);
 }
 
+/// ミュート状態に応じたボタンラベルを返す
+fn mute_button_label(muted: bool) -> String {
+    if muted {
+        "Sound: OFF".to_string()
+    } else {
+        "Sound: ON".to_string()
+    }
+}
+
 /// メニュー画面のUIを構築する
-fn setup_menu_screen(mut commands: Commands, game_assets: Res<GameAssets>) {
+fn setup_menu_screen(
+    mut commands: Commands,
+    game_assets: Res<GameAssets>,
+    audio_muted: Res<AudioMuted>,
+) {
+    let mute_label = mute_button_label(audio_muted.0);
     spawn_screen_container(&mut commands, OnMenuScreen, BG_DARK).with_children(|parent| {
         spawn_screen_title(
             parent,
@@ -77,6 +92,7 @@ fn setup_menu_screen(mut commands: Commands, game_assets: Res<GameAssets>) {
                 ..default()
             })
             .with_children(|p| {
+                spawn_mute_button(p, game_assets.font_bold.clone(), &mute_label);
                 spawn_screen_button(p, game_assets.font_bold.clone(), "Back")
                     .insert(MenuButtonAction::Back)
                     .observe(on_back_button_click)
@@ -91,9 +107,41 @@ fn setup_menu_screen(mut commands: Commands, game_assets: Res<GameAssets>) {
     });
 }
 
-/// Backボタンのクリックハンドラ: タイトル画面に遷移する
+/// ミュートトグルボタンを生成する
+fn spawn_mute_button(
+    parent: &mut ChildSpawnerCommands<'_>,
+    font: Handle<Font>,
+    label: &str,
+) {
+    spawn_screen_button(parent, font, label)
+        .observe(on_mute_button_click)
+        .observe(handle_screen_button_over)
+        .observe(handle_screen_button_out);
+}
+
+/// ミュートボタンのクリックハンドラ: ミュート状態を切り替え、テキストを更新する
+fn on_mute_button_click(
+    click: On<Pointer<Click>>,
+    mut audio_muted: ResMut<AudioMuted>,
+    children_query: Query<&Children>,
+    mut text_query: Query<&mut Text>,
+) {
+    audio_muted.0 = !audio_muted.0;
+    let new_label = mute_button_label(audio_muted.0);
+
+    // ボタンの子要素からTextを見つけて更新
+    if let Ok(children) = children_query.get(click.entity) {
+        for child in children.iter() {
+            if let Ok(mut text) = text_query.get_mut(child) {
+                **text = new_label.clone();
+            }
+        }
+    }
+}
+
+/// Backボタンのクリックハンドラ: ゲーム画面に戻る
 fn on_back_button_click(_click: On<Pointer<Click>>, mut state: ResMut<NextState<GameState>>) {
-    state.set(GameState::Title);
+    state.set(GameState::Game);
 }
 
 /// Quitボタンのクリックハンドラ: アプリケーションを終了する
