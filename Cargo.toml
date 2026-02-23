@@ -15,7 +15,6 @@ common = { path = "common" }
 
 [dependencies]
 bevy.workspace = true
-bevy-inspector-egui = { version = "0.36", default-features = false }
 common.workspace = true
 game-plugin = { path = "game-plugin" }
 title-plugin = { path = "title-plugin" }

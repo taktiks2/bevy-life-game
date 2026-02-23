@@ -29,6 +29,7 @@ pub fn chunk_world_pos(chunk_key: ChunkKey) -> Vec3 {
 /// チャンクのメッシュエンティティを生成する
 ///
 /// セルデータはテクスチャに、グリッド線はカスタムシェーダーで描画する。
+#[allow(clippy::too_many_arguments)]
 pub fn spawn_chunk_mesh(
     commands: &mut Commands,
     images: &mut Assets<Image>,

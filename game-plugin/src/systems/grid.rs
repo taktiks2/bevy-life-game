@@ -72,7 +72,7 @@ pub fn update_cell_highlight(
         .cursor_position()
         .filter(|&pos| is_cursor_over_world_viewport(pos, scale_factor, sizes.main_height))
         .and_then(|cursor_pos| camera.viewport_to_world_2d(cam_transform, cursor_pos).ok())
-        .map(|world_pos| screen_to_grid_coords(world_pos));
+        .map(screen_to_grid_coords);
 
     let Ok((mut transform, mut vis)) = highlight_query.single_mut() else {
         return;

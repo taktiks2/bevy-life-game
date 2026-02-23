@@ -50,6 +50,7 @@ pub fn calc_visible_chunks(
 /// - 新規に見えるチャンクをスポーン
 /// - 範囲外のチャンクをデスポーン
 /// - 変更のあったチャンクのテクスチャを再描画
+#[allow(clippy::too_many_arguments)]
 pub fn manage_chunks(
     mut commands: Commands,
     mut images: ResMut<Assets<Image>>,
@@ -119,14 +120,12 @@ pub fn manage_chunks(
             if !visible_chunks.contains(&chunk.0) {
                 continue;
             }
-            if world.dirty_chunks().contains(&chunk.0) {
-                if let Some(material) = grid_materials.get(&material_handle.0) {
-                    if let Some(image) = images.get_mut(&material.cell_texture) {
-                        if let Some(ref mut data) = image.data {
-                            write_chunk_to_image_data(data, &world, chunk.0);
-                        }
-                    }
-                }
+            if world.dirty_chunks().contains(&chunk.0)
+                && let Some(material) = grid_materials.get(&material_handle.0)
+                && let Some(image) = images.get_mut(&material.cell_texture)
+                && let Some(ref mut data) = image.data
+            {
+                write_chunk_to_image_data(data, &world, chunk.0);
             }
         }
     }

@@ -8,8 +8,8 @@ use bevy::prelude::*;
 
 use common::{
     consts::{
-        ACCENT_GREEN, ACCENT_GREEN_DIM, BG_DARK, FONT_SIZE_MEDIUM, FONT_SIZE_SMALL, TEXT_MUTED,
-        TEXT_PRIMARY,
+        ACCENT_GREEN, ACCENT_GREEN_DIM, BG_DARK, FONT_SIZE_MEDIUM, FONT_SIZE_SMALL, SPACING_LG,
+        SPACING_SM, SPACING_XS, TEXT_MUTED, TEXT_PRIMARY,
     },
     resources::GameAssets,
     states::GameState,
@@ -74,7 +74,7 @@ fn setup_title_screen(mut commands: Commands, game_assets: Res<GameAssets>) {
             .spawn(Node {
                 flex_direction: FlexDirection::Column,
                 align_items: AlignItems::FlexStart,
-                row_gap: Val::Px(4.0),
+                row_gap: Val::Px(SPACING_XS),
                 ..default()
             })
             .with_children(|section| {
@@ -88,7 +88,7 @@ fn setup_title_screen(mut commands: Commands, game_assets: Res<GameAssets>) {
                     },
                     TextColor(TEXT_PRIMARY),
                     Node {
-                        margin: UiRect::bottom(Val::Px(8.0)),
+                        margin: UiRect::bottom(Val::Px(SPACING_SM)),
                         ..default()
                     },
                 ));
@@ -109,7 +109,7 @@ fn setup_title_screen(mut commands: Commands, game_assets: Res<GameAssets>) {
                     if key.is_empty() && desc.is_empty() {
                         // 区切りスペース
                         section.spawn(Node {
-                            height: Val::Px(4.0),
+                            height: Val::Px(SPACING_XS),
                             ..default()
                         });
                         continue;
@@ -118,7 +118,7 @@ fn setup_title_screen(mut commands: Commands, game_assets: Res<GameAssets>) {
                     section
                         .spawn(Node {
                             flex_direction: FlexDirection::Row,
-                            column_gap: Val::Px(16.0),
+                            column_gap: Val::Px(SPACING_LG),
                             ..default()
                         })
                         .with_children(|row| {

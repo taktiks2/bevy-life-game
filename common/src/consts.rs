@@ -100,6 +100,16 @@ pub const TITLE_BUTTON_HEIGHT: f32 = 60.0;
 /// タイトル/メニュー画面の上下パディング
 pub const TITLE_PADDING: f32 = 80.0;
 
+// UIスペーシング
+/// 極小間隔（4px）
+pub const SPACING_XS: f32 = 4.0;
+/// 小間隔（8px）
+pub const SPACING_SM: f32 = 8.0;
+/// 中間隔（12px）
+pub const SPACING_MD: f32 = 12.0;
+/// 大間隔（16px）
+pub const SPACING_LG: f32 = 16.0;
+
 // パターンボタンUI
 /// パターンボタンの幅（ピクセル）
 pub const PATTERN_BUTTON_WIDTH: f32 = 140.0;

@@ -9,7 +9,8 @@ use bevy::prelude::*;
 use common::{
     consts::{
         BG_BUTTON, BG_DARK, BORDER_RADIUS, BORDER_SUBTLE, FONT_SIZE_MEDIUM, FONT_SIZE_SMALL,
-        PATTERN_BUTTON_HEIGHT, PATTERN_BUTTON_WIDTH, TEXT_MUTED, TEXT_PRIMARY, TITLE_BUTTON_WIDTH,
+        PATTERN_BUTTON_HEIGHT, PATTERN_BUTTON_WIDTH, SPACING_LG, SPACING_SM, TEXT_MUTED,
+        TEXT_PRIMARY, TITLE_BUTTON_WIDTH,
     },
     patterns::LifePattern,
     resources::{AudioMuted, GameAssets, SelectedPattern},
@@ -94,7 +95,7 @@ fn setup_menu_screen(
             .spawn(Node {
                 flex_direction: FlexDirection::Column,
                 align_items: AlignItems::Center,
-                row_gap: Val::Px(16.0),
+                row_gap: Val::Px(SPACING_LG),
                 ..default()
             })
             .with_children(|p| {
@@ -133,7 +134,7 @@ fn spawn_pattern_section(parent: &mut ChildSpawnerCommands<'_>, font: Handle<Fon
         .spawn(Node {
             flex_direction: FlexDirection::Column,
             align_items: AlignItems::Center,
-            row_gap: Val::Px(8.0),
+            row_gap: Val::Px(SPACING_SM),
             ..default()
         })
         .with_children(|p| {
@@ -152,8 +153,8 @@ fn spawn_pattern_section(parent: &mut ChildSpawnerCommands<'_>, font: Handle<Fon
             p.spawn(Node {
                 display: Display::Grid,
                 grid_template_columns: vec![GridTrack::auto(), GridTrack::auto()],
-                column_gap: Val::Px(8.0),
-                row_gap: Val::Px(8.0),
+                column_gap: Val::Px(SPACING_SM),
+                row_gap: Val::Px(SPACING_SM),
                 justify_content: JustifyContent::Center,
                 ..default()
             })

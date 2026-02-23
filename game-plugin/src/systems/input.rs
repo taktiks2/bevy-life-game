@@ -215,29 +215,29 @@ pub fn mouse_drag_pan(
 
     // 左クリック中のドラッグ処理
     if mouse.pressed(MouseButton::Left) {
-        if let (Some(start_pos), Some(last_pos)) = (drag_state.start_pos, drag_state.last_pos) {
-            if let Some(current_pos) = window.cursor_position() {
-                // 閾値超えでドラッグモード開始
-                if !drag_state.is_dragging && exceeds_drag_threshold(start_pos, current_pos) {
-                    drag_state.is_dragging = true;
-                }
-                if drag_state.is_dragging {
-                    let delta = current_pos - last_pos;
-                    let Ok((mut transform, projection)) = camera_query.single_mut() else {
-                        return;
-                    };
-                    // スクリーンピクセルをワールド座標に変換（スケール考慮）
-                    let scale = if let Projection::Orthographic(ref ortho) = *projection {
-                        ortho.scale
-                    } else {
-                        1.0
-                    };
-                    // スクリーン座標系は下向きY、ワールド座標系は上向きYなので反転
-                    transform.translation.x -= delta.x * scale;
-                    transform.translation.y += delta.y * scale;
-                }
-                drag_state.last_pos = Some(current_pos);
+        if let (Some(start_pos), Some(last_pos)) = (drag_state.start_pos, drag_state.last_pos)
+            && let Some(current_pos) = window.cursor_position()
+        {
+            // 閾値超えでドラッグモード開始
+            if !drag_state.is_dragging && exceeds_drag_threshold(start_pos, current_pos) {
+                drag_state.is_dragging = true;
             }
+            if drag_state.is_dragging {
+                let delta = current_pos - last_pos;
+                let Ok((mut transform, projection)) = camera_query.single_mut() else {
+                    return;
+                };
+                // スクリーンピクセルをワールド座標に変換（スケール考慮）
+                let scale = if let Projection::Orthographic(ref ortho) = *projection {
+                    ortho.scale
+                } else {
+                    1.0
+                };
+                // スクリーン座標系は下向きY、ワールド座標系は上向きYなので反転
+                transform.translation.x -= delta.x * scale;
+                transform.translation.y += delta.y * scale;
+            }
+            drag_state.last_pos = Some(current_pos);
         }
         return;
     }
