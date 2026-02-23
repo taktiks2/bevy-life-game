@@ -225,11 +225,7 @@ fn on_pattern_button_click(
 }
 
 /// ミュートトグルボタンを生成する
-fn spawn_mute_button(
-    parent: &mut ChildSpawnerCommands<'_>,
-    font: Handle<Font>,
-    label: &str,
-) {
+fn spawn_mute_button(parent: &mut ChildSpawnerCommands<'_>, font: Handle<Font>, label: &str) {
     spawn_screen_button(parent, font, label)
         .observe(on_mute_button_click)
         .observe(handle_screen_button_over)

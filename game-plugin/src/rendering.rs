@@ -142,7 +142,9 @@ pub fn write_chunk_to_image_data(data: &mut [u8], world: &World, chunk_key: Chun
 mod tests {
     use super::*;
     use crate::resources::world::World;
-    use common::consts::{CELL_ALIVE_RGB, CELL_DEAD_RGB, CELL_PIXELS, CHUNK_TEX_SIZE, CHUNK_WORLD_SIZE};
+    use common::consts::{
+        CELL_ALIVE_RGB, CELL_DEAD_RGB, CELL_PIXELS, CHUNK_TEX_SIZE, CHUNK_WORLD_SIZE,
+    };
 
     fn pixel_rgb(data: &[u8], tex_width: usize, tx: usize, ty: usize) -> (u8, u8, u8) {
         let offset = (ty * tex_width + tx) * 4;
