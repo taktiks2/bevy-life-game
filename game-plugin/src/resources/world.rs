@@ -1,87 +1,156 @@
-//! ライフゲームのワールド（セルグリッド）リソース
+//! ライフゲームの無限ワールドリソース
 
 use bevy::prelude::Resource;
+use rustc_hash::{FxHashMap, FxHashSet};
+
+use common::consts::{CHUNK_SIZE, SQUARE_COORDINATES};
 
 use super::simulation;
 
-/// ライフゲームのワールドを表すリソース
+/// チャンクの座標キー (chunk_x, chunk_y)
+pub type ChunkKey = (i32, i32);
+
+/// ライフゲームの無限ワールドを表すリソース
 ///
-/// セルの生死状態をフラット配列 (`Vec<bool>`) で管理する。
-/// ダブルバッファリングにより、世代更新時のアロケーションを回避する。
-/// `initial_cells` にユーザーが配置した初期パターンを保存し、リセット時に復元できる。
+/// 生存セルのみを `FxHashSet` で管理する。座標は `(i32, i32)` で無限に拡張可能。
+/// `dirty_chunks` で変更のあったチャンクを追跡し、レンダリングの最適化に使用する。
 #[derive(Resource, Clone, Debug)]
 pub struct World {
-    /// 現在のセル状態（row-major: y * width + x）
-    cells: Vec<bool>,
-    /// 世代更新時の書き込み先バッファ（swap で交互に使用）
-    back_buffer: Vec<bool>,
+    /// 生存セルの座標集合
+    cells: FxHashSet<(i32, i32)>,
     /// ユーザーが配置した初期パターン（リセット時に復元）
-    initial_cells: Vec<bool>,
-    /// ワールドの幅（セル数）
-    pub width: u16,
-    /// ワールドの高さ（セル数）
-    pub height: u16,
+    initial_cells: FxHashSet<(i32, i32)>,
+    /// 直前の操作で変更があったチャンクの集合
+    dirty_chunks: FxHashSet<ChunkKey>,
     /// 現在の世代数
     pub generation_count: u64,
 }
 
 impl World {
-    /// 全セルが死んだ状態の新しいワールドを生成する
-    pub fn new(width: u16, height: u16) -> Self {
-        let size = width as usize * height as usize;
+    /// 空の無限ワールドを生成する
+    pub fn new() -> Self {
         Self {
-            cells: vec![false; size],
-            back_buffer: vec![false; size],
-            initial_cells: vec![false; size],
-            width,
-            height,
+            cells: FxHashSet::default(),
+            initial_cells: FxHashSet::default(),
+            dirty_chunks: FxHashSet::default(),
             generation_count: 0,
         }
     }
-    /// (x, y) 座標をフラット配列のインデックスに変換する
-    fn idx(&self, x: u16, y: u16) -> usize {
-        y as usize * self.width as usize + x as usize
+
+    /// セル座標からチャンクキーを計算する
+    pub fn chunk_key(x: i32, y: i32) -> ChunkKey {
+        (x.div_euclid(CHUNK_SIZE), y.div_euclid(CHUNK_SIZE))
     }
+
     /// 指定座標のセルが生きているかを返す
-    pub fn is_alive(&self, x: u16, y: u16) -> bool {
-        self.cells[self.idx(x, y)]
+    pub fn is_alive(&self, x: i32, y: i32) -> bool {
+        self.cells.contains(&(x, y))
     }
-    /// コンウェイのルールに従い世代を1つ進める
-    ///
-    /// バックバッファに次世代の状態を計算し、swap で切り替える。
-    pub fn progress_generation(&mut self) {
-        self.generation_count += 1;
-        for y in 0..self.height as usize {
-            for x in 0..self.width as usize {
-                let neighbors =
-                    simulation::count_alive_neighbors(&self.cells, self.width, self.height, y, x);
-                self.back_buffer[y * self.width as usize + x] =
-                    simulation::next_cell_state(self.cells[y * self.width as usize + x], neighbors);
-            }
-        }
-        std::mem::swap(&mut self.cells, &mut self.back_buffer);
-    }
+
     /// 指定座標のセルの生死をトグルする
     ///
     /// 初期パターンも同時に更新し、世代カウントを0にリセットする。
-    pub fn toggle_cell(&mut self, x: u16, y: u16) {
-        let i = self.idx(x, y);
-        let new_state = !self.cells[i];
-        self.cells[i] = new_state;
-        self.initial_cells[i] = new_state;
+    pub fn toggle_cell(&mut self, x: i32, y: i32) {
+        let chunk = Self::chunk_key(x, y);
+        if self.cells.contains(&(x, y)) {
+            self.cells.remove(&(x, y));
+            self.initial_cells.remove(&(x, y));
+        } else {
+            self.cells.insert((x, y));
+            self.initial_cells.insert((x, y));
+        }
+        self.dirty_chunks.insert(chunk);
         self.generation_count = 0;
     }
+
+    /// コンウェイのルールに従い世代を1つ進める
+    ///
+    /// 生存セルとその隣接セルのみを処理する効率的なアルゴリズム。
+    pub fn progress_generation(&mut self) {
+        self.generation_count += 1;
+
+        // 候補セル = 生存セル + その8近傍のカウントを構築
+        let mut candidates: FxHashMap<(i32, i32), u8> = FxHashMap::default();
+
+        for &(x, y) in &self.cells {
+            // 自分自身を候補に
+            candidates.entry((x, y)).or_insert(0);
+            // 8近傍のカウントを+1
+            for &(dy, dx) in &SQUARE_COORDINATES {
+                let nx = x + dx as i32;
+                let ny = y + dy as i32;
+                *candidates.entry((nx, ny)).or_insert(0) += 1;
+            }
+        }
+
+        let old_cells = std::mem::take(&mut self.cells);
+        self.dirty_chunks.clear();
+
+        for ((x, y), count) in candidates {
+            let was_alive = old_cells.contains(&(x, y));
+            let is_alive = simulation::next_cell_state(was_alive, count as usize);
+            if is_alive {
+                self.cells.insert((x, y));
+            }
+            if was_alive != is_alive {
+                self.dirty_chunks.insert(Self::chunk_key(x, y));
+            }
+        }
+    }
+
     /// 初期パターンの状態に復元し、世代カウントを0にリセットする
     pub fn reset(&mut self) {
+        let old_cells = std::mem::take(&mut self.cells);
         self.cells = self.initial_cells.clone();
+        self.dirty_chunks.clear();
+
+        // 変更のあったチャンクを追跡
+        for &(x, y) in old_cells.symmetric_difference(&self.cells) {
+            self.dirty_chunks.insert(Self::chunk_key(x, y));
+        }
         self.generation_count = 0;
     }
+
     /// 全セルを死んだ状態にし、初期パターンもクリアする
     pub fn clear(&mut self) {
-        let size = self.width as usize * self.height as usize;
-        self.cells = vec![false; size];
-        self.back_buffer = vec![false; size];
-        self.initial_cells = vec![false; size];
+        // 旧生存セルのチャンクをdirtyに
+        for &(x, y) in &self.cells {
+            self.dirty_chunks.insert(Self::chunk_key(x, y));
+        }
+        for &(x, y) in &self.initial_cells {
+            self.dirty_chunks.insert(Self::chunk_key(x, y));
+        }
+        self.cells.clear();
+        self.initial_cells.clear();
+        self.generation_count = 0;
+    }
+
+    /// 生存セルの集合を返す
+    #[allow(dead_code)]
+    pub fn alive_cells(&self) -> &FxHashSet<(i32, i32)> {
+        &self.cells
+    }
+
+    /// 直前の操作で変更があったチャンクの集合を返す
+    pub fn dirty_chunks(&self) -> &FxHashSet<ChunkKey> {
+        &self.dirty_chunks
+    }
+
+    /// dirtyチャンクの追跡をクリアする
+    pub fn clear_dirty_chunks(&mut self) {
+        self.dirty_chunks.clear();
+    }
+
+    /// 指定したセル群をワールドに配置する
+    ///
+    /// セルを生存状態にし、初期パターンにも記録する。
+    /// 世代カウントを0にリセットし、対応チャンクをdirtyにする。
+    pub fn place_pattern(&mut self, cells: &[(i32, i32)]) {
+        for &(x, y) in cells {
+            self.cells.insert((x, y));
+            self.initial_cells.insert((x, y));
+            self.dirty_chunks.insert(Self::chunk_key(x, y));
+        }
         self.generation_count = 0;
     }
 }
@@ -89,14 +158,19 @@ impl World {
 #[cfg(test)]
 impl World {
     /// 指定座標のセルの生死状態を設定する（テスト専用）
-    pub fn set_alive(&mut self, x: u16, y: u16, alive: bool) {
-        let i = self.idx(x, y);
-        self.cells[i] = alive;
+    pub fn set_alive(&mut self, x: i32, y: i32, alive: bool) {
+        if alive {
+            self.cells.insert((x, y));
+        } else {
+            self.cells.remove(&(x, y));
+        }
     }
+
     /// 初期パターンにおいて指定座標のセルが生きているかを返す（テスト専用）
-    pub fn is_initial_alive(&self, x: u16, y: u16) -> bool {
-        self.initial_cells[self.idx(x, y)]
+    pub fn is_initial_alive(&self, x: i32, y: i32) -> bool {
+        self.initial_cells.contains(&(x, y))
     }
+
     /// 現在のセル状態を初期パターンとして保存する（テスト専用）
     pub fn save_as_initial(&mut self) {
         self.initial_cells = self.cells.clone();
@@ -110,40 +184,29 @@ mod tests {
     // --- World::new ---
 
     #[test]
-    fn new_world_has_all_dead_cells() {
-        let world = World::new(5, 5);
-        for y in 0..5u16 {
-            for x in 0..5u16 {
-                assert!(!world.is_alive(x, y));
-            }
-        }
-    }
-
-    #[test]
-    fn new_world_has_correct_dimensions() {
-        let world = World::new(10, 7);
-        assert_eq!(world.width, 10);
-        assert_eq!(world.height, 7);
+    fn new_world_is_empty() {
+        let world = World::new();
+        assert!(world.alive_cells().is_empty());
     }
 
     #[test]
     fn new_world_has_zero_generation() {
-        let world = World::new(5, 5);
+        let world = World::new();
         assert_eq!(world.generation_count, 0);
     }
 
-    // --- toggle_cell (switch_state の代替テスト含む) ---
+    // --- toggle_cell ---
 
     #[test]
     fn toggle_cell_switches_dead_to_alive() {
-        let mut world = World::new(3, 3);
+        let mut world = World::new();
         world.toggle_cell(1, 1);
         assert!(world.is_alive(1, 1));
     }
 
     #[test]
     fn toggle_cell_switches_alive_to_dead() {
-        let mut world = World::new(3, 3);
+        let mut world = World::new();
         world.set_alive(1, 1, true);
         world.toggle_cell(1, 1);
         assert!(!world.is_alive(1, 1));
@@ -151,38 +214,51 @@ mod tests {
 
     #[test]
     fn toggle_cell_syncs_initial_cells() {
-        let mut world = World::new(3, 3);
+        let mut world = World::new();
         world.toggle_cell(1, 1);
         assert!(world.is_initial_alive(1, 1));
     }
 
     #[test]
     fn toggle_cell_resets_generation_count() {
-        let mut world = World::new(3, 3);
+        let mut world = World::new();
         world.generation_count = 5;
         world.toggle_cell(1, 1);
         assert_eq!(world.generation_count, 0);
     }
 
     #[test]
-    fn toggle_cell_does_not_clone_entire_grid() {
-        let mut world = World::new(3, 3);
+    fn toggle_cell_does_not_affect_other_initial_cells() {
+        let mut world = World::new();
         world.set_alive(0, 0, true);
         world.save_as_initial();
 
         world.toggle_cell(1, 1);
 
-        // 他のセルの initial_cells は変わらない
         assert!(world.is_initial_alive(0, 0));
-        // トグルしたセルだけ同期される
         assert!(world.is_initial_alive(1, 1));
+    }
+
+    #[test]
+    fn toggle_cell_negative_coordinates() {
+        let mut world = World::new();
+        world.toggle_cell(-5, -10);
+        assert!(world.is_alive(-5, -10));
+        assert!(!world.is_alive(0, 0));
+    }
+
+    #[test]
+    fn toggle_cell_marks_dirty_chunk() {
+        let mut world = World::new();
+        world.toggle_cell(3, 5);
+        assert!(world.dirty_chunks().contains(&World::chunk_key(3, 5)));
     }
 
     // --- Conway's ルール (progress_generation 経由) ---
 
     #[test]
     fn alive_cell_with_0_neighbors_dies() {
-        let mut world = World::new(3, 3);
+        let mut world = World::new();
         world.set_alive(1, 1, true);
         world.progress_generation();
         assert!(!world.is_alive(1, 1));
@@ -190,7 +266,7 @@ mod tests {
 
     #[test]
     fn alive_cell_with_1_neighbor_dies() {
-        let mut world = World::new(3, 3);
+        let mut world = World::new();
         world.set_alive(1, 1, true);
         world.set_alive(0, 0, true);
         world.progress_generation();
@@ -199,7 +275,7 @@ mod tests {
 
     #[test]
     fn alive_cell_with_2_neighbors_survives() {
-        let mut world = World::new(3, 3);
+        let mut world = World::new();
         world.set_alive(1, 1, true);
         world.set_alive(0, 0, true);
         world.set_alive(1, 0, true);
@@ -209,7 +285,7 @@ mod tests {
 
     #[test]
     fn alive_cell_with_3_neighbors_survives() {
-        let mut world = World::new(3, 3);
+        let mut world = World::new();
         world.set_alive(1, 1, true);
         world.set_alive(0, 0, true);
         world.set_alive(1, 0, true);
@@ -220,7 +296,7 @@ mod tests {
 
     #[test]
     fn alive_cell_with_4_neighbors_dies() {
-        let mut world = World::new(3, 3);
+        let mut world = World::new();
         world.set_alive(1, 1, true);
         world.set_alive(0, 0, true);
         world.set_alive(1, 0, true);
@@ -232,7 +308,7 @@ mod tests {
 
     #[test]
     fn dead_cell_with_3_neighbors_becomes_alive() {
-        let mut world = World::new(3, 3);
+        let mut world = World::new();
         world.set_alive(0, 0, true);
         world.set_alive(1, 0, true);
         world.set_alive(0, 1, true);
@@ -242,7 +318,7 @@ mod tests {
 
     #[test]
     fn dead_cell_with_2_neighbors_stays_dead() {
-        let mut world = World::new(3, 3);
+        let mut world = World::new();
         world.set_alive(0, 0, true);
         world.set_alive(1, 0, true);
         world.progress_generation();
@@ -253,14 +329,12 @@ mod tests {
 
     #[test]
     fn blinker_oscillates() {
-        // 横棒 → 縦棒
-        let mut world = World::new(5, 5);
+        let mut world = World::new();
         world.set_alive(1, 2, true);
         world.set_alive(2, 2, true);
         world.set_alive(3, 2, true);
 
         world.progress_generation();
-        // 縦棒になるはず
         assert!(!world.is_alive(1, 2));
         assert!(world.is_alive(2, 1));
         assert!(world.is_alive(2, 2));
@@ -268,7 +342,6 @@ mod tests {
         assert!(!world.is_alive(3, 2));
 
         world.progress_generation();
-        // 横棒に戻るはず
         assert!(world.is_alive(1, 2));
         assert!(world.is_alive(2, 2));
         assert!(world.is_alive(3, 2));
@@ -278,7 +351,7 @@ mod tests {
 
     #[test]
     fn block_is_stable() {
-        let mut world = World::new(4, 4);
+        let mut world = World::new();
         world.set_alive(1, 1, true);
         world.set_alive(2, 1, true);
         world.set_alive(1, 2, true);
@@ -289,13 +362,14 @@ mod tests {
         assert!(world.is_alive(2, 1));
         assert!(world.is_alive(1, 2));
         assert!(world.is_alive(2, 2));
+        assert_eq!(world.alive_cells().len(), 4);
     }
 
     // --- generation_count ---
 
     #[test]
     fn generation_count_increments() {
-        let mut world = World::new(3, 3);
+        let mut world = World::new();
         assert_eq!(world.generation_count, 0);
         world.progress_generation();
         assert_eq!(world.generation_count, 1);
@@ -307,7 +381,7 @@ mod tests {
 
     #[test]
     fn reset_restores_initial_cells() {
-        let mut world = World::new(3, 3);
+        let mut world = World::new();
         world.set_alive(0, 0, true);
         world.save_as_initial();
 
@@ -318,48 +392,158 @@ mod tests {
         assert_eq!(world.generation_count, 0);
     }
 
+    #[test]
+    fn reset_marks_dirty_chunks() {
+        let mut world = World::new();
+        world.set_alive(0, 0, true);
+        world.save_as_initial();
+        world.set_alive(50, 50, true);
+        world.clear_dirty_chunks();
+
+        world.reset();
+
+        // (50,50)が消えるのでそのチャンクがdirty
+        assert!(world.dirty_chunks().contains(&World::chunk_key(50, 50)));
+    }
+
     // --- clear ---
 
     #[test]
     fn clear_sets_all_cells_dead() {
-        let mut world = World::new(3, 3);
+        let mut world = World::new();
         world.set_alive(0, 0, true);
         world.set_alive(1, 1, true);
         world.generation_count = 5;
 
         world.clear();
 
-        for y in 0..3u16 {
-            for x in 0..3u16 {
-                assert!(!world.is_alive(x, y));
-                assert!(!world.is_initial_alive(x, y));
-            }
-        }
+        assert!(world.alive_cells().is_empty());
         assert_eq!(world.generation_count, 0);
     }
 
-    // --- 境界条件 ---
+    #[test]
+    fn clear_marks_dirty_chunks() {
+        let mut world = World::new();
+        world.set_alive(5, 5, true);
+        world.clear_dirty_chunks();
+
+        world.clear();
+
+        assert!(world.dirty_chunks().contains(&World::chunk_key(5, 5)));
+    }
+
+    // --- chunk_key ---
 
     #[test]
-    fn corner_cell_counts_neighbors_correctly() {
-        // 左上角(0,0)に3隣接 → 誕生
-        let mut world = World::new(3, 3);
-        world.set_alive(1, 0, true);
-        world.set_alive(0, 1, true);
-        world.set_alive(1, 1, true);
-
-        world.progress_generation();
-        assert!(world.is_alive(0, 0));
+    fn chunk_key_positive_coordinates() {
+        assert_eq!(World::chunk_key(0, 0), (0, 0));
+        assert_eq!(World::chunk_key(63, 63), (0, 0));
+        assert_eq!(World::chunk_key(64, 0), (1, 0));
+        assert_eq!(World::chunk_key(127, 63), (1, 0));
     }
 
     #[test]
-    fn edge_cell_counts_neighbors_correctly() {
-        // 上辺の中央(0,1)に隣接2つ → Dead のまま
-        let mut world = World::new(3, 3);
+    fn chunk_key_negative_coordinates() {
+        assert_eq!(World::chunk_key(-1, -1), (-1, -1));
+        assert_eq!(World::chunk_key(-64, -64), (-1, -1));
+        assert_eq!(World::chunk_key(-65, -65), (-2, -2));
+    }
+
+    // --- dirty_chunks ---
+
+    #[test]
+    fn progress_generation_marks_dirty_chunks() {
+        let mut world = World::new();
+        // Blinker at origin
+        world.set_alive(0, -1, true);
         world.set_alive(0, 0, true);
-        world.set_alive(2, 0, true);
+        world.set_alive(0, 1, true);
+        world.clear_dirty_chunks();
 
         world.progress_generation();
+
+        // 変化があるので dirty_chunks は空でない
+        assert!(!world.dirty_chunks().is_empty());
+    }
+
+    #[test]
+    fn clear_dirty_chunks_works() {
+        let mut world = World::new();
+        world.toggle_cell(0, 0);
+        assert!(!world.dirty_chunks().is_empty());
+        world.clear_dirty_chunks();
+        assert!(world.dirty_chunks().is_empty());
+    }
+
+    // --- 負の座標でのシミュレーション ---
+
+    #[test]
+    fn blinker_at_negative_coordinates() {
+        let mut world = World::new();
+        world.set_alive(-1, 0, true);
+        world.set_alive(0, 0, true);
+        world.set_alive(1, 0, true);
+
+        world.progress_generation();
+        assert!(world.is_alive(0, -1));
+        assert!(world.is_alive(0, 0));
+        assert!(world.is_alive(0, 1));
+        assert!(!world.is_alive(-1, 0));
         assert!(!world.is_alive(1, 0));
+    }
+
+    #[test]
+    fn pattern_across_chunk_boundary() {
+        // チャンク境界(31,32)をまたぐblinker
+        let mut world = World::new();
+        world.set_alive(31, 0, true);
+        world.set_alive(32, 0, true);
+        world.set_alive(33, 0, true);
+
+        world.progress_generation();
+        assert!(world.is_alive(32, -1));
+        assert!(world.is_alive(32, 0));
+        assert!(world.is_alive(32, 1));
+    }
+
+    #[test]
+    fn place_pattern_sets_cells_alive() {
+        let mut world = World::new();
+        let cells = &[(0, 0), (1, 0), (0, 1)];
+        world.place_pattern(cells);
+        assert!(world.is_alive(0, 0));
+        assert!(world.is_alive(1, 0));
+        assert!(world.is_alive(0, 1));
+        assert!(!world.is_alive(1, 1));
+    }
+
+    #[test]
+    fn place_pattern_records_initial_cells() {
+        let mut world = World::new();
+        let cells = &[(0, 0), (1, 0)];
+        world.place_pattern(cells);
+        assert!(world.is_initial_alive(0, 0));
+        assert!(world.is_initial_alive(1, 0));
+    }
+
+    #[test]
+    fn place_pattern_resets_generation_count() {
+        let mut world = World::new();
+        world.toggle_cell(0, 0);
+        world.clear_dirty_chunks();
+        world.progress_generation();
+        assert!(world.generation_count > 0);
+        world.place_pattern(&[(5, 5)]);
+        assert_eq!(world.generation_count, 0);
+    }
+
+    #[test]
+    fn place_pattern_marks_dirty_chunks() {
+        let mut world = World::new();
+        world.clear_dirty_chunks();
+        world.place_pattern(&[(0, 0), (100, 100)]);
+        let dirty = world.dirty_chunks();
+        assert!(dirty.contains(&World::chunk_key(0, 0)));
+        assert!(dirty.contains(&World::chunk_key(100, 100)));
     }
 }

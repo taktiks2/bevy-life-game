@@ -4,7 +4,7 @@ use bevy::prelude::*;
 
 /// 現在マウスがホバーしているセルの座標を保持するリソース
 #[derive(Resource, Default, PartialEq)]
-pub struct HoveredCell(pub Option<(u16, u16)>);
+pub struct HoveredCell(pub Option<(i32, i32)>);
 
 /// 連続再生防止用のクールダウンタイマー（50ms）
 /// TimerMode::Once なので reset() 後に再度50ms経過するまで is_finished() は false を返す
@@ -12,8 +12,14 @@ pub struct HoveredCell(pub Option<(u16, u16)>);
 pub struct AudioCooldown(pub Timer);
 
 /// グリッドラインの表示/非表示状態を管理するリソース
-#[derive(Resource, Default)]
+#[derive(Resource)]
 pub struct GridVisible(pub bool);
+
+impl Default for GridVisible {
+    fn default() -> Self {
+        Self(true)
+    }
+}
 
 /// マウスドラッグ状態を管理するリソース
 ///

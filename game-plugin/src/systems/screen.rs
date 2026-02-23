@@ -1,24 +1,24 @@
 //! ゲーム画面のUI構築
 
 use bevy::prelude::*;
-use common::{consts::BG_SURFACE, resources::GameAssets};
+use common::{
+    consts::{BG_SURFACE, SPACING_MD, SPACING_SM},
+    resources::GameAssets,
+    ui::handle_screen_button_out,
+};
 
 use crate::components::{action::GameButtonAction, screen::OnGameScreen, slider::SliderKind};
 use crate::layer::Layer;
-use crate::rendering::{spawn_cell_highlight, spawn_grid_sprite};
+use crate::rendering::spawn_cell_highlight;
 use crate::resources::world::World;
 use crate::systems::button_handler::*;
 use crate::systems::ui::*;
 
 /// ゲーム画面の全UIを構築するシステム
 ///
-/// ボトムパネル（操作ボタン群）とワールド（セルグリッドスプライト＋ハイライト）を生成する。
-pub fn spawn_screen(
-    mut commands: Commands,
-    world: Res<World>,
-    game_assets: Res<GameAssets>,
-    mut images: ResMut<Assets<Image>>,
-) {
+/// ボトムパネル（操作ボタン群）とセルハイライトを生成する。
+/// チャンクスプライトは `manage_chunks` システムが動的に管理する。
+pub fn spawn_screen(mut commands: Commands, world: Res<World>, game_assets: Res<GameAssets>) {
     // NOTE: Bottom Panel
     commands
         .spawn((
@@ -28,8 +28,8 @@ pub fn spawn_screen(
                 align_items: AlignItems::Center,
                 justify_content: JustifyContent::SpaceEvenly,
                 flex_direction: FlexDirection::Row,
-                column_gap: Val::Px(8.),
-                padding: UiRect::horizontal(Val::Px(12.)),
+                column_gap: Val::Px(SPACING_SM),
+                padding: UiRect::horizontal(Val::Px(SPACING_MD)),
                 ..default()
             },
             Layer::BottomPanel.as_render_layer(),
@@ -45,11 +45,11 @@ pub fn spawn_screen(
                 spawn_action_button(p, &game_assets, "Start", GameButtonAction::ToggleSimulation)
                     .observe(handle_toggle_simulation)
                     .observe(handle_over)
-                    .observe(handle_out);
+                    .observe(handle_screen_button_out);
                 spawn_action_button(p, &game_assets, "Next", GameButtonAction::Next)
                     .observe(handle_next)
                     .observe(handle_over)
-                    .observe(handle_out);
+                    .observe(handle_screen_button_out);
             });
 
             // Reset / Clear
@@ -57,11 +57,11 @@ pub fn spawn_screen(
                 spawn_action_button(p, &game_assets, "Reset", GameButtonAction::Reset)
                     .observe(handle_reset)
                     .observe(handle_over)
-                    .observe(handle_out);
+                    .observe(handle_screen_button_out);
                 spawn_action_button(p, &game_assets, "Clear", GameButtonAction::Clear)
                     .observe(handle_clear)
                     .observe(handle_over)
-                    .observe(handle_out);
+                    .observe(handle_screen_button_out);
             });
 
             // Grid toggle
@@ -69,7 +69,7 @@ pub fn spawn_screen(
                 spawn_action_button(p, &game_assets, "Grid", GameButtonAction::GridToggle)
                     .observe(handle_grid_toggle)
                     .observe(handle_over)
-                    .observe(handle_out);
+                    .observe(handle_screen_button_out);
             });
 
             // Speed slider
@@ -79,7 +79,6 @@ pub fn spawn_screen(
             spawn_slider(p, &game_assets, "Zoom", SliderKind::Zoom);
         });
 
-    // NOTE: World
-    spawn_grid_sprite(&mut commands, &mut images, &world);
+    // NOTE: Cell highlight (チャンクスプライトはmanage_chunksが管理)
     spawn_cell_highlight(&mut commands);
 }

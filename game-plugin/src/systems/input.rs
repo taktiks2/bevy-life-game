@@ -215,29 +215,29 @@ pub fn mouse_drag_pan(
 
     // 左クリック中のドラッグ処理
     if mouse.pressed(MouseButton::Left) {
-        if let (Some(start_pos), Some(last_pos)) = (drag_state.start_pos, drag_state.last_pos) {
-            if let Some(current_pos) = window.cursor_position() {
-                // 閾値超えでドラッグモード開始
-                if !drag_state.is_dragging && exceeds_drag_threshold(start_pos, current_pos) {
-                    drag_state.is_dragging = true;
-                }
-                if drag_state.is_dragging {
-                    let delta = current_pos - last_pos;
-                    let Ok((mut transform, projection)) = camera_query.single_mut() else {
-                        return;
-                    };
-                    // スクリーンピクセルをワールド座標に変換（スケール考慮）
-                    let scale = if let Projection::Orthographic(ref ortho) = *projection {
-                        ortho.scale
-                    } else {
-                        1.0
-                    };
-                    // スクリーン座標系は下向きY、ワールド座標系は上向きYなので反転
-                    transform.translation.x -= delta.x * scale;
-                    transform.translation.y += delta.y * scale;
-                }
-                drag_state.last_pos = Some(current_pos);
+        if let (Some(start_pos), Some(last_pos)) = (drag_state.start_pos, drag_state.last_pos)
+            && let Some(current_pos) = window.cursor_position()
+        {
+            // 閾値超えでドラッグモード開始
+            if !drag_state.is_dragging && exceeds_drag_threshold(start_pos, current_pos) {
+                drag_state.is_dragging = true;
             }
+            if drag_state.is_dragging {
+                let delta = current_pos - last_pos;
+                let Ok((mut transform, projection)) = camera_query.single_mut() else {
+                    return;
+                };
+                // スクリーンピクセルをワールド座標に変換（スケール考慮）
+                let scale = if let Projection::Orthographic(ref ortho) = *projection {
+                    ortho.scale
+                } else {
+                    1.0
+                };
+                // スクリーン座標系は下向きY、ワールド座標系は上向きYなので反転
+                transform.translation.x -= delta.x * scale;
+                transform.translation.y += delta.y * scale;
+            }
+            drag_state.last_pos = Some(current_pos);
         }
         return;
     }
@@ -326,8 +326,8 @@ mod tests {
     #[test]
     fn calc_zoom_scroll_down_zooms_out() {
         // スクロール下（負値）→ スケール増加（ズームアウト）
-        let result = calc_zoom_scale(0.5, -1.0);
-        assert!(result > 0.5);
+        let result = calc_zoom_scale(0.15, -1.0);
+        assert!(result > 0.15);
     }
 
     #[test]
@@ -346,8 +346,8 @@ mod tests {
 
     #[test]
     fn calc_zoom_zero_scroll_no_change() {
-        let result = calc_zoom_scale(0.5, 0.0);
-        assert_eq!(result, 0.5);
+        let result = calc_zoom_scale(0.15, 0.0);
+        assert_eq!(result, 0.15);
     }
 
     // --- ドラッグ閾値判定テスト ---

@@ -1,36 +1,12 @@
-//! セル状態の更新・描画同期・イベントハンドリング
+//! セル状態の更新・イベントハンドリング
 //!
-//! Worldリソースの変更をテクスチャに反映し、
 //! 世代進行・リセット・クリアのイベントを処理する。
 
 use bevy::prelude::*;
 
-use crate::components::screen::{GenerationText, GridTexture};
+use crate::components::screen::GenerationText;
 use crate::events::{GenerationResetEvent, ProgressGenerationEvent, WorldClearEvent};
-use crate::rendering::write_world_to_image_data;
-use crate::resources::{interaction::GridVisible, timer::SimulationTimer, world::World};
-
-/// Worldの変更をグリッドテクスチャに反映するシステム
-pub fn update_cells(
-    world: Res<World>,
-    grid_visible: Res<GridVisible>,
-    grid_query: Query<&Sprite, With<GridTexture>>,
-    mut images: ResMut<Assets<Image>>,
-) {
-    if !world.is_changed() && !grid_visible.is_changed() {
-        return;
-    }
-    let Ok(sprite) = grid_query.single() else {
-        return;
-    };
-    let Some(image) = images.get_mut(&sprite.image) else {
-        return;
-    };
-    let Some(ref mut data) = image.data else {
-        return;
-    };
-    write_world_to_image_data(data, &world, grid_visible.0);
-}
+use crate::resources::{timer::SimulationTimer, world::World};
 
 /// 世代カウンターのUI表示を更新するシステム
 pub fn update_generation(world: Res<World>, mut query: Query<&mut TextSpan, With<GenerationText>>) {

@@ -6,3 +6,4 @@ edition.workspace = true
 [dependencies]
 bevy.workspace = true
 common.workspace = true
+rustc-hash = "2.1.1"

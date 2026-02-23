@@ -18,7 +18,3 @@ pub struct SliderTrack;
 /// スライダーのサム（つまみ）マーカー
 #[derive(Component)]
 pub struct SliderThumb;
-
-/// スライダーの現在値テキストマーカー
-#[derive(Component)]
-pub struct SliderValueText;

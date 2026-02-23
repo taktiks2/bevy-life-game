@@ -7,7 +7,7 @@ use bevy::{asset::AssetMetaCheck, prelude::*, window::WindowResolution};
 
 use common::{
     consts::{MIN_WINDOW_HEIGHT, MIN_WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_WIDTH},
-    resources::GameAssets,
+    resources::{GameAssets, SelectedPattern},
     states::GameState,
 };
 
@@ -47,6 +47,7 @@ fn main() {
         .add_plugins(GamePlugin)
         .add_plugins(MenuPlugin)
         .init_resource::<GameAssets>()
+        .init_resource::<SelectedPattern>()
         .init_state::<GameState>()
         .run();
 }

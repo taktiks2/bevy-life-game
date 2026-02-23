@@ -10,10 +10,6 @@ pub struct OnGameScreen;
 #[derive(Component)]
 pub struct GenerationText;
 
-/// セルグリッドのテクスチャスプライトのマーカー
-#[derive(Component)]
-pub struct GridTexture;
-
 /// マウスホバー時のセルハイライト表示のマーカー
 #[derive(Component)]
 pub struct CellHighlight;

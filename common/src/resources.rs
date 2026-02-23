@@ -2,11 +2,12 @@
 
 use bevy::prelude::{AssetServer, AudioSource, Font, FromWorld, Handle, Resource, World};
 
-use crate::consts::{DEFAULT_TICK_INTERVAL, WORLD_HEIGHT, WORLD_WIDTH};
+use crate::consts::DEFAULT_TICK_INTERVAL;
+use crate::patterns::LifePattern;
 
 /// ゲーム全体で使用するアセットと設定を保持するリソース
 ///
-/// フォント・効果音のハンドルに加え、ワールドサイズやシミュレーション速度など
+/// フォント・効果音のハンドルに加え、シミュレーション速度など
 /// 各プラグインから参照される設定値を含む。
 #[derive(Resource, Debug, Clone)]
 pub struct GameAssets {
@@ -18,11 +19,21 @@ pub struct GameAssets {
     pub audio_hover: Handle<AudioSource>,
     /// シミュレーションのティック間隔（秒）
     pub tick_interval: f32,
-    /// ワールドの幅（セル数）
-    pub world_width: u16,
-    /// ワールドの高さ（セル数）
-    pub world_height: u16,
 }
+
+/// オーディオのミュート状態を管理するリソース
+///
+/// `true` の場合、効果音の再生をスキップする。
+/// メニュー画面のトグルボタンで切り替え可能。
+#[derive(Resource, Debug, Clone, Default)]
+pub struct AudioMuted(pub bool);
+
+/// メニューから選択されたパターンを保持するリソース
+///
+/// パターンが選択されると `GameState::Game` 遷移時にワールドに配置される。
+/// 配置後は `None` にリセットされる。
+#[derive(Resource, Debug, Clone, Default)]
+pub struct SelectedPattern(pub LifePattern);
 
 impl FromWorld for GameAssets {
     fn from_world(world: &mut World) -> Self {
@@ -32,8 +43,6 @@ impl FromWorld for GameAssets {
             font_bold: asset_server.load("fonts/PixelMplus12-Bold.ttf"),
             audio_hover: asset_server.load("audios/appear-online.ogg"),
             tick_interval: DEFAULT_TICK_INTERVAL,
-            world_width: WORLD_WIDTH,
-            world_height: WORLD_HEIGHT,
         }
     }
 }

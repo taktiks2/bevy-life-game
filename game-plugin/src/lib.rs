@@ -3,16 +3,19 @@
 //! コンウェイのライフゲームのメイン画面を提供する。
 //! ボトムパネル（操作パネル）とワールド（セルグリッド）の2カメラ構成で描画する。
 
+use bevy::sprite_render::Material2dPlugin;
 use bevy::{camera::Viewport, prelude::*};
 use common::{
     consts::{INITIAL_CAMERA_SCALE, WINDOW_HEIGHT, WINDOW_WIDTH, calc_viewport_sizes},
-    resources::GameAssets,
+    patterns::LifePattern,
+    resources::{AudioMuted, GameAssets, SelectedPattern},
     states::GameState,
     systems::despawn_entity,
 };
 
 mod components;
 mod events;
+pub mod grid_material;
 mod layer;
 mod rendering;
 mod resources;
@@ -35,6 +38,7 @@ use systems::button_handler::update_toggle_button_text;
 use systems::{
     audio::play_audios,
     cell_operations::*,
+    chunk::{manage_chunks, update_grid_uniforms},
     grid::{handle_grid_click, update_cell_highlight},
     input::*,
     screen::spawn_screen,
@@ -49,6 +53,8 @@ pub struct GamePlugin;
 
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
+        app.add_plugins(Material2dPlugin::<grid_material::GridMaterial>::default());
+        app.init_resource::<AudioMuted>();
         app.add_systems(
             OnEnter(GameState::Game),
             (
@@ -70,7 +76,7 @@ impl Plugin for GamePlugin {
         app.add_systems(
             Update,
             (
-                update_cells,
+                manage_chunks,
                 game_input_keyboard_handling,
                 game_input_zoom_handling,
                 progress_generation,
@@ -92,6 +98,7 @@ impl Plugin for GamePlugin {
                 update_camera_viewports,
                 update_toggle_button_text,
                 systems::slider::sync_slider_thumbs,
+                update_grid_uniforms,
             )
                 .run_if(in_state(GameState::Game)),
         );
@@ -108,9 +115,6 @@ impl Plugin for GamePlugin {
 }
 
 /// ボトムパネル用カメラを生成する
-///
-/// ウィンドウ下部をビューポートとし、操作ボタン群を描画する。
-/// order=1 でワールドカメラより上に描画される。
 pub fn setup_bottom_panel_camera(mut commands: Commands, windows: Query<&Window>) {
     let (pw, ph) = windows
         .single()
@@ -134,9 +138,6 @@ pub fn setup_bottom_panel_camera(mut commands: Commands, windows: Query<&Window>
 }
 
 /// ワールド描画用カメラを生成する
-///
-/// ウィンドウ上部をビューポートとし、セルグリッドを描画する。
-/// OrthographicProjectionによるズーム・パン操作に対応する。
 pub fn setup_world_camera(mut commands: Commands, windows: Query<&Window>) {
     let (pw, ph) = windows
         .single()
@@ -165,11 +166,21 @@ pub fn setup_world_camera(mut commands: Commands, windows: Query<&Window>) {
 }
 
 /// Worldリソースとシミュレーションタイマーを初期化する
-fn setup_resource(mut commands: Commands, game_assets: Res<GameAssets>) {
-    commands.insert_resource(World::new(
-        game_assets.world_width,
-        game_assets.world_height,
-    ));
+fn setup_resource(
+    mut commands: Commands,
+    game_assets: Res<GameAssets>,
+    mut selected_pattern: ResMut<SelectedPattern>,
+) {
+    let mut world = World::new();
+
+    // 選択されたパターンがあれば配置してリセット
+    let pattern = selected_pattern.0;
+    if pattern != LifePattern::None {
+        world.place_pattern(pattern.cells());
+        selected_pattern.0 = LifePattern::None;
+    }
+
+    commands.insert_resource(world);
     commands.insert_resource(SimulationTimer::new(game_assets.tick_interval));
     commands.insert_resource(GridVisible::default());
 }

@@ -3,9 +3,9 @@
 use bevy::prelude::*;
 use common::{
     consts::{
-        ACCENT_GREEN, ACTION_BUTTON_HEIGHT, BG_BUTTON, BORDER_RADIUS, BORDER_SUBTLE,
-        FONT_SIZE_LARGE, FONT_SIZE_MEDIUM, FONT_SIZE_SMALL, SLIDER_THUMB_SIZE, SLIDER_TRACK_HEIGHT,
-        SLIDER_TRACK_WIDTH, TEXT_MUTED, TEXT_PRIMARY,
+        ACCENT_GREEN, ACTION_BUTTON_HEIGHT, ACTION_BUTTON_MIN_WIDTH, BG_BUTTON, BORDER_RADIUS,
+        BORDER_SUBTLE, FONT_SIZE_LARGE, FONT_SIZE_MEDIUM, FONT_SIZE_SMALL, GEN_COUNTER_MIN_WIDTH,
+        SLIDER_THUMB_SIZE, SLIDER_TRACK_HEIGHT, SLIDER_TRACK_WIDTH, TEXT_MUTED, TEXT_PRIMARY,
     },
     resources::GameAssets,
 };
@@ -13,7 +13,7 @@ use common::{
 use crate::components::{
     action::GameButtonAction,
     screen::GenerationText,
-    slider::{SliderKind, SliderThumb, SliderTrack, SliderValueText},
+    slider::{SliderKind, SliderThumb, SliderTrack},
 };
 use crate::systems::slider::{handle_slider_click, handle_slider_drag};
 
@@ -24,25 +24,31 @@ pub fn spawn_generation_text(
     generation_count: u64,
 ) {
     parent
-        .spawn((
-            Text::new("Gen: ".to_string()),
-            TextFont {
-                font: game_assets.font.clone(),
-                font_size: FONT_SIZE_MEDIUM,
-                ..default()
-            },
-            TextColor(TEXT_MUTED),
-        ))
-        .with_child((
-            TextSpan::new(generation_count.to_string()),
-            TextFont {
-                font: game_assets.font.clone(),
-                font_size: FONT_SIZE_MEDIUM,
-                ..default()
-            },
-            GenerationText,
-            TextColor(ACCENT_GREEN),
-        ));
+        .spawn(Node {
+            min_width: Val::Px(GEN_COUNTER_MIN_WIDTH),
+            ..default()
+        })
+        .with_children(|p| {
+            p.spawn((
+                Text::new("Gen: ".to_string()),
+                TextFont {
+                    font: game_assets.font.clone(),
+                    font_size: FONT_SIZE_MEDIUM,
+                    ..default()
+                },
+                TextColor(TEXT_MUTED),
+            ))
+            .with_child((
+                TextSpan::new(generation_count.to_string()),
+                TextFont {
+                    font: game_assets.font.clone(),
+                    font_size: FONT_SIZE_MEDIUM,
+                    ..default()
+                },
+                GenerationText,
+                TextColor(ACCENT_GREEN),
+            ));
+        });
 }
 
 /// アクションボタン（フルサイズ）を生成する
@@ -52,13 +58,13 @@ pub fn spawn_action_button<'a>(
     label: &str,
     action: GameButtonAction,
 ) -> EntityCommands<'a> {
-    let font = game_assets.font_bold.clone();
+    let font = game_assets.font.clone();
     let label = label.to_string();
     let mut entity = parent.spawn((
         Node {
             align_items: AlignItems::Center,
             justify_content: JustifyContent::Center,
-            width: Val::Auto,
+            width: Val::Px(ACTION_BUTTON_MIN_WIDTH),
             height: Val::Px(ACTION_BUTTON_HEIGHT),
             padding: UiRect::horizontal(Val::Px(16.)),
             border_radius: BorderRadius::px(

@@ -14,7 +14,7 @@ pub const MIN_WINDOW_HEIGHT: f32 = 480.0;
 
 // ビューポート
 /// ボトムパネルの固定高さ（物理ピクセル）
-pub const PANEL_HEIGHT: u32 = 80;
+pub(crate) const PANEL_HEIGHT: u32 = 80;
 
 /// ウィンドウの物理サイズから計算されたビューポートサイズ
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -40,11 +40,13 @@ pub fn calc_viewport_sizes(physical_width: u32, physical_height: u32) -> Viewpor
     }
 }
 
-// ワールドサイズ（セル数）
-/// ワールドの幅（セル数）
-pub const WORLD_WIDTH: u16 = 480;
-/// ワールドの高さ（セル数）
-pub const WORLD_HEIGHT: u16 = 270;
+// チャンク設定
+/// 1チャンクの1辺のセル数
+pub const CHUNK_SIZE: i32 = 64;
+/// 1セルのワールド空間サイズ
+pub const CELL_WORLD_SIZE: f32 = 1.0;
+/// 1チャンクのワールド空間サイズ
+pub const CHUNK_WORLD_SIZE: f32 = CHUNK_SIZE as f32 * CELL_WORLD_SIZE;
 
 // シミュレーション速度
 /// デフォルトのティック間隔（秒）
@@ -60,13 +62,13 @@ pub const SPACE_KEY_HOLD_DURATION: f32 = 0.5;
 
 // カメラ設定
 /// カメラの初期ズームスケール
-pub const INITIAL_CAMERA_SCALE: f32 = 0.2;
+pub const INITIAL_CAMERA_SCALE: f32 = 0.1;
 /// カメラのズーム最小値（最も拡大）
-pub const MIN_CAMERA_SCALE: f32 = 0.1;
+pub const MIN_CAMERA_SCALE: f32 = 0.05;
 /// カメラのズーム最大値（最も縮小）
-pub const MAX_CAMERA_SCALE: f32 = 1.0;
+pub const MAX_CAMERA_SCALE: f32 = 0.25;
 /// ズーム変更時のステップ幅
-pub const CAMERA_SCALE_STEP: f32 = 0.1;
+pub const CAMERA_SCALE_STEP: f32 = 0.01;
 /// WASD操作によるカメラ移動速度
 pub const CAMERA_PAN_SPEED: f32 = 10.0;
 /// ドラッグ判定の移動ピクセル閾値（スクリーン座標）
@@ -85,6 +87,10 @@ pub const FONT_SIZE_MEDIUM: f32 = 20.0;
 pub const FONT_SIZE_SMALL: f32 = 16.0;
 /// アクションボタンの高さ
 pub const ACTION_BUTTON_HEIGHT: f32 = 44.0;
+/// Genカウンターの最小幅（ピクセル）
+pub const GEN_COUNTER_MIN_WIDTH: f32 = 120.0;
+/// アクションボタンの最小幅（ピクセル）
+pub const ACTION_BUTTON_MIN_WIDTH: f32 = 90.0;
 /// ボタンの角丸半径
 pub const BORDER_RADIUS: f32 = 8.0;
 /// タイトル画面のボタン幅
@@ -92,7 +98,23 @@ pub const TITLE_BUTTON_WIDTH: f32 = 200.0;
 /// タイトル画面のボタン高さ
 pub const TITLE_BUTTON_HEIGHT: f32 = 60.0;
 /// タイトル/メニュー画面の上下パディング
-pub const TITLE_PADDING: f32 = 200.0;
+pub const TITLE_PADDING: f32 = 80.0;
+
+// UIスペーシング
+/// 極小間隔（4px）
+pub const SPACING_XS: f32 = 4.0;
+/// 小間隔（8px）
+pub const SPACING_SM: f32 = 8.0;
+/// 中間隔（12px）
+pub const SPACING_MD: f32 = 12.0;
+/// 大間隔（16px）
+pub const SPACING_LG: f32 = 16.0;
+
+// パターンボタンUI
+/// パターンボタンの幅（ピクセル）
+pub const PATTERN_BUTTON_WIDTH: f32 = 140.0;
+/// パターンボタンの高さ（ピクセル）
+pub const PATTERN_BUTTON_HEIGHT: f32 = 40.0;
 
 // スライダーUI
 /// スライダートラックの幅（ピクセル）
@@ -154,33 +176,16 @@ pub const SQUARE_COORDINATES: [(i8, i8); 8] = [
     (1, 1),
 ];
 
-/// グリッドのワールド空間表示サイズ（高さ基準）
-pub const GRID_DISPLAY_HEIGHT: f32 = 800.0;
-/// グリッドのワールド空間表示サイズ（幅はセル数の比率で算出）
-pub const GRID_DISPLAY_WIDTH: f32 =
-    GRID_DISPLAY_HEIGHT * (WORLD_WIDTH as f32 / WORLD_HEIGHT as f32);
-
-/// 指定ワールドサイズに対する1セルのピクセルサイズ (幅, 高さ) を返す
-///
-/// セルは正方形になるよう、高さ基準で統一する。
-pub fn cell_size(world_width: u16, world_height: u16) -> (f32, f32) {
-    (
-        GRID_DISPLAY_WIDTH / world_width as f32,
-        GRID_DISPLAY_HEIGHT / world_height as f32,
-    )
-}
-
 /// セル1個を表現するテクスチャピクセル数（幅・高さ）
-pub const CELL_PIXELS: u32 = 10;
-/// グリッドライン1本のテクスチャピクセル数
-pub const GRID_LINE_PIXELS: u32 = 1;
+pub const CELL_PIXELS: u32 = 8;
 /// グリッドラインのRGB色（控えめな暗灰色）
-pub const GRID_LINE_RGB: (u8, u8, u8) = (40, 42, 48);
+pub const GRID_LINE_RGB: (u8, u8, u8) = (25, 26, 32);
+/// グリッド線のスクリーンピクセル幅（ズームレベルに依存しない一定幅）
+pub const GRID_LINE_SCREEN_WIDTH: f32 = 0.1;
 
-/// ワールドのセル数からテクスチャのピクセル数を計算する
-pub fn texture_size(cells: u16) -> u32 {
-    cells as u32 * CELL_PIXELS + (cells as u32 + 1) * GRID_LINE_PIXELS
-}
+/// 1チャンクのテクスチャピクセル数（1辺）
+/// グリッド線はシェーダーで描画するため、テクスチャにはセルデータのみ
+pub const CHUNK_TEX_SIZE: u32 = CHUNK_SIZE as u32 * CELL_PIXELS;
 
 #[cfg(test)]
 mod tests {
@@ -228,25 +233,22 @@ mod tests {
 }
 
 #[cfg(test)]
-mod grid_tests {
+mod chunk_tests {
     use super::*;
 
     #[test]
-    fn texture_size_basic() {
-        // 10セル: 10*CELL_PIXELS + 11*GRID_LINE_PIXELS
-        assert_eq!(texture_size(10), 10 * CELL_PIXELS + 11 * GRID_LINE_PIXELS);
+    fn chunk_tex_size_value() {
+        // 64 * 8 = 512 (グリッド線はシェーダー描画のためテクスチャに含まない)
+        assert_eq!(CHUNK_TEX_SIZE, 512);
     }
 
     #[test]
-    fn texture_size_300_cells() {
-        assert_eq!(
-            texture_size(300),
-            300 * CELL_PIXELS + 301 * GRID_LINE_PIXELS
-        );
+    fn chunk_world_size_value() {
+        assert_eq!(CHUNK_WORLD_SIZE, 64.0);
     }
 
     #[test]
-    fn texture_size_1_cell() {
-        assert_eq!(texture_size(1), 1 * CELL_PIXELS + 2 * GRID_LINE_PIXELS);
+    fn cell_world_size_value() {
+        assert_eq!(CELL_WORLD_SIZE, 1.0);
     }
 }

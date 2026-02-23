@@ -7,7 +7,10 @@
 use bevy::prelude::*;
 
 use common::{
-    consts::{ACCENT_GREEN, BG_DARK},
+    consts::{
+        ACCENT_GREEN, ACCENT_GREEN_DIM, BG_DARK, FONT_SIZE_MEDIUM, FONT_SIZE_SMALL, SPACING_LG,
+        SPACING_SM, SPACING_XS, TEXT_MUTED, TEXT_PRIMARY,
+    },
     resources::GameAssets,
     states::GameState,
     systems::{despawn_entity, setup_camera},
@@ -65,6 +68,88 @@ fn setup_title_screen(mut commands: Commands, game_assets: Res<GameAssets>) {
             "Life Game",
             ACCENT_GREEN,
         );
+
+        // 操作説明セクション
+        parent
+            .spawn(Node {
+                flex_direction: FlexDirection::Column,
+                align_items: AlignItems::FlexStart,
+                row_gap: Val::Px(SPACING_XS),
+                ..default()
+            })
+            .with_children(|section| {
+                // ヘッダー
+                section.spawn((
+                    Text::new("Controls".to_string()),
+                    TextFont {
+                        font: game_assets.font_bold.clone(),
+                        font_size: FONT_SIZE_MEDIUM,
+                        ..default()
+                    },
+                    TextColor(TEXT_PRIMARY),
+                    Node {
+                        margin: UiRect::bottom(Val::Px(SPACING_SM)),
+                        ..default()
+                    },
+                ));
+
+                let controls = [
+                    ("Click", "Toggle cell"),
+                    ("Drag", "Pan camera"),
+                    ("Scroll", "Zoom"),
+                    ("", ""),
+                    ("WASD", "Pan camera"),
+                    ("Q / E", "Zoom in / out"),
+                    ("Space", "Tap: step one generation"),
+                    ("", "Hold: start / stop simulation"),
+                    ("Esc", "Menu"),
+                ];
+
+                for (key, desc) in controls {
+                    if key.is_empty() && desc.is_empty() {
+                        // 区切りスペース
+                        section.spawn(Node {
+                            height: Val::Px(SPACING_XS),
+                            ..default()
+                        });
+                        continue;
+                    }
+
+                    section
+                        .spawn(Node {
+                            flex_direction: FlexDirection::Row,
+                            column_gap: Val::Px(SPACING_LG),
+                            ..default()
+                        })
+                        .with_children(|row| {
+                            // キー名（固定幅）
+                            row.spawn((
+                                Text::new(key.to_string()),
+                                TextFont {
+                                    font: game_assets.font_bold.clone(),
+                                    font_size: FONT_SIZE_SMALL,
+                                    ..default()
+                                },
+                                TextColor(ACCENT_GREEN_DIM),
+                                Node {
+                                    width: Val::Px(80.0),
+                                    ..default()
+                                },
+                            ));
+                            // 説明
+                            row.spawn((
+                                Text::new(desc.to_string()),
+                                TextFont {
+                                    font: game_assets.font_bold.clone(),
+                                    font_size: FONT_SIZE_SMALL,
+                                    ..default()
+                                },
+                                TextColor(TEXT_MUTED),
+                            ));
+                        });
+                }
+            });
+
         spawn_screen_button(parent, game_assets.font_bold.clone(), "Start")
             .insert(TitleButtonAction::Start)
             .observe(on_start_button_click)
