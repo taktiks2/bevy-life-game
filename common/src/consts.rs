@@ -87,6 +87,10 @@ pub const FONT_SIZE_MEDIUM: f32 = 20.0;
 pub const FONT_SIZE_SMALL: f32 = 16.0;
 /// アクションボタンの高さ
 pub const ACTION_BUTTON_HEIGHT: f32 = 44.0;
+/// Genカウンターの最小幅（ピクセル）
+pub const GEN_COUNTER_MIN_WIDTH: f32 = 120.0;
+/// アクションボタンの最小幅（ピクセル）
+pub const ACTION_BUTTON_MIN_WIDTH: f32 = 90.0;
 /// ボタンの角丸半径
 pub const BORDER_RADIUS: f32 = 8.0;
 /// タイトル画面のボタン幅
