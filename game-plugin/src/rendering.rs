@@ -141,7 +141,7 @@ pub fn write_chunk_to_image_data(data: &mut [u8], world: &World, chunk_key: Chun
 mod tests {
     use super::*;
     use crate::resources::world::World;
-    use common::consts::{CELL_ALIVE_RGB, CELL_DEAD_RGB, CELL_PIXELS, CHUNK_TEX_SIZE};
+    use common::consts::{CELL_ALIVE_RGB, CELL_DEAD_RGB, CELL_PIXELS, CHUNK_TEX_SIZE, CHUNK_WORLD_SIZE};
 
     fn pixel_rgb(data: &[u8], tex_width: usize, tx: usize, ty: usize) -> (u8, u8, u8) {
         let offset = (ty * tex_width + tx) * 4;
@@ -156,7 +156,6 @@ mod tests {
 
         write_chunk_to_image_data(&mut data, &world, (0, 0));
 
-        // グリッド線はシェーダー描画のため、テクスチャの(0,0)はセルデータ
         assert_eq!(pixel_rgb(&data, tex_w, 0, 0), CELL_DEAD_RGB);
     }
 
@@ -184,9 +183,56 @@ mod tests {
         write_chunk_to_image_data(&mut data, &world, (0, 0));
 
         let cp = CELL_PIXELS as usize;
-        // セル(1,0)の先頭ピクセル
         assert_eq!(pixel_rgb(&data, tex_w, cp, 0), CELL_ALIVE_RGB);
-        // セル(0,0)の範囲内はdead
         assert_eq!(pixel_rgb(&data, tex_w, cp - 1, 0), CELL_DEAD_RGB);
+    }
+
+    // === chunk_world_pos テスト ===
+
+    #[test]
+    fn chunk_world_pos_origin() {
+        let pos = chunk_world_pos((0, 0));
+        let half = CHUNK_WORLD_SIZE / 2.0;
+        assert_eq!(pos, Vec3::new(half, -half, 0.0));
+    }
+
+    #[test]
+    fn chunk_world_pos_negative() {
+        let pos = chunk_world_pos((-1, -1));
+        let half = CHUNK_WORLD_SIZE / 2.0;
+        assert_eq!(pos, Vec3::new(-half, half, 0.0));
+    }
+
+    #[test]
+    fn chunk_world_pos_positive() {
+        let pos = chunk_world_pos((1, 2));
+        let half = CHUNK_WORLD_SIZE / 2.0;
+        assert_eq!(
+            pos,
+            Vec3::new(
+                CHUNK_WORLD_SIZE + half,
+                -(2.0 * CHUNK_WORLD_SIZE + half),
+                0.0,
+            )
+        );
+    }
+
+    // === write_chunk_to_image_data 負座標テスト ===
+
+    #[test]
+    fn negative_chunk_alive_cell() {
+        let mut world = World::new();
+        world.toggle_cell(-1, -1);
+
+        let tex_w = CHUNK_TEX_SIZE as usize;
+        let mut data = vec![0u8; tex_w * tex_w * 4];
+
+        write_chunk_to_image_data(&mut data, &world, (-1, -1));
+
+        // セル(-1,-1)はチャンク(-1,-1)のローカル座標(63,63)
+        let cp = CELL_PIXELS as usize;
+        let tx = 63 * cp;
+        let ty = 63 * cp;
+        assert_eq!(pixel_rgb(&data, tex_w, tx, ty), CELL_ALIVE_RGB);
     }
 }
