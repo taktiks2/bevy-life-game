@@ -2,6 +2,39 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## [0.3.0](https://github.com/taktiks2/bevy-life-game/compare/200d87e2f0c39879b1b568165e4d224970b8500d..0.3.0) - 2026-02-23
+#### Features
+- メニュー画面にパターン選択機能を追加しグリッドをデフォルト表示に変更 - ([937660d](https://github.com/taktiks2/bevy-life-game/commit/937660deb112df03a5314b57409c28362f83071f)) - taktiks2
+- メニュー画面にミュートトグルボタンを追加 - ([0c1f8aa](https://github.com/taktiks2/bevy-life-game/commit/0c1f8aa0d26f76c574265602f1b43115d3e3c437)) - taktiks2
+- タイトル画面に操作方法の追加 - ([6c33845](https://github.com/taktiks2/bevy-life-game/commit/6c3384580b3ea49d4ec63549d77ad74f9f955aba)) - taktiks2
+- グリッド線をシェーダー描画に移行しズームレベルに依存しない一定幅を実現 - ([08617ba](https://github.com/taktiks2/bevy-life-game/commit/08617ba33581e6136abfe6059146eac4cd1f4952)) - taktiks2
+- 無限フィールド化 — HashSetベースのワールド＋チャンクレンダリング - ([de1a658](https://github.com/taktiks2/bevy-life-game/commit/de1a658093afbe42ce5357de201c0dc0bff641c3)) - taktiks2
+- マウスホイールズーム＆左クリックドラッグパンを追加 - ([bb937fb](https://github.com/taktiks2/bevy-life-game/commit/bb937fb2bd9eb5aee7bc27a527a4e88ea8a6b0cd)) - taktiks2
+- マウスホイールズーム＆左クリックドラッグパンを追加 - ([79f523a](https://github.com/taktiks2/bevy-life-game/commit/79f523a24e2fd596a6c0335003714491b4f79811)) - taktiks2
+- Speed/ZoomのステッパーボタンをスライダーUIに置き換え - ([3a37d13](https://github.com/taktiks2/bevy-life-game/commit/3a37d13d484a30c53dd5d03d1776cd27bf0ed4f3)) - taktiks2
+- フォントをPixelMplus12に変更しライフゲームの雰囲気を演出 - ([e0b47a2](https://github.com/taktiks2/bevy-life-game/commit/e0b47a211c352324111ebb442e02b590016bb845)) - taktiks2
+- 非正方形グリッド対応＆ゲーム画面ボタンのボーダー削除 - ([744bc03](https://github.com/taktiks2/bevy-life-game/commit/744bc03467ea0616f13bf4ae968e15dcd05723b6)) - taktiks2
+#### Bug Fixes
+- PRレビュー指摘対応 — dirty_chunks制御とテスト関数名修正 - ([fff9d39](https://github.com/taktiks2/bevy-life-game/commit/fff9d39adf8aa9da8f51e5335d1a43e8aef6fe95)) - taktiks2
+- ボトムパネルUIのレイアウトガタつきを固定化 - ([0ba8fae](https://github.com/taktiks2/bevy-life-game/commit/0ba8faefbb23857b1cd1d1a5072810fdb654fbef)) - taktiks2
+- グリッド線の太さ制御をAA幅ではなく強度(不透明度)方式に変更 - ([1929b35](https://github.com/taktiks2/bevy-life-game/commit/1929b3587fd4147ccb0243a613ee2ebc6ea1c3a3)) - taktiks2
+- グリッド線のちらつきをfwidth()による正確なピクセルサイズ計算で解消 - ([3a23c46](https://github.com/taktiks2/bevy-life-game/commit/3a23c46eeb370bfa7e3d8231a7dcb46c02a1c005)) - taktiks2
+#### Documentation
+- 無限ワールドの仕組み - ([06ba196](https://github.com/taktiks2/bevy-life-game/commit/06ba196fa36a0cc4c0f3341a1f64b0fc57deb9a2)) - taktiks2
+- READMEの更新 - ([200d87e](https://github.com/taktiks2/bevy-life-game/commit/200d87e2f0c39879b1b568165e4d224970b8500d)) - taktiks2
+#### Tests
+- chunk_world_posと負座標チャンク描画のテスト追加 - ([3d6b53d](https://github.com/taktiks2/bevy-life-game/commit/3d6b53d86fe0d0c0f1ed03fdd40adc9341e80de2)) - taktiks2
+#### Refactoring
+- 未使用依存関係の削除、Clippy警告修正、コード重複排除、スペーシング定数集約 - ([2c26643](https://github.com/taktiks2/bevy-life-game/commit/2c26643dbaa54d0ee54b6bde0650a223501ae857)) - taktiks2
+- 未使用のSliderValueTextコンポーネントとデッドコードを削除 - ([f1d1458](https://github.com/taktiks2/bevy-life-game/commit/f1d1458b51fa21d6cd8dfdaae377acaf90b15507)) - taktiks2
+- スライダー変換関数をInvertedLinearMappingで統合し重複解消 - ([a865ac2](https://github.com/taktiks2/bevy-life-game/commit/a865ac2c505d01d41f76d184fddd137222131fcf)) - taktiks2
+- チャンクサイズ64化・ズーム範囲調整・コードフォーマット整理 - ([23e1eec](https://github.com/taktiks2/bevy-life-game/commit/23e1eec9e991aa33d24b14ea5c30b7ce1a480475)) - taktiks2
+- Start/Stopボタンを1つのトグルボタンに統合 - ([c95e99b](https://github.com/taktiks2/bevy-life-game/commit/c95e99bc7f8a9b8b66cbf5f4ce863a28c96305da)) - taktiks2
+#### Styling
+- rustfmtによるインポートとシグネチャのフォーマット整理 - ([4251b40](https://github.com/taktiks2/bevy-life-game/commit/4251b4065dca5ff7e0d91acc6ae68751c587b019)) - taktiks2
+
+- - -
+
 ## [0.2.0](https://github.com/taktiks2/bevy-life-game/compare/1fc83a37a7705bc60f71deb5c664ed23b2a9ef26..0.2.0) - 2026-02-15
 #### Features
 - セル間のグリッドライン表示機能を追加 - ([04c692c](https://github.com/taktiks2/bevy-life-game/commit/04c692caef72858b16c35f94bd9f3023f59d90d5)) - taktiks2
