@@ -10,30 +10,57 @@ use crate::components::camera::WorldCamera;
 use crate::components::slider::{SliderKind, SliderThumb, SliderTrack, SliderValueText};
 use crate::resources::timer::SimulationTimer;
 
+/// 値域 [min, max] とスライダー比率 [0.0, 1.0] の逆転リニアマッピング
+///
+/// ratio=0.0 → max, ratio=1.0 → min （右側ほど値が小さい）
+struct InvertedLinearMapping {
+    min: f32,
+    max: f32,
+}
+
+impl InvertedLinearMapping {
+    fn value_to_ratio(&self, value: f32) -> f32 {
+        ((self.max - value) / (self.max - self.min)).clamp(0.0, 1.0)
+    }
+
+    fn ratio_to_value(&self, ratio: f32) -> f32 {
+        let r = ratio.clamp(0.0, 1.0);
+        self.max - r * (self.max - self.min)
+    }
+}
+
+const SPEED_MAPPING: InvertedLinearMapping = InvertedLinearMapping {
+    min: MIN_TICK_INTERVAL,
+    max: MAX_TICK_INTERVAL,
+};
+
+const ZOOM_MAPPING: InvertedLinearMapping = InvertedLinearMapping {
+    min: MIN_CAMERA_SCALE,
+    max: MAX_CAMERA_SCALE,
+};
+
 /// tick_interval 値をスライダー比率 (0.0–1.0) に変換する
 ///
 /// 右側ほど速い（tick_interval が小さい）ため、逆転マッピングを行う。
 pub fn speed_to_ratio(tick_interval: f32) -> f32 {
-    ((MAX_TICK_INTERVAL - tick_interval) / (MAX_TICK_INTERVAL - MIN_TICK_INTERVAL)).clamp(0.0, 1.0)
+    SPEED_MAPPING.value_to_ratio(tick_interval)
 }
 
 /// スライダー比率 (0.0–1.0) を tick_interval 値に変換する
 pub fn ratio_to_speed(ratio: f32) -> f32 {
-    let r = ratio.clamp(0.0, 1.0);
-    MAX_TICK_INTERVAL - r * (MAX_TICK_INTERVAL - MIN_TICK_INTERVAL)
+    SPEED_MAPPING.ratio_to_value(ratio)
 }
 
 /// camera_scale 値をスライダー比率 (0.0–1.0) に変換する
 ///
 /// 右側ほどズームイン（camera_scale が小さい）ため、逆転マッピングを行う。
 pub fn zoom_to_ratio(camera_scale: f32) -> f32 {
-    ((MAX_CAMERA_SCALE - camera_scale) / (MAX_CAMERA_SCALE - MIN_CAMERA_SCALE)).clamp(0.0, 1.0)
+    ZOOM_MAPPING.value_to_ratio(camera_scale)
 }
 
 /// スライダー比率 (0.0–1.0) を camera_scale 値に変換する
 pub fn ratio_to_zoom(ratio: f32) -> f32 {
-    let r = ratio.clamp(0.0, 1.0);
-    MAX_CAMERA_SCALE - r * (MAX_CAMERA_SCALE - MIN_CAMERA_SCALE)
+    ZOOM_MAPPING.ratio_to_value(ratio)
 }
 
 /// トラック上でのドラッグハンドラ
@@ -290,12 +317,81 @@ mod tests {
 
     #[test]
     fn zoom_roundtrip() {
-        for &scale in &[0.05, 0.1, 0.2, 0.3] {
+        for &scale in &[0.05, 0.1, 0.15, 0.25] {
             let roundtrip = ratio_to_zoom(zoom_to_ratio(scale));
             assert!(
                 (roundtrip - scale).abs() < 0.001,
                 "roundtrip failed for {scale}: got {roundtrip}"
             );
         }
+    }
+
+    // === InvertedLinearMapping テスト ===
+
+    #[test]
+    fn mapping_ratio_0_returns_max() {
+        let m = InvertedLinearMapping { min: 1.0, max: 5.0 };
+        assert!((m.ratio_to_value(0.0) - 5.0).abs() < f32::EPSILON);
+    }
+
+    #[test]
+    fn mapping_ratio_1_returns_min() {
+        let m = InvertedLinearMapping { min: 1.0, max: 5.0 };
+        assert!((m.ratio_to_value(1.0) - 1.0).abs() < f32::EPSILON);
+    }
+
+    #[test]
+    fn mapping_value_max_returns_ratio_0() {
+        let m = InvertedLinearMapping { min: 1.0, max: 5.0 };
+        assert!((m.value_to_ratio(5.0) - 0.0).abs() < f32::EPSILON);
+    }
+
+    #[test]
+    fn mapping_value_min_returns_ratio_1() {
+        let m = InvertedLinearMapping { min: 1.0, max: 5.0 };
+        assert!((m.value_to_ratio(1.0) - 1.0).abs() < f32::EPSILON);
+    }
+
+    #[test]
+    fn mapping_clamps_value_above_max() {
+        let m = InvertedLinearMapping { min: 1.0, max: 5.0 };
+        assert!((m.value_to_ratio(10.0) - 0.0).abs() < f32::EPSILON);
+    }
+
+    #[test]
+    fn mapping_clamps_value_below_min() {
+        let m = InvertedLinearMapping { min: 1.0, max: 5.0 };
+        assert!((m.value_to_ratio(0.0) - 1.0).abs() < f32::EPSILON);
+    }
+
+    #[test]
+    fn mapping_clamps_ratio_negative() {
+        let m = InvertedLinearMapping { min: 1.0, max: 5.0 };
+        assert!((m.ratio_to_value(-0.5) - 5.0).abs() < f32::EPSILON);
+    }
+
+    #[test]
+    fn mapping_clamps_ratio_above_1() {
+        let m = InvertedLinearMapping { min: 1.0, max: 5.0 };
+        assert!((m.ratio_to_value(1.5) - 1.0).abs() < f32::EPSILON);
+    }
+
+    #[test]
+    fn mapping_roundtrip() {
+        let m = InvertedLinearMapping { min: 2.0, max: 8.0 };
+        for &v in &[2.0, 3.0, 5.0, 7.0, 8.0] {
+            let roundtrip = m.ratio_to_value(m.value_to_ratio(v));
+            assert!(
+                (roundtrip - v).abs() < 0.001,
+                "roundtrip failed for {v}: got {roundtrip}"
+            );
+        }
+    }
+
+    #[test]
+    fn mapping_mid_value() {
+        let m = InvertedLinearMapping { min: 2.0, max: 8.0 };
+        assert!((m.value_to_ratio(5.0) - 0.5).abs() < f32::EPSILON);
+        assert!((m.ratio_to_value(0.5) - 5.0).abs() < f32::EPSILON);
     }
 }
