@@ -14,7 +14,7 @@ pub const MIN_WINDOW_HEIGHT: f32 = 480.0;
 
 // ビューポート
 /// ボトムパネルの固定高さ（物理ピクセル）
-pub const PANEL_HEIGHT: u32 = 80;
+pub(crate) const PANEL_HEIGHT: u32 = 80;
 
 /// ウィンドウの物理サイズから計算されたビューポートサイズ
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

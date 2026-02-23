@@ -7,7 +7,7 @@ use common::consts::{
 };
 
 use crate::components::camera::WorldCamera;
-use crate::components::slider::{SliderKind, SliderThumb, SliderTrack, SliderValueText};
+use crate::components::slider::{SliderKind, SliderThumb, SliderTrack};
 use crate::resources::timer::SimulationTimer;
 
 /// 値域 [min, max] とスライダー比率 [0.0, 1.0] の逆転リニアマッピング
@@ -142,12 +142,11 @@ pub fn handle_slider_click(
     }
 }
 
-/// スライダーのサム位置と値テキストをゲーム状態に同期するシステム
+/// スライダーのサム位置をゲーム状態に同期するシステム
 pub fn sync_slider_thumbs(
     simulation_timer: Res<SimulationTimer>,
     camera_query: Query<&Projection, With<WorldCamera>>,
     mut thumb_query: Query<(&SliderKind, &mut Node), With<SliderThumb>>,
-    mut text_query: Query<(&SliderKind, &mut Text), With<SliderValueText>>,
 ) {
     let speed_ratio = speed_to_ratio(simulation_timer.0.duration().as_secs_f32());
     let zoom_ratio = camera_query
@@ -168,29 +167,6 @@ pub fn sync_slider_thumbs(
         };
         // サムの left = ratio * (track_width - thumb_size)
         node.left = Val::Px(ratio * (SLIDER_TRACK_WIDTH - SLIDER_THUMB_SIZE));
-    }
-
-    for (kind, mut text) in text_query.iter_mut() {
-        match kind {
-            SliderKind::Speed => {
-                let interval = simulation_timer.0.duration().as_secs_f32();
-                **text = format!("{interval:.1}s");
-            }
-            SliderKind::Zoom => {
-                let scale = camera_query
-                    .iter()
-                    .find_map(|p| {
-                        if let Projection::Orthographic(ortho) = p {
-                            Some(ortho.scale)
-                        } else {
-                            None
-                        }
-                    })
-                    .unwrap_or(0.5);
-                let zoom_pct = ((1.0 / scale) * 100.0) as u32;
-                **text = format!("{zoom_pct}%");
-            }
-        }
     }
 }
 
